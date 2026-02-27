@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 6: Ascension - Member Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+            --bg-light: #f9fafb;
+            --border: #e5e7eb;
+            --gold: #d97706;
+            --gold-dark: #92400e;
+            --gold-light: #fef3c7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar-container {
+            flex-shrink: 0;
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-saved {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .progress-saved.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 3rem 2rem 5rem 2rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .slide[data-slide="1"] { align-items: center; }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .slide.prev { transform: translateX(-100%); }
+
+        .slide-content {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .nav-button {
+            position: fixed;
+            top: calc(50% + 3px);
+            transform: translateY(-50%);
+            background: rgba(217, 119, 6, 0.9);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .nav-button:hover {
+            background: #b45309;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-button:disabled:hover {
+            transform: translateY(-50%) scale(1);
+            background: rgba(217, 119, 6, 0.9);
+        }
+
+        .nav-button.prev { left: 20px; }
+        .nav-button.next { right: 20px; }
+
+        /* Hero: gold/amber for Ascension */
+        .hero {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 40%, #d97706 100%);
+            color: white;
+            text-align: center;
+            margin: -3rem -2rem -5rem -2rem;
+            padding: 3rem 2rem 5rem 2rem;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 30%, rgba(251, 191, 36, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            position: relative;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.9);
+            position: relative;
+        }
+
+        .hero .module-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        h4 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .callout {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 6px solid var(--gold);
+            margin: 2rem 0;
+        }
+
+        .callout h3 { color: var(--gold-dark); margin-bottom: 1rem; }
+        .callout p { color: #78350f; margin-bottom: 0; }
+
+        .callout.blue {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left-color: var(--primary);
+        }
+        .callout.blue h3 { color: var(--primary-dark); }
+        .callout.blue p { color: #1e3a8a; }
+
+        .callout.green {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left-color: #10b981;
+        }
+        .callout.green h3 { color: #065f46; }
+        .callout.green p { color: #064e3b; }
+
+        .callout.purple {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border-left-color: #7c3aed;
+        }
+        .callout.purple h3 { color: #4c1d95; }
+        .callout.purple p { color: #3b0764; }
+
+        .quote {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--gold);
+            padding: 2rem;
+            border-left: 4px solid var(--gold);
+            margin: 2rem 0;
+            background: var(--gold-light);
+            border-radius: 8px;
+        }
+
+        .framework-box {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .framework-box h3 {
+            color: var(--gold);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 1rem 1rem 1rem 3rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 1rem;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .warning-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .warning-list li {
+            padding: 1rem 1rem 1rem 3rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            position: relative;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .warning-list li.do { background: #d1fae5; }
+        .warning-list li.do::before { content: "✅"; position: absolute; left: 0.75rem; }
+        .warning-list li.dont { background: #fee2e2; }
+        .warning-list li.dont::before { content: "❌"; position: absolute; left: 0.75rem; }
+
+        .interactive-checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .interactive-checklist li {
+            padding: 1rem 1rem 1rem 3.5rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .interactive-checklist li:hover {
+            background: #fef3c7;
+            border-color: var(--gold);
+        }
+
+        .interactive-checklist li.checked {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .interactive-checklist li::before {
+            content: "";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .interactive-checklist li.checked::before {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .interactive-checklist li.checked::after {
+            content: "✓";
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .mission-progress {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .mission-progress h4 { color: var(--gold-dark); margin-bottom: 1rem; }
+
+        .progress-track {
+            background: rgba(0,0,0,0.08);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--gold) 0%, #f59e0b 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--gold) 0%, #f59e0b 100%);
+        }
+
+        .timeline-item {
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -0.6rem;
+            top: 0.5rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px white, 0 0 0 6px var(--gold);
+        }
+
+        .timeline-item h4 { color: var(--gold-dark); }
+
+        .strategy-number {
+            display: inline-block;
+            background: var(--gold);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .example-box {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 { color: #065f46; margin-bottom: 0.5rem; }
+        .example-box p { color: #064e3b; margin-bottom: 0.5rem; }
+
+        .gold-box {
+            background: #fffbeb;
+            border-left: 4px solid var(--gold);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .gold-box h4 { color: var(--gold-dark); margin-bottom: 0.5rem; }
+        .gold-box p { color: #78350f; margin-bottom: 0.5rem; }
+
+        .warning-box {
+            background: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 { color: #9a3412; margin-bottom: 0.5rem; }
+        .warning-box p { color: #7c2d12; margin-bottom: 0; }
+
+        .bg-alternate {
+            background: var(--bg-light);
+            margin: -3rem -2rem -5rem -2rem;
+            padding: 3rem 2rem 5rem 2rem;
+            min-height: 100%;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .col-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .col-box.green { background: #d1fae5; border-left: 4px solid #10b981; }
+        .col-box.red { background: #fee2e2; border-left: 4px solid #ef4444; }
+        .col-box.gold { background: #fef3c7; border-left: 4px solid var(--gold); }
+        .col-box.blue { background: #dbeafe; border-left: 4px solid var(--primary); }
+        .col-box h4 { margin-bottom: 0.75rem; }
+        .col-box.green h4 { color: #065f46; }
+        .col-box.red h4 { color: #991b1b; }
+        .col-box.gold h4 { color: var(--gold-dark); }
+        .col-box.blue h4 { color: var(--primary-dark); }
+        .col-box p { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .col-box.green p { color: #064e3b; }
+        .col-box.red p { color: #7f1d1d; }
+        .col-box.gold p { color: #78350f; }
+        .col-box.blue p { color: #1e3a8a; }
+
+        /* Ascension type cards */
+        .ascension-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .ascension-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .ascension-card:hover { border-color: var(--gold); }
+
+        .ascension-card .type-badge {
+            display: inline-block;
+            background: var(--gold-light);
+            color: var(--gold-dark);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ascension-card h4 { color: var(--gold-dark); margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .ascension-card p { font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem; }
+        .ascension-card .example { font-size: 0.85rem; color: var(--text); font-style: italic; }
+
+        /* Tier structure */
+        .tier-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .tier-card {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .tier-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tier-header.t1 { background: #f9fafb; }
+        .tier-header.t2 { background: #fef3c7; }
+        .tier-header.t3 { background: linear-gradient(90deg, #78350f, #b45309); color: white; }
+
+        .tier-header h4 { margin: 0; font-size: 1.1rem; }
+        .tier-header .tier-price { font-size: 1.1rem; font-weight: 700; }
+        .tier-header.t3 h4 { color: white; }
+        .tier-header.t3 .tier-price { color: #fde68a; }
+        .tier-header.t1 h4 { color: var(--text); }
+        .tier-header.t2 h4 { color: var(--gold-dark); }
+        .tier-header.t2 .tier-price { color: var(--gold); }
+
+        .tier-body {
+            padding: 1rem 1.5rem;
+            background: white;
+        }
+
+        .tier-body p { font-size: 0.95rem; margin-bottom: 0.4rem; color: var(--text-light); }
+        .tier-body p:last-child { margin-bottom: 0; }
+
+        /* Timing window */
+        .timing-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            align-items: stretch;
+        }
+
+        .timing-badge {
+            min-width: 120px;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .timing-badge.early { background: #fee2e2; color: #991b1b; }
+        .timing-badge.sweet { background: #d1fae5; color: #065f46; border: 2px solid #10b981; }
+        .timing-badge.late { background: #fef3c7; color: var(--gold-dark); }
+        .timing-badge.mature { background: #dbeafe; color: var(--primary-dark); }
+
+        .timing-desc {
+            background: var(--bg-light);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            flex: 1;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Status levels */
+        .status-ladder {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin: 1.5rem 0;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .status-rung {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-rung:last-child { border-bottom: none; }
+
+        .status-rung:nth-child(1) { background: #f9fafb; }
+        .status-rung:nth-child(2) { background: #f0fdf4; }
+        .status-rung:nth-child(3) { background: #fef3c7; }
+        .status-rung:nth-child(4) { background: linear-gradient(90deg, #fef3c7, #fde68a); }
+        .status-rung:nth-child(5) { background: linear-gradient(90deg, #92400e, #b45309); color: white; }
+
+        .status-icon {
+            font-size: 1.5rem;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .status-info { flex: 1; }
+        .status-info strong { display: block; font-size: 1rem; margin-bottom: 0.15rem; }
+        .status-info span { font-size: 0.85rem; opacity: 0.75; }
+        .status-rung:nth-child(5) .status-info span { opacity: 0.85; }
+
+        .status-trigger {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.07);
+            white-space: nowrap;
+        }
+
+        .status-rung:nth-child(5) .status-trigger {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        /* LTV comparison */
+        .ltv-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .ltv-card {
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .ltv-card.before { background: #fee2e2; border: 2px solid #fca5a5; }
+        .ltv-card.after { background: #d1fae5; border: 2px solid #6ee7b7; }
+
+        .ltv-card h4 { margin-bottom: 1rem; }
+        .ltv-card.before h4 { color: #991b1b; }
+        .ltv-card.after h4 { color: #065f46; }
+
+        .ltv-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .ltv-card.before .ltv-amount { color: #ef4444; }
+        .ltv-card.after .ltv-amount { color: #10b981; }
+
+        .ltv-desc { font-size: 0.85rem; color: var(--text-light); }
+        .ltv-card.before .ltv-desc { color: #991b1b; }
+        .ltv-card.after .ltv-desc { color: #065f46; }
+
+        /* Blueprint */
+        .blueprint-section {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .blueprint-section h4 {
+            color: var(--gold-dark);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .blueprint-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .blueprint-field label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .blueprint-field input,
+        .blueprint-field textarea {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .blueprint-field input:focus,
+        .blueprint-field textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .two-col-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .save-btn {
+            background: var(--gold);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover { background: #b45309; }
+
+        /* Negative churn math */
+        .math-block {
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .math-block .math-line {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #d1d5db;
+        }
+
+        .math-block .math-line.result {
+            color: #34d399;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #374151;
+            margin-top: 0.75rem;
+        }
+
+        .math-block .math-label {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+            font-family: inherit;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            h3 { font-size: 1.5rem; }
+            .nav-button { width: 50px; height: 50px; font-size: 20px; }
+            .nav-button.prev { left: 10px; }
+            .nav-button.next { right: 10px; }
+            .slide { padding: 3rem 1.5rem 4rem 1.5rem; }
+            .two-col { grid-template-columns: 1fr; }
+            .ascension-grid { grid-template-columns: 1fr; }
+            .ltv-compare { grid-template-columns: 1fr; }
+            .two-col-fields { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-saved" id="progressSaved">Progress Saved ✓</div>
+
+    <button class="nav-button prev" id="prevBtn" onclick="previousSlide()">←</button>
+    <button class="nav-button next" id="nextBtn" onclick="nextSlide()">→</button>
+
+    <div class="slide-container">
+
+        <!-- Slide 1: Hero -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content">
+                <div class="hero">
+                    <div>
+                        <div class="module-tag">MODULE 6</div>
+                        <h1>Ascension</h1>
+                        <p class="subtitle">Give Your Best Members Somewhere to Go</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Retention Problem -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>The Retention Problem</h2>
+
+                <div class="quote">
+                    "Here is the retention paradox nobody talks about: your most successful members are most likely to cancel."
+                </div>
+
+                <p>A member joins to lose 20 pounds. They lose 20 pounds. Mission accomplished. They cancel. A member joins to hit $10K MRR. They hit it. Cancel. A member joins to master a skill. They master it. Cancel.</p>
+
+                <p>This is the <strong>Graduation Problem.</strong> When members achieve their initial goal and leave because they have outgrown you. And it is costing you your best, most engaged, highest-value members.</p>
+
+                <div class="ltv-compare">
+                    <div class="ltv-card before">
+                        <h4>No Ascension Path</h4>
+                        <div class="ltv-amount">$1,200</div>
+                        <div class="ltv-desc">$50/month for 2 years, then graduation churn</div>
+                    </div>
+                    <div class="ltv-card after">
+                        <h4>With Ascension Path</h4>
+                        <div class="ltv-amount">$12,000+</div>
+                        <div class="ltv-desc">Upgrades to $200/month, stays 5 years</div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <h3>The Misconception</h3>
+                    <p>Most membership owners think ascension is about making more money. It is not. It is about churn prevention. <strong>Members who have nowhere to go... leave.</strong> Ascension creates a growth path within your ecosystem so members never outgrow you. They just grow deeper with you.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Core Principle -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content bg-alternate">
+                <h2>The Core Principle</h2>
+
+                <div class="callout purple">
+                    <h3>The Big Idea</h3>
+                    <p>Retention through expansion. Keeping members engaged long-term requires giving them somewhere to go without leaving. Ascension creates a growth path that turns 12-month relationships into decade-long partnerships. Stop thinking "How do I keep someone for 12 months?" Start thinking "How do I serve this person for 5 to 10 years?"</p>
+                </div>
+
+                <div class="framework-box">
+                    <h3>When Members Achieve Their Initial Goal, They Face Three Options</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4 style="color: #ef4444;">Option 1: Cancel</h4>
+                            <p>Mission accomplished, no reason to stay. The most common outcome without an ascension path.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 style="color: #f59e0b;">Option 2: Coast</h4>
+                            <p>Stay subscribed but disengage. Eventually cancel anyway. Worse than Option 1 because you don't see it coming.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4 style="color: #10b981;">Option 3: Ascend</h4>
+                            <p>Redefine the mission. Deepen the relationship. This is the outcome a well-designed ascension path makes irresistible.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="callout green">
+                    <h3>Why Ascenders Stay</h3>
+                    <p>Members who ascend are more invested (sunk cost plus increasing value), more engaged (they are getting more), more committed (they chose to deepen the relationship), and far less likely to leave due to higher relational switching costs. Ascension increases the cost of leaving through genuine value expansion, not manipulation.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Graduation Problem + Negative Churn -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>The Science: Two Key Concepts</h2>
+
+                <div class="framework-box">
+                    <h3>The Graduation Problem (and How to Solve It)</h3>
+                    <p>When members achieve their stated goal, they mentally "graduate" and cancel, even if you have more to offer. Goal completion triggers a sense of closure. "Mission accomplished" feels like permission to leave.</p>
+
+                    <p><strong>The solution:</strong> Redefine the mission before they achieve the initial goal.</p>
+
+                    <div class="gold-box">
+                        <h4>Example: Fitness Membership</h4>
+                        <p>Member goal: "Lose 20 pounds." At 15 pounds lost: "Amazing progress! You are on track to hit 20. Let's talk about what's next: maintaining this forever, or pushing to your ideal body composition?" New goal: "Maintain 160 lbs and build lean muscle." Result: They don't cancel. They ascend.</p>
+                    </div>
+
+                    <p>The reframe: The initial goal is not the destination. It is Stage 1. Stage 2 was always part of the journey.</p>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>Net Negative Churn: The Holy Grail Metric</h3>
+                    <p>When expansion revenue (upgrades, upsells, add-ons) exceeds churn revenue, your MRR grows even without a single new member.</p>
+
+                    <div class="math-block">
+                        <div class="math-label">Example: 100 members at $50/month</div>
+                        <div class="math-line">Month 1: 100 x $50 = $5,000 MRR</div>
+                        <div class="math-line">Month 2: 5 cancel (-$250)</div>
+                        <div class="math-line">Month 2: 10 upgrade to $200 (+$1,500 net expansion)</div>
+                        <div class="math-line result">Net result: +$1,250 MRR despite 5% member churn</div>
+                    </div>
+
+                    <p>Most memberships fight churn by adding new members to replace lost ones. That is a treadmill. With negative churn, you are growing revenue from your existing base. That is compounding.</p>
+
+                    <div class="callout blue">
+                        <h3>The Goal</h3>
+                        <p>Make expansion revenue exceed churn revenue every single month. This is what Robert Skrob means when he says correctly handled ascension can increase LTV by 3 to 10x.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Four Types of Ascension -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content bg-alternate">
+                <h2>Four Types of Ascension</h2>
+                <p>Not all ascension is the same. Choose the types that fit your membership model and your members' natural next steps.</p>
+
+                <div class="ascension-grid">
+                    <div class="ascension-card">
+                        <div class="type-badge">Vertical</div>
+                        <h4>More of the Same</h4>
+                        <p>Same offering, higher intensity or frequency.</p>
+                        <p class="example">Basic (1 call/month) → Pro (4 calls/month) → VIP (unlimited)</p>
+                        <p class="example">Works when: Members want more of what you already provide.</p>
+                    </div>
+
+                    <div class="ascension-card">
+                        <div class="type-badge">Horizontal</div>
+                        <h4>Adjacent Specialisations</h4>
+                        <p>Master one area, expand into related ones at the same level.</p>
+                        <p class="example">Weight loss program → Strength program → Athletic performance</p>
+                        <p class="example">Works when: Members master one area and want to expand.</p>
+                    </div>
+
+                    <div class="ascension-card">
+                        <div class="type-badge">Depth</div>
+                        <h4>Add-On Services</h4>
+                        <p>Same tier with optional extras layered on top.</p>
+                        <p class="example">Course + implementation calls ($100 add-on) / Platform + setup service ($500 one-time)</p>
+                        <p class="example">Works when: Members want help implementing, not just learning.</p>
+                    </div>
+
+                    <div class="ascension-card">
+                        <div class="type-badge">Adjacent</div>
+                        <h4>Experiences and Credentials</h4>
+                        <p>One-time experiential or credential products.</p>
+                        <p class="example">Monthly membership → Annual conference ($1,500) / Learning platform → Certification to teach it</p>
+                        <p class="example">Works when: Members want identity or experiential next steps.</p>
+                    </div>
+                </div>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>Combine Types for Maximum LTV</h3>
+                    <p>MasterClass uses horizontal ascension only (one price, all topics). It works but caps per-member revenue. Peloton combines vertical (bike upgrade), horizontal (run + cycle), and adjacent (apparel, events). The multi-type approach compounds LTV far beyond what any single type can achieve alone.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Timing the Ascension -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>Ascension Timing</h2>
+                <p>The right offer at the wrong time is the wrong offer. Timing is everything.</p>
+
+                <div class="framework-box">
+                    <h3>The Ascension Window</h3>
+
+                    <div class="timing-row">
+                        <div class="timing-badge early">Month 1-2: Too Early</div>
+                        <div class="timing-desc">They haven't achieved enough to want more. Feels pushy. Damages the trust you just started building.</div>
+                    </div>
+                    <div class="timing-row">
+                        <div class="timing-badge sweet">Month 3-6: Sweet Spot</div>
+                        <div class="timing-desc">First major win achieved. Habit formed. Results visible. They believe in the process and are excited about what is next. This is your window.</div>
+                    </div>
+                    <div class="timing-row">
+                        <div class="timing-badge late">Month 7-9: Getting Late</div>
+                        <div class="timing-desc">Still viable if they are progressing. Beginning to coast if not. Act on the sweet spot signals while you can.</div>
+                    </div>
+                    <div class="timing-row">
+                        <div class="timing-badge mature">Month 10-12+: Mature or Gone</div>
+                        <div class="timing-desc">Either they ascended and are committed, or they are mentally checked out and considering leaving. Very hard to shift at this stage.</div>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>Three Tactical Trigger Moments</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Early Momentum (Month 1-2)</h4>
+                            <p>Use quick wins to introduce annual plans. "You hit your first milestone in 2 weeks! Imagine what you'll achieve in a full year. Lock in the annual plan now and save $200."</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Retention Buffer (Month 3 or 6)</h4>
+                            <p>Offer upgrades right before known drop-off points. "Month 3 is when most members plateau. Want to make sure you don't? Upgrade to Pro for personalised support."</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Achievement Moments (Variable)</h4>
+                            <p>When they hit a major milestone. "Congrats on hitting $10K MRR! Ready for the next level? Here's what scaling to $50K looks like."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Strategy 1 - Success Path Reframe -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">1</span>
+                <h2>The Success Path Reframe</h2>
+                <h3>Introduce Stage 2 Before They Finish Stage 1</h3>
+
+                <p><strong>What it is:</strong> Showing the full multi-stage journey from Day 1, so there is never a natural graduation point.</p>
+
+                <p><strong>Why it works:</strong> If the journey is always multi-stage, there is no natural end point where cancellation makes sense. Members cannot graduate from a path that keeps extending.</p>
+
+                <div class="framework-box">
+                    <h3>The Three-Stage Architecture</h3>
+                    <div class="two-col">
+                        <div>
+                            <div class="gold-box">
+                                <h4>Fitness Membership</h4>
+                                <p><strong>Stage 1 (Months 1-6):</strong> Lose 20 lbs</p>
+                                <p><strong>Stage 2 (Months 7-12):</strong> Build lean muscle while maintaining weight</p>
+                                <p><strong>Stage 3 (Year 2+):</strong> Athletic performance or body composition goals</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="gold-box">
+                                <h4>Business Coaching</h4>
+                                <p><strong>Stage 1 (Months 1-6):</strong> Hit $10K MRR</p>
+                                <p><strong>Stage 2 (Months 7-18):</strong> Scale to $50K MRR</p>
+                                <p><strong>Stage 3 (Year 2+):</strong> Build team and systems for $100K+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 1.5rem;">
+                    <h3>When to Introduce Each Stage</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>In Activation (Day 1)</h4>
+                            <p>Show the full path from the beginning. "Here's your journey: Stage 1 (Months 1-6) = Foundation. Stage 2 (Months 7-12) = Optimisation. Stage 3 (Year 2+) = Mastery."</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>At Month 3-4 (Before Stage 1 completion)</h4>
+                            <p>"You are crushing Stage 1. Let's start thinking about Stage 2. Here is what that looks like for someone at your level..."</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>At Stage 1 completion</h4>
+                            <p>"Incredible. You hit your goal. Now here is the exciting part: Stage 2 is where you make this permanent and build on everything you've achieved."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Strategy 2 - Tiered Structure -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <span class="strategy-number">2</span>
+                <h2>Tiered Membership Structure</h2>
+                <h3>Good, Better, Best</h3>
+
+                <p><strong>What it is:</strong> Two to four tiers with clear value differentiation, allowing members to self-select based on needs and budget.</p>
+
+                <p><strong>Why it works:</strong> Members choose their own pace (autonomy), there is a natural upgrade path, and you capture different willingness to pay without excluding anyone.</p>
+
+                <div class="tier-stack">
+                    <div class="tier-card">
+                        <div class="tier-header t1">
+                            <h4>Foundation</h4>
+                            <span class="tier-price">$50-100/month</span>
+                        </div>
+                        <div class="tier-body">
+                            <p>Core content library and self-paced learning</p>
+                            <p>Group community access</p>
+                            <p>Monthly Q&A calls</p>
+                        </div>
+                    </div>
+                    <div class="tier-card">
+                        <div class="tier-header t2">
+                            <h4>Accelerator</h4>
+                            <span class="tier-price">$150-300/month</span>
+                        </div>
+                        <div class="tier-body">
+                            <p>Everything in Foundation, plus:</p>
+                            <p>Monthly 1:1 coaching call</p>
+                            <p>Exclusive workshops and priority support</p>
+                            <p>Advanced content and tools</p>
+                        </div>
+                    </div>
+                    <div class="tier-card">
+                        <div class="tier-header t3">
+                            <h4>VIP / Done-For-You</h4>
+                            <span class="tier-price">$500-2,000/month</span>
+                        </div>
+                        <div class="tier-body">
+                            <p>Everything in Accelerator, plus:</p>
+                            <p>Weekly 1:1 coaching and quarterly strategy sessions</p>
+                            <p>Done-for-you implementation</p>
+                            <p>Direct access (Slack / phone)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box" style="margin-top: 1.5rem;">
+                    <h4>Naming Matters</h4>
+                    <p>Avoid "Basic / Premium / Elite" (hierarchical, shame-inducing). Use mission-aligned names: "Foundation / Accelerator / Mastery" or "Self-Guided / Coached / Done-For-You." The name signals the transformation, not a social ranking.</p>
+                </div>
+
+                <div class="callout green" style="margin-top: 1.5rem;">
+                    <h3>Pitch Timing</h3>
+                    <p>Do not pitch upgrades in the first 30 days. At Month 3: "You are ready for more. Here is what Accelerator unlocks." At first major win: "Imagine what you'd achieve with 1:1 support. Want to explore VIP?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Strategies 3-4 (Add-Ons + Annual) -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">3</span>
+                <h2>Add-On Services and Annual Plans</h2>
+
+                <div class="framework-box">
+                    <h3>Add-On Services (Depth Ascension)</h3>
+                    <p><strong>What it is:</strong> A la carte services that enhance the core membership without requiring a full tier upgrade. Lower commitment, immediate revenue.</p>
+
+                    <div class="two-col" style="margin-top: 1rem;">
+                        <div>
+                            <h4 style="margin-bottom: 0.75rem;">One-Time Add-Ons</h4>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Setup or onboarding call ($200-500)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Strategy session ($300-1,000)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Done-for-you implementation ($1,000-5,000)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0;">Conference or retreat ticket ($500-2,000)</p>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 0.75rem;">Recurring Add-Ons</h4>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Monthly 1:1 coaching calls (+$100-300/month)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Accountability partner matching (+$50/month)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0.4rem;">Advanced tool access (+$25-50/month)</p>
+                            <p style="font-size: 0.95rem; margin-bottom: 0;">Private mastermind group (+$200-500/month)</p>
+                        </div>
+                    </div>
+
+                    <div class="gold-box" style="margin-top: 1.25rem;">
+                        <h4>The Psychology</h4>
+                        <p>Add-ons feel like help, not upsells. Members request them when they need them. The framing is "I can help you with that specific problem" rather than "please upgrade your account."</p>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <span class="strategy-number">4</span>
+                    <h3 style="margin-top: 1rem;">Annual Plan Upgrades (Lock-In Ascension)</h3>
+                    <p><strong>What it is:</strong> Converting monthly members to annual plans. Reduces monthly churn to zero for 12 months. Increases LTV immediately. Creates commitment through sunk cost.</p>
+
+                    <div class="example-box">
+                        <h4>The Pitch at Month 3-6</h4>
+                        <p>"You've achieved [result] in 3 months. Imagine what you'll achieve in a full year. Lock in your annual plan now: save $200 and get exclusive bonuses: [bonus 1], [bonus 2], [bonus 3]."</p>
+                    </div>
+
+                    <p>Annual-only bonuses that create genuine urgency: annual planning session (1:1 call), exclusive annual member community, early access to new content, physical welcome kit.</p>
+
+                    <p style="margin-bottom: 0;"><strong>Best timing:</strong> Month 3-6 (first major win achieved), right before monthly renewal, or during promotions (Black Friday, New Year).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Strategy 5 - Status and Recognition -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <span class="strategy-number">5</span>
+                <h2>Status and Recognition</h2>
+                <h3>Social Ascension Alongside Financial Ascension</h3>
+
+                <p><strong>What it is:</strong> Using social status within the community as a parallel ascension track. Not just price tiers.</p>
+
+                <p><strong>Why it works:</strong> Humans crave status and recognition. Being elevated within the tribe is a powerful reward that operates independently of price, creating a second reason to stay.</p>
+
+                <div class="status-ladder">
+                    <div class="status-rung">
+                        <div class="status-icon">🌱</div>
+                        <div class="status-info">
+                            <strong>Newcomer</strong>
+                            <span>Getting oriented, completing onboarding</span>
+                        </div>
+                        <div class="status-trigger">Month 1</div>
+                    </div>
+                    <div class="status-rung">
+                        <div class="status-icon">⚡</div>
+                        <div class="status-info">
+                            <strong>Active Member</strong>
+                            <span>Profile badge, featured in newsletter</span>
+                        </div>
+                        <div class="status-trigger">Month 3 + engagement threshold</div>
+                    </div>
+                    <div class="status-rung">
+                        <div class="status-icon">🏆</div>
+                        <div class="status-info">
+                            <strong>Advanced Member</strong>
+                            <span>Access to advanced-only channel, milestone achieved</span>
+                        </div>
+                        <div class="status-trigger">Month 6 + milestone</div>
+                    </div>
+                    <div class="status-rung">
+                        <div class="status-icon">⭐</div>
+                        <div class="status-info">
+                            <strong>Elite</strong>
+                            <span>Monthly spotlight, invited to speak on group calls</span>
+                        </div>
+                        <div class="status-trigger">Month 12 + top 10%</div>
+                    </div>
+                    <div class="status-rung">
+                        <div class="status-icon">👑</div>
+                        <div class="status-info">
+                            <strong>Leader / Mentor</strong>
+                            <span>Community moderator, co-hosts workshops, shapes the culture</span>
+                        </div>
+                        <div class="status-trigger">Year 2 + community contribution</div>
+                    </div>
+                </div>
+
+                <div class="example-box" style="margin-top: 2rem;">
+                    <h4>Why This Compounds Retention</h4>
+                    <p>Sarah reaches Elite status after a year. She has two reasons to stay: her financial investment in the Accelerator tier, and her social investment in Elite status and community role. Leaving means losing both. The switching cost is now relational and reputational, not just financial.</p>
+                </div>
+
+                <div class="callout">
+                    <h3>The Retention Driver</h3>
+                    <p>Status ascension requires continued engagement, milestone achievement, and community contribution. Each of those is also a retention behaviour. The status ladder and the retention engine are the same thing.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Strategy 6 - Adjacent Products -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">6</span>
+                <h2>Adjacent Products and Experiences</h2>
+
+                <p><strong>What it is:</strong> One-time or experiential products that complement the core membership without requiring an ongoing commitment change.</p>
+
+                <p><strong>Why it works:</strong> Deepens the relationship, creates memorable moments, generates significant revenue spikes, and anchors member identity further into your ecosystem.</p>
+
+                <div class="ascension-grid">
+                    <div class="ascension-card">
+                        <div class="type-badge">In-Person Events</div>
+                        <h4>Experiences</h4>
+                        <p>Annual conference or retreat ($1,000-3,000)</p>
+                        <p>Regional meetups ($100-500)</p>
+                        <p>VIP dinner with founder ($500-1,000)</p>
+                    </div>
+                    <div class="ascension-card">
+                        <div class="type-badge">Credentials</div>
+                        <h4>Certifications</h4>
+                        <p>Become certified to teach the methodology ($2,000-5,000)</p>
+                        <p>Advanced practitioner certification ($1,000-3,000)</p>
+                    </div>
+                    <div class="ascension-card">
+                        <div class="type-badge">Physical</div>
+                        <h4>Products</h4>
+                        <p>Books, workbooks, planners ($20-50)</p>
+                        <p>Equipment or tools ($50-500)</p>
+                        <p>Branded merchandise (creates identity and tribe markers)</p>
+                    </div>
+                    <div class="ascension-card">
+                        <div class="type-badge">Intensives</div>
+                        <h4>Masterminds</h4>
+                        <p>3-day intensive workshop ($3,000-10,000)</p>
+                        <p>6-month mastermind cohort ($5,000-15,000)</p>
+                    </div>
+                </div>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>Timing for Adjacent Offers</h3>
+                    <p>Experiences work best at the 6 to 12 month mark (established members with momentum). Certifications work best at 12 to 24 months (mastery achieved). The pitch: "You've mastered the fundamentals. Ready to take it to the next level? Join us for the annual [retreat / certification / intensive]."</p>
+                </div>
+
+                <div class="gold-box" style="margin-top: 1.5rem;">
+                    <h4>The LTV Multiplier Effect</h4>
+                    <p>Members stay in the core membership AND buy adjacent products. A member at $100/month who attends a $2,000 retreat and earns a $3,000 certification has a total LTV of over $6,000 in year one alone, without ever upgrading their subscription tier.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Ethics Check -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2>The Ethics Check</h2>
+
+                <div class="callout">
+                    <h3>Ascension Should Feel Like Service, Not Extraction</h3>
+                    <p>Ethical ascension is leadership: recognising where a member is in their journey and offering the next step that genuinely serves them. It is not about maximising revenue from every interaction.</p>
+                </div>
+
+                <div class="two-col">
+                    <div class="col-box green">
+                        <h4>Ethical Ascension</h4>
+                        <p>Offer ascension when members are ready for more</p>
+                        <p>Each tier delivers genuine incremental value</p>
+                        <p>Members can fully succeed at any tier</p>
+                        <p>Upgrades solve real problems members are experiencing</p>
+                        <p>Pricing and tier differences are transparent from day one</p>
+                    </div>
+                    <div class="col-box red">
+                        <h4>Value Traps to Avoid</h4>
+                        <p>Pushing upgrades before members are ready</p>
+                        <p>Artificially crippling the base tier to force upgrades</p>
+                        <p>Making members feel inadequate for staying at lower tiers</p>
+                        <p>Fake scarcity: "Only 3 VIP spots left!" with no real limit</p>
+                        <p>Features that appear available but are paywalled unexpectedly</p>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>The Bait-and-Switch Test</h3>
+                    <ul class="warning-list">
+                        <li class="do">Sell: "Join for $50/month and achieve [Stage 1 outcome]. When you're ready for Stage 2, here are your options."</li>
+                        <li class="dont">Sell: "Join for $50/month and achieve [outcome]." Then immediately: "Actually, to really achieve it, you need the $500/month tier."</li>
+                    </ul>
+                    <p style="margin-top: 1rem; margin-bottom: 0;">Ethical ascension offers more. Bait-and-switch implies the initial tier was insufficient. The difference is respect for the original promise.</p>
+                </div>
+
+                <div class="quote" style="margin-top: 2rem;">
+                    "Would I feel good about my best friend buying the Foundation tier and staying there forever? If the honest answer is no, I have built a value trap."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Real-World Teardown -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content bg-alternate">
+                <h2>Real-World Teardown</h2>
+                <h3>Three Ascension Models</h3>
+
+                <div class="framework-box">
+                    <h3>Peloton: Vertical + Adjacent</h3>
+                    <p>The base tier (Bike + Membership) is fully functional with no value trap. Upgrades offer genuine additional value (larger screen, auto-resistance). Adjacent products (apparel, live events) deepen identity and make members Pelotoners before they are cyclists. Status system with milestone rides and leaderboard ranks creates social ascension alongside financial. Average LTV grows from $1,495 to $3,000-5,000+ through this combination.</p>
+                </div>
+
+                <div class="framework-box" style="margin-top: 1.5rem;">
+                    <h3>MasterClass: Horizontal Only</h3>
+                    <p>Single price tier, all topics, no vertical tiers. Ascension is purely horizontal: cooking leads to photography leads to writing. It works and simplifies the decision. The limitation is that everyone pays the same regardless of usage or value received, which leaves revenue uncaptured from power users. Lesson: horizontal ascension works, but combining it with vertical creates significantly more LTV potential per member.</p>
+                </div>
+
+                <div class="framework-box" style="margin-top: 1.5rem;">
+                    <h3>The Full Ecosystem Model</h3>
+                    <p>The most durable ascension architectures follow a "What, How, With, For You" structure:</p>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Stage 1 (Months 1-3): Course</h4>
+                            <p>Teaches the framework. "Here is what to do." Self-paced, affordable entry point.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Stage 2 (Months 3-6): Membership</h4>
+                            <p>Shows how with ongoing support. "Here is how to do it, repeatedly." Monthly community and advanced tactics.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Stage 3 (Months 6-12): Consultancy</h4>
+                            <p>Does it with them. "We implement together." High-touch, high-value, done-for-you.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Stage 4 (Year 2+): Tool or Platform</h4>
+                            <p>Does it for them automatically. "Set it and it runs." The logical top of the ladder once they have the foundation.</p>
+                        </div>
+                    </div>
+                    <p>At every stage, there is a next step. Members never graduate because the ladder keeps extending.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Implementation Blueprint -->
+        <div class="slide" data-slide="14">
+            <div class="slide-content">
+                <h2>Your Implementation Blueprint</h2>
+                <p>Your Ascension Canvas. Fill this in and save it.</p>
+
+                <div class="blueprint-section">
+                    <h4>Success Path: Three Stages</h4>
+                    <div class="blueprint-field">
+                        <label>Stage 1 goal: What members initially join to achieve</label>
+                        <input type="text" id="bp-s1" placeholder="e.g. Lose 20 lbs in 6 months">
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Stage 2 goal: What comes after Stage 1 completion</label>
+                        <input type="text" id="bp-s2" placeholder="e.g. Build lean muscle and maintain ideal weight long-term">
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Stage 3 goal: Long-term mastery (Year 2+)</label>
+                        <input type="text" id="bp-s3" placeholder="e.g. Athletic performance, coaching others, body composition mastery">
+                    </div>
+                    <div class="blueprint-field">
+                        <label>How and when will I introduce Stage 2?</label>
+                        <textarea id="bp-s2-intro" rows="2" placeholder="e.g. At the Month 3 check-in when they are near their Stage 1 goal: 'You are close to hitting X. Let's talk about what comes next...'"></textarea>
+                    </div>
+                </div>
+
+                <div class="blueprint-section">
+                    <h4>Tier Structure</h4>
+                    <div class="two-col-fields">
+                        <div class="blueprint-field">
+                            <label>Tier 1 name and price</label>
+                            <input type="text" id="bp-t1" placeholder="e.g. Foundation, $97/month">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Tier 1 key inclusions</label>
+                            <input type="text" id="bp-t1-inc" placeholder="e.g. Content library, group community, monthly Q&A">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Tier 2 name and price</label>
+                            <input type="text" id="bp-t2" placeholder="e.g. Accelerator, $247/month">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Tier 2 key additions</label>
+                            <input type="text" id="bp-t2-inc" placeholder="e.g. Monthly 1:1 call, exclusive workshops, priority support">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Tier 3 name and price (if applicable)</label>
+                            <input type="text" id="bp-t3" placeholder="e.g. Done-For-You, $997/month">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Tier 3 key additions</label>
+                            <input type="text" id="bp-t3-inc" placeholder="e.g. Weekly 1:1, implementation, direct access">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blueprint-section">
+                    <h4>Add-On Services Menu</h4>
+                    <div class="two-col-fields">
+                        <div class="blueprint-field">
+                            <label>One-time add-on 1</label>
+                            <input type="text" id="bp-addon1" placeholder="e.g. 90-day strategy session, $500">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>One-time add-on 2</label>
+                            <input type="text" id="bp-addon2" placeholder="e.g. Done-for-you setup, $1,500">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Recurring add-on 1</label>
+                            <input type="text" id="bp-addon3" placeholder="e.g. Monthly 1:1 coaching, $200/month">
+                        </div>
+                        <div class="blueprint-field">
+                            <label>Recurring add-on 2</label>
+                            <input type="text" id="bp-addon4" placeholder="e.g. Accountability partner matching, $50/month">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blueprint-section">
+                    <h4>Status and Recognition Levels</h4>
+                    <div class="blueprint-field">
+                        <label>Level names and triggers (e.g. Newcomer / Active / Advanced / Elite / Leader and what earns each)</label>
+                        <textarea id="bp-status" rows="3" placeholder="e.g. Level 1: Newcomer (Day 1). Level 2: Active (Month 3, completes first milestone). Level 3: Advanced (Month 6, featured in newsletter). Level 4: Elite (Month 12, top 10%). Level 5: Leader (Year 2, community moderator role)."></textarea>
+                    </div>
+                </div>
+
+                <button class="save-btn" onclick="saveBlueprint()">Save My Blueprint</button>
+                <p id="bp-saved-msg" style="color: #10b981; font-weight: 600; margin-top: 1rem; display: none;">Blueprint saved ✓</p>
+            </div>
+        </div>
+
+        <!-- Slide 15: This Week's Mission -->
+        <div class="slide" data-slide="15">
+            <div class="slide-content bg-alternate">
+                <h2>This Week's Mission</h2>
+                <p style="font-size: 1.3rem;">Design your Success Path with all three stages. Then write the Stage 2 introduction message.</p>
+
+                <div class="framework-box" style="margin: 3rem 0;">
+                    <h3>Four Steps to Complete This Week</h3>
+                    <ul class="interactive-checklist" id="missionChecklist">
+                        <li data-task="s1">Map your Stage 1 goal: what members join specifically to achieve</li>
+                        <li data-task="s2">Map your Stage 2 goal: what naturally follows Stage 1 completion</li>
+                        <li data-task="s3">Map your Stage 3 goal: the long-term mastery state</li>
+                        <li data-task="msg">Write the Stage 2 introduction message to send at Month 3</li>
+                    </ul>
+
+                    <div class="mission-progress">
+                        <h4>Your Progress</h4>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="missionProgress"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0 of 4 complete (0%)</div>
+                    </div>
+
+                    <div class="gold-box" style="margin-top: 2rem;">
+                        <h4>Your Stage 2 Message Template</h4>
+                        <p>"Congratulations on achieving [Stage 1 goal]! You have [specific accomplishment]. Now here is where it gets exciting: Stage 2 is about [Stage 2 goal]. Here is what that looks like, and here is how we get you there..."</p>
+                    </div>
+
+                    <p style="margin-top: 1.5rem; color: var(--text-light);"><strong>Bonus:</strong> Audit your current membership. Does your Foundation tier deliver genuine standalone value? If a member stayed at Foundation forever, would they be well-served? If no, you have a value trap to fix.</p>
+                </div>
+
+                <div class="callout purple">
+                    <h3>The Six-Module Journey: Complete</h3>
+                    <p>You have now covered the complete Member Engine retention framework: Activation gets them started, Habit Formation keeps them coming back, Connection makes them stay for people, Communication Architecture builds ritual and trust, Detection catches the signals before they cancel, and Ascension gives your best members somewhere to go. These six pillars work together. Each one builds on the last.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const STORAGE_KEY = 'memberengine_module6_progress';
+        const MISSION_STORAGE_KEY = 'memberengine_module6_mission';
+        const BLUEPRINT_STORAGE_KEY = 'memberengine_module6_blueprint';
+
+        const missionTasks = new Set();
+
+        function loadMissionProgress() {
+            const saved = localStorage.getItem(MISSION_STORAGE_KEY);
+            if (saved) {
+                JSON.parse(saved).forEach(task => {
+                    missionTasks.add(task);
+                    const item = document.querySelector(`#missionChecklist [data-task="${task}"]`);
+                    if (item) item.classList.add('checked');
+                });
+                updateMissionProgress();
+            }
+        }
+
+        function saveMissionProgress() {
+            localStorage.setItem(MISSION_STORAGE_KEY, JSON.stringify(Array.from(missionTasks)));
+        }
+
+        function updateMissionProgress() {
+            const total = 4;
+            const completed = missionTasks.size;
+            const pct = Math.round((completed / total) * 100);
+            document.getElementById('missionProgress').style.width = pct + '%';
+            document.getElementById('progressText').textContent = `${completed} of ${total} complete (${pct}%)`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#missionChecklist li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const task = item.dataset.task;
+                    if (missionTasks.has(task)) {
+                        missionTasks.delete(task);
+                        item.classList.remove('checked');
+                    } else {
+                        missionTasks.add(task);
+                        item.classList.add('checked');
+                    }
+                    saveMissionProgress();
+                    updateMissionProgress();
+                });
+            });
+            loadMissionProgress();
+            loadBlueprint();
+        });
+
+        function saveBlueprint() {
+            const fields = ['bp-s1','bp-s2','bp-s3','bp-s2-intro',
+                'bp-t1','bp-t1-inc','bp-t2','bp-t2-inc','bp-t3','bp-t3-inc',
+                'bp-addon1','bp-addon2','bp-addon3','bp-addon4','bp-status'];
+            const data = {};
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            localStorage.setItem(BLUEPRINT_STORAGE_KEY, JSON.stringify(data));
+            const msg = document.getElementById('bp-saved-msg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+
+        function loadBlueprint() {
+            const saved = localStorage.getItem(BLUEPRINT_STORAGE_KEY);
+            if (saved) {
+                Object.entries(JSON.parse(saved)).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value;
+                });
+            }
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const n = parseInt(saved);
+                if (n >= 1 && n <= totalSlides) currentSlide = n;
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem(STORAGE_KEY, currentSlide.toString());
+            const n = document.getElementById('progressSaved');
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 2000);
+        }
+
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i + 1 === currentSlide) slide.classList.add('active');
+                else if (i + 1 < currentSlide) slide.classList.add('prev');
+            });
+            document.getElementById('progressBar').style.width = (currentSlide / totalSlides * 100) + '%';
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+            const active = document.querySelector('.slide.active');
+            if (active) active.scrollTop = 0;
+            saveProgress();
+        }
+
+        function nextSlide() { if (currentSlide < totalSlides) { currentSlide++; updateSlide(); } }
+        function previousSlide() { if (currentSlide > 1) { currentSlide--; updateSlide(); } }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowRight') nextSlide();
+            else if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        loadProgress();
+        updateSlide();
+    </script>
+</body>
+</html>

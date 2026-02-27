@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 2: Habit Formation - Member Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+            --bg-light: #f9fafb;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .progress-bar-container {
+            flex-shrink: 0;
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-saved {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .progress-saved.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 3rem 2rem 5rem 2rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        .slide[data-slide="1"] {
+            align-items: center;
+        }
+
+        .slide-content {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .nav-button {
+            position: fixed;
+            top: calc(50% + 3px);
+            transform: translateY(-50%);
+            background: rgba(37, 99, 235, 0.9);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-button:disabled:hover {
+            transform: translateY(-50%) scale(1);
+            background: rgba(37, 99, 235, 0.9);
+        }
+        .nav-button.prev {
+            left: 20px;
+        }
+
+        .nav-button.next {
+            right: 20px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            color: white;
+            text-align: center;
+            margin: -3rem -2rem -5rem -2rem;
+            padding: 3rem 2rem 5rem 2rem;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            opacity: 1;
+            font-weight: 300;
+            color: white;
+        }
+
+        .hero .module-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        h4 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .callout {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 6px solid var(--accent);
+            margin: 2rem 0;
+        }
+
+        .callout h3 {
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        .callout p {
+            color: #78350f;
+            margin-bottom: 0;
+        }
+
+        .callout.blue {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-left-color: var(--primary);
+        }
+
+        .callout.blue h3 {
+            color: var(--primary-dark);
+        }
+
+        .callout.blue p {
+            color: #1e3a8a;
+        }
+
+        .callout.green {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-left-color: #10b981;
+        }
+
+        .callout.green h3 {
+            color: #065f46;
+        }
+
+        .callout.green p {
+            color: #064e3b;
+        }
+
+        .quote {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: var(--primary);
+            padding: 2rem;
+            border-left: 4px solid var(--primary);
+            margin: 2rem 0;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+
+        .framework-box {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .framework-box h3 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 1rem 1rem 1rem 3rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "✓";
+            position: absolute;
+            left: 1rem;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .warning-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .warning-list li {
+            padding: 1rem 1rem 1rem 3rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .warning-list li.do {
+            background: #d1fae5;
+        }
+
+        .warning-list li.do::before {
+            content: "✅";
+            position: absolute;
+            left: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .warning-list li.dont {
+            background: #fee2e2;
+        }
+
+        .warning-list li.dont::before {
+            content: "❌";
+            position: absolute;
+            left: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .interactive-checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .interactive-checklist li {
+            padding: 1rem 1rem 1rem 3.5rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .interactive-checklist li:hover {
+            background: #e0f2fe;
+            border-color: var(--primary);
+        }
+
+        .interactive-checklist li.checked {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .interactive-checklist li::before {
+            content: "";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .interactive-checklist li.checked::before {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .interactive-checklist li.checked::after {
+            content: "✓";
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .mission-progress {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .mission-progress h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .progress-track {
+            background: #e0f2fe;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .timeline-item {
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -0.6rem;
+            top: 0.5rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px white, 0 0 0 6px var(--primary);
+        }
+
+        .timeline-item h4 {
+            color: var(--primary);
+        }
+
+        .strategy-number {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .example-box {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .example-box h4 {
+            color: #065f46;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-box p {
+            color: #064e3b;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-box {
+            background: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box h4 {
+            color: #9a3412;
+            margin-bottom: 0.5rem;
+        }
+
+        .warning-box p {
+            color: #7c2d12;
+            margin-bottom: 0;
+        }
+
+        .bg-alternate {
+            background: var(--bg-light);
+            margin: -3rem -2rem -5rem -2rem;
+            padding: 3rem 2rem 5rem 2rem;
+            min-height: 100%;
+        }
+
+        /* Hook cycle diagram */
+        .hook-cycle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            margin: 2rem 0;
+        }
+
+        .hook-phase {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.25rem 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .hook-phase h4 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .hook-phase p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 0;
+        }
+
+        .hook-arrow {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 0.3rem 0;
+            line-height: 1;
+        }
+
+        /* Habit stack visual */
+        .habit-stack {
+            margin: 2rem 0;
+        }
+
+        .habit-layer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .habit-label {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .habit-bar {
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: white;
+            flex: 1;
+        }
+
+        .habit-bar.h1 { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+        .habit-bar.h2 { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+        .habit-bar.h3 { background: linear-gradient(90deg, #10b981, #34d399); }
+        .habit-bar.h4 { background: linear-gradient(90deg, #f59e0b, #fbbf24); color: #1f2937; }
+
+        .habit-checkmark {
+            font-size: 1.2rem;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        /* Blueprint textarea */
+        .blueprint-section {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .blueprint-section h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .blueprint-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .blueprint-field label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .blueprint-field input,
+        .blueprint-field textarea {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .blueprint-field input:focus,
+        .blueprint-field textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Two-column grid */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .col-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .col-box.green {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+        }
+
+        .col-box.red {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .col-box h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .col-box.green h4 { color: #065f46; }
+        .col-box.red h4 { color: #991b1b; }
+
+        .col-box p {
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .col-box.green p { color: #064e3b; }
+        .col-box.red p { color: #7f1d1d; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero .subtitle { font-size: 1.2rem; }
+            h2 { font-size: 2rem; }
+            h3 { font-size: 1.5rem; }
+            .stat-number { font-size: 2.5rem; }
+            .nav-button { width: 50px; height: 50px; font-size: 20px; }
+            .nav-button.prev { left: 10px; }
+            .nav-button.next { right: 10px; }
+            .slide { padding: 3rem 1.5rem 4rem 1.5rem; }
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-saved" id="progressSaved">Progress Saved ✓</div>
+
+    <button class="nav-button prev" id="prevBtn" onclick="previousSlide()">←</button>
+    <button class="nav-button next" id="nextBtn" onclick="nextSlide()">→</button>
+
+    <div class="slide-container">
+
+        <!-- Slide 1: Hero -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content">
+                <div class="hero">
+                    <div>
+                        <div class="module-tag">MODULE 2</div>
+                        <h1>Habit Formation</h1>
+                        <p class="subtitle">Make Engagement Automatic</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Retention Problem -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2>The Retention Problem</h2>
+
+                <div class="quote">
+                    "Members who engage less than once per week have 4× higher churn than those who engage weekly."
+                </div>
+
+                <p>Think about what that means. If your members aren't building a habit of using your membership, they're almost guaranteed to cancel. They'll keep meaning to log in. They'll keep telling themselves "I'll get to it this week." And then one day, that credit card charge hits, and they think "What am I even paying for?" Cancel.</p>
+
+                <p><strong>Your membership isn't competing with other memberships.</strong> It's competing with Netflix, Instagram, sleep, and doing nothing. If engagement isn't a habit, you lose that battle every single time.</p>
+
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">4×</div>
+                        <div class="stat-label">Higher churn for members who don't engage weekly</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">20-28%</div>
+                        <div class="stat-label">Monthly churn for non-habitual members (vs. 5-7% for weekly users)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$12,600</div>
+                        <div class="stat-label">Preventable annual loss per 100 members at $50/month from failed habit formation</div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <h3>The Misconception</h3>
+                    <p>Most membership owners think they just need to create better content. But members aren't leaving because your content isn't good enough—they're leaving because they <strong>never built the habit of consuming it in the first place.</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Core Principle -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content bg-alternate">
+                <h2>The Core Principle</h2>
+
+                <div class="callout blue">
+                    <h3>The Big Idea</h3>
+                    <p>Habits are automatic behaviors triggered by situational cues that occur with little or no conscious thought. Your job is to make engagement with your membership the <strong>path of least resistance.</strong></p>
+                </div>
+
+                <h3>For a Behavior to Enter the "Habit Zone"</h3>
+                <ul class="checklist">
+                    <li><strong>High frequency</strong> — it happens often enough to become automatic</li>
+                    <li><strong>High perceived utility</strong> — the member believes it's genuinely valuable</li>
+                </ul>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>The Retention Insight</h3>
+                    <p>Habitual engagement means members engage longer, benefit longer, and are more likely to stay. Habits are hard to break.</p>
+                    <p style="margin-bottom: 0;">This is the <strong>lowest-cost retention strategy</strong> available to you. You're not calling members every week or sending personalized emails. You're building systems that allow members to <strong>resell themselves</strong> on your membership through repeated, rewarded behaviors.</p>
+                </div>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>The Framework: The Hook Model (Nir Eyal)</h3>
+                    <p style="margin-bottom: 0; font-size: 1.2rem; font-weight: 600; color: #78350f;">Trigger → Action → Variable Reward → Investment → [repeat]</p>
+                </div>
+
+                <p style="margin-top: 1.5rem;">Each cycle through the Hook strengthens the habit until the trigger becomes <em>internal</em>—automatic. That's when retention becomes effortless.</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Hook Model - Trigger -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2>The Science: The Hook Model</h2>
+                <h3>Phase 1 — TRIGGER (The Spark)</h3>
+
+                <p>Triggers tell members what to do next. There are two types, and your goal is to move members from one to the other.</p>
+
+                <div class="two-col">
+                    <div class="col-box green">
+                        <h4>External Triggers</h4>
+                        <p>• Emails ("Your weekly training is ready")</p>
+                        <p>• Push notifications ("Sarah just commented")</p>
+                        <p>• Calendar reminders ("Monday = new content")</p>
+                        <p>• Seeing the app icon</p>
+                    </div>
+                    <div class="col-box" style="background: #eff6ff; border-left: 4px solid var(--primary);">
+                        <h4 style="color: var(--primary-dark);">Internal Triggers</h4>
+                        <p style="color: #1e3a8a;">• Boredom → "I'll check the community"</p>
+                        <p style="color: #1e3a8a;">• Monday morning → "Time for my weekly lesson"</p>
+                        <p style="color: #1e3a8a;">• Lunch break → "I'll watch today's video"</p>
+                        <p style="color: #1e3a8a;">• The situation <em>is</em> the trigger</p>
+                    </div>
+                </div>
+
+                <div class="framework-box">
+                    <h3>The Progression</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Weeks 1-4: External triggers dominate</h4>
+                            <p>Email reminder → member logs in. Conscious effort required.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Months 2-3: Transitioning</h4>
+                            <p>Monday morning <em>feeling</em> triggers login. Less conscious effort.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Month 4+: Habit formed</h4>
+                            <p>"It's Monday, I check the app." Notification no longer needed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: The Hook Model - Action & Reward -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content bg-alternate">
+                <h2>The Hook Model</h2>
+                <h3>Phase 2 — ACTION & Phase 3 — VARIABLE REWARD</h3>
+
+                <div class="framework-box">
+                    <h3>Phase 2: Action (The Behavior)</h3>
+                    <p>The action must be <strong>the simplest behavior done in anticipation of a reward.</strong> Recall BJ Fogg's model from Module 1: at the trigger moment, the action must be easier to do than to think about.</p>
+
+                    <div class="two-col">
+                        <div class="col-box red">
+                            <h4>High Friction ❌</h4>
+                            <p>Log in → find the library → search for today's content → click through 3 screens</p>
+                        </div>
+                        <div class="col-box green">
+                            <h4>Low Friction ✅</h4>
+                            <p>Click email link → video auto-plays</p>
+                        </div>
+                    </div>
+                    <p style="margin-bottom: 0;"><strong>The simpler the action, the more likely the habit forms.</strong> Reduce friction relentlessly.</p>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>Phase 3: Variable Reward (The Craving)</h3>
+                    <p>Unlike predictable loops (do X, always get Y), variable rewards create desire through uncertainty and novelty. Think slot machines—you don't win every pull, but the possibility keeps you pulling.</p>
+
+                    <div class="stat-grid" style="margin: 1.5rem 0;">
+                        <div class="stat-card">
+                            <div class="stat-number" style="font-size: 1.5rem;">Tribe</div>
+                            <div class="stat-label">Likes, comments, recognition, belonging, status elevation</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" style="font-size: 1.5rem;">Hunt</div>
+                            <div class="stat-label">New content, insights, unlocking bonuses, discovering something valuable</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" style="font-size: 1.5rem;">Self</div>
+                            <div class="stat-label">Progress bars, milestones, mastery, the "I did it!" feeling</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: The Hook Model - Investment + Full Cycle -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2>The Hook Model</h2>
+                <h3>Phase 4 — INVESTMENT (The Hook)</h3>
+
+                <p>Investment asks the member to do a "bit of work" that stores value in the product and loads the next trigger.</p>
+
+                <div class="stat-grid" style="margin: 1.5rem 0;">
+                    <div class="stat-card">
+                        <div class="stat-number" style="font-size: 1.5rem;">Time</div>
+                        <div class="stat-label">Customising profile, building a plan, tracking progress over weeks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="font-size: 1.5rem;">Data</div>
+                        <div class="stat-label">Logging results, completing assessments, filling in preferences</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="font-size: 1.5rem;">Social</div>
+                        <div class="stat-label">Posting wins, helping peers, building reputation and status</div>
+                    </div>
+                </div>
+
+                <p><strong>The more a member invests, the more valuable the membership becomes to them personally—and the harder it is to leave.</strong></p>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>The Full Hook Cycle</h3>
+                    <div class="hook-cycle">
+                        <div class="hook-phase">
+                            <h4>TRIGGER</h4>
+                            <p>Tuesday email: "New training ready"</p>
+                        </div>
+                        <div class="hook-arrow">↓</div>
+                        <div class="hook-phase">
+                            <h4>ACTION</h4>
+                            <p>Click link, watch video (2 min)</p>
+                        </div>
+                        <div class="hook-arrow">↓</div>
+                        <div class="hook-phase">
+                            <h4>VARIABLE REWARD</h4>
+                            <p>Sometimes tactical, sometimes motivational, sometimes includes a member win</p>
+                        </div>
+                        <div class="hook-arrow">↓</div>
+                        <div class="hook-phase">
+                            <h4>INVESTMENT</h4>
+                            <p>Complete action item, post result → triggers notification when someone replies</p>
+                        </div>
+                        <div class="hook-arrow">↺</div>
+                        <div class="hook-phase" style="border-color: #10b981;">
+                            <h4 style="color: #10b981;">CYCLE REPEATS</h4>
+                            <p>Each loop deepens the habit</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Strategy 1 - Ritualistic Content -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">1</span>
+                <h2>Ritualistic Content (Predictable Triggers)</h2>
+
+                <p><strong>What it is:</strong> Establishing a predictable rhythm for content delivery—same day, same time, every week—that becomes a ritual members integrate into their routine.</p>
+
+                <p><strong>Why it works:</strong> Predictability creates anticipation. When members know "Tuesdays at 10am = new training," their brain starts to expect it. Miss a Tuesday, and they notice. Maintain the Tuesday rhythm, and it becomes automatic.</p>
+
+                <div class="framework-box">
+                    <h3>How to Implement</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Step 1: Choose your cadence</h4>
+                            <p>Weekly is ideal. Monthly is too infrequent for habit formation. Daily works for certain memberships (meditation, language learning). Bi-weekly is acceptable for intensive programs.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Step 2: Choose your day/time strategically</h4>
+                            <p>Avoid Monday mornings (chaotic) and Friday afternoons (weekend mode). Best: Tuesday-Thursday mornings. Consider your audience's context.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Step 3: Lock it in and NEVER miss it</h4>
+                            <p>This is your sacred ritual. <strong>Consistency beats perfection.</strong> A solid Tuesday for a year beats an unreliable "when inspiration strikes."</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Step 4: Tell members explicitly</h4>
+                            <p>"Every Tuesday at 10am, you'll get the Weekly Retention Deep-Dive. Set a reminder. Grab your coffee. This is our time together."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <h4>Real-World Example: James Clear's 3-2-1 Thursday Newsletter</h4>
+                    <p>Every Thursday, like clockwork, for years. Readers expect it, plan for it, look forward to it. Miss a Thursday? Readers notice and email asking if he's okay.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Strategy 2 - Milestones -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <span class="strategy-number">2</span>
+                <h2>Milestones (Progress Visualization)</h2>
+
+                <p><strong>What it is:</strong> Breaking the transformation into clear, achievable milestones that members can see, celebrate, and use as proof of progress.</p>
+
+                <p><strong>Why it works:</strong> Humans are wired for progress. We crave completion. Progress bars, checklists, and milestone markers tap into this drive. Small wins build momentum. Visible progress combats the "I'm not getting anywhere" doubt.</p>
+
+                <div class="framework-box">
+                    <h3>How to Implement</h3>
+
+                    <h4 style="margin-top: 1rem;">Step 1: Define your milestones</h4>
+                    <div class="example-box">
+                        <h4>Business Coaching Example</h4>
+                        <p>Week 1: Current revenue benchmarked → Month 1: First client acquired → Month 3: $5K MRR → Month 6: $10K MRR → Year 1: $100K annual revenue</p>
+                    </div>
+
+                    <h4>Step 2: Make progress visible</h4>
+                    <ul class="checklist">
+                        <li>Progress bars (75% complete)</li>
+                        <li>Checklists (4/6 modules done)</li>
+                        <li>Badges/achievements ("First Client" unlocked)</li>
+                        <li>Charts and graphs showing growth over time</li>
+                    </ul>
+
+                    <h4 style="margin-top: 1.5rem;">Step 3: Celebrate every milestone</h4>
+                    <ul class="checklist">
+                        <li>Automated email: "Congratulations! You just hit [milestone]"</li>
+                        <li>Unlock bonus: exclusive content or access</li>
+                    </ul>
+
+                    <h4 style="margin-top: 1.5rem;">Step 4: Always show the next milestone</h4>
+                    <p style="margin-bottom: 0;">"You've hit $5K MRR! Next milestone: $10K in Month 6." Never let them feel they've "arrived" with nothing ahead.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Strategy 3 - Gamification -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">3</span>
+                <h2>Gamification (Points, Badges, Leaderboards)</h2>
+
+                <p><strong>What it is:</strong> Using game mechanics to provide immediate positive feedback and a sense of status and progress.</p>
+
+                <div class="warning-box">
+                    <h4>⚠️ Critical Warning: Gamification Can Backfire</h4>
+                    <p>Done wrong, gamification undermines intrinsic motivation by replacing it with extrinsic rewards. The ethics matter here.</p>
+                </div>
+
+                <div class="two-col">
+                    <div class="col-box green">
+                        <h4>✅ Incentivise Valuable Behaviours</h4>
+                        <p>• Points for completing a lesson</p>
+                        <p>• Points for sharing a win</p>
+                        <p>• Points for helping another member</p>
+                        <p>• Badge for "30-Day Streak"</p>
+                        <p>• Leaderboard for "Most Workouts Logged"</p>
+                    </div>
+                    <div class="col-box red">
+                        <h4>❌ Don't Incentivise Vanity Metrics</h4>
+                        <p>• Points for just logging in</p>
+                        <p>• Points for clicking around</p>
+                        <p>• Streaks designed to create guilt</p>
+                        <p>• Badges for spending money</p>
+                        <p>• Fake engagement that delivers nothing</p>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>The Test</h3>
+                    <p style="margin-bottom: 0; font-size: 1.15rem;">"If I removed the points tomorrow, would members still do these behaviours? If yes—gamification is reinforcing intrinsic motivation. If no—you're creating extrinsic dependence."</p>
+                </div>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>The Pavlov Acknowledgment</h3>
+                    <p>Yes, this is classical conditioning. But unlike Pavlov's dogs, your members are choosing to be here and benefiting from the process. You're rewarding behaviours that <strong>genuinely help them achieve their goals</strong>—not manipulating them into fake engagement.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Strategy 4 - Community Connectivity -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <span class="strategy-number">4</span>
+                <h2>Community Connectivity</h2>
+                <h3>Relational Switching Costs</h3>
+
+                <p><strong>What it is:</strong> Building habits around community participation that create emotional bonds, making it genuinely painful to leave.</p>
+
+                <div class="quote">
+                    "People join for the content, stay for the community."
+                </div>
+
+                <p>When members form relationships with peers, canceling means losing connection with people who know their story, abandoning accountability partners, and leaving people counting on them. That's a <strong>relational switching cost</strong>—a psychological barrier to leaving that has nothing to do with your content.</p>
+
+                <div class="framework-box">
+                    <h3>The Four Phases</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Phase 1: Onboarding into Community</h4>
+                            <p>Get members to introduce themselves in the first 72 hours. Respond personally. Tag another member to create a peer-to-peer bond immediately.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Phase 2: Participation Prompts</h4>
+                            <p>Weekly rhythms: Win Wednesday, Feedback Friday, Challenge Monday. Monthly events: live Q&As, member spotlights, group challenges.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Phase 3: Accountability Partnerships</h4>
+                            <p>Pair members with shared goals. Weekly check-in prompts: "How did your partner do this week?" This is the deepest relational bond you can build.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Phase 4: Recognition Loops</h4>
+                            <p>Feature top contributors in newsletters. Create a monthly "Circle of Awesomeness" roundup. Public recognition is a powerful social reward.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Strategy 5 - Smart Notifications -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content bg-alternate">
+                <span class="strategy-number">5</span>
+                <h2>Smart Notifications</h2>
+                <h3>External → Internal Triggers</h3>
+
+                <p><strong>What it is:</strong> Using notifications strategically to create external triggers that eventually become internal.</p>
+
+                <div class="warning-box">
+                    <h4>⚠️ Warning: Powerful but Irritating When Misused</h4>
+                    <p>Notifications are a tool, not a strategy. Use them to serve members, not to optimise your open rates.</p>
+                </div>
+
+                <div class="framework-box">
+                    <h3>Four Notification Types</h3>
+
+                    <div class="example-box">
+                        <h4>1. Content Drop — "Your weekly training just dropped 🎯"</h4>
+                        <p>Best time: 8-10am when attention is high.</p>
+                    </div>
+
+                    <div class="example-box">
+                        <h4>2. Social — "Sarah replied to your comment 💬"</h4>
+                        <p>Trigger: Peer engagement. Deliver immediately.</p>
+                    </div>
+
+                    <div class="example-box">
+                        <h4>3. Milestone Proximity — "1 workout away from your 30-day streak! 🔥"</h4>
+                        <p>Best time: Evening reminder for next day action.</p>
+                    </div>
+
+                    <div class="example-box">
+                        <h4>4. Inactivity — "Here's what you missed this week 👋"</h4>
+                        <p>Use sparingly. After 7-14 days of inactivity. Warm tone only—never guilt.</p>
+                    </div>
+                </div>
+
+                <div class="two-col" style="margin-top: 1.5rem;">
+                    <div class="col-box green">
+                        <h4>✅ Do</h4>
+                        <p>• Let members customise preferences</p>
+                        <p>• Make every notification actionable</p>
+                        <p>• Vary the content and copy</p>
+                        <p>• Respect quiet hours</p>
+                    </div>
+                    <div class="col-box red">
+                        <h4>❌ Don't</h4>
+                        <p>• Spam daily with low-value pings</p>
+                        <p>• Send guilt-trip messages</p>
+                        <p>• Make notifications impossible to disable</p>
+                        <p>• Send without a clear CTA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Strategy 6 - Habit Stacking -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <span class="strategy-number">6</span>
+                <h2>Habit Stacking</h2>
+                <h3>Progressive Layering Over Time</h3>
+
+                <p><strong>What it is:</strong> Instead of overwhelming members with all desired habits at once, you layer habits progressively.</p>
+
+                <p><strong>Why it works:</strong> Trying to build 5 habits simultaneously = overwhelm = failure. Building 1 habit, then adding another, then another = sustainable retention. (James Clear, <em>Atomic Habits</em>: leverage existing habits as triggers for new ones.)</p>
+
+                <div class="framework-box">
+                    <h3>The Progression</h3>
+
+                    <div class="habit-stack">
+                        <div class="habit-layer">
+                            <div class="habit-label">Month 1</div>
+                            <div class="habit-bar h1">Content habit — Tuesday email → watch video → complete action</div>
+                            <div class="habit-checkmark">✓</div>
+                        </div>
+                        <div class="habit-layer">
+                            <div class="habit-label">Month 2</div>
+                            <div class="habit-bar h2">+ Community habit — after video → post result or question</div>
+                            <div class="habit-checkmark">✓</div>
+                        </div>
+                        <div class="habit-layer">
+                            <div class="habit-label">Month 3</div>
+                            <div class="habit-bar h3">+ Tracking habit — Friday → log metrics → chart updates</div>
+                            <div class="habit-checkmark">✓</div>
+                        </div>
+                        <div class="habit-layer">
+                            <div class="habit-label">Month 4</div>
+                            <div class="habit-bar h4">+ Peer support — accountability check-in with partner</div>
+                            <div class="habit-checkmark">✓</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>The Key Rule</h3>
+                    <p>Don't introduce Habit #2 until Habit #1 is established—usually 2-4 weeks. Four interlocking habits = deep retention that's genuinely hard to walk away from.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Ethics Check -->
+        <div class="slide" data-slide="13">
+            <div class="slide-content bg-alternate">
+                <h2>The Ethics Check</h2>
+
+                <div class="callout">
+                    <h3>Retention vs. Detention</h3>
+                    <p>Habit formation is powerful—which means it can be used ethically or manipulatively. This is where Member Engine's core principle is tested.</p>
+                </div>
+
+                <div class="two-col">
+                    <div class="col-box green">
+                        <h4>🌱 Garden (Ethical)</h4>
+                        <p>Members engage because they want to</p>
+                        <p>Habits make their lives genuinely better</p>
+                        <p>They'd recommend you to friends</p>
+                        <p>They'd feel supported taking a break</p>
+                    </div>
+                    <div class="col-box red">
+                        <h4>🔒 Prison (Manipulative)</h4>
+                        <p>Members feel trapped by streaks or sunk cost</p>
+                        <p>Habits create anxiety, not value</p>
+                        <p>They resent the membership but feel stuck</p>
+                        <p>They'd feel guilty for taking a break</p>
+                    </div>
+                </div>
+
+                <div class="framework-box" style="margin-top: 2rem;">
+                    <h3>Protect Member Autonomy</h3>
+                    <ul class="warning-list">
+                        <li class="do">Give members control over notification settings</li>
+                        <li class="do">Make participation optional, not compulsory</li>
+                        <li class="do">"Take a break, we'll be here" — offer flexible models</li>
+                        <li class="dont">Force daily check-ins to maintain streak</li>
+                        <li class="dont">Guilt-trip for missed days ("You're letting your team down!")</li>
+                        <li class="dont">Design streaks that create anxiety when broken</li>
+                    </ul>
+                </div>
+
+                <div class="callout blue" style="margin-top: 2rem;">
+                    <h3>The Reactance Warning</h3>
+                    <p>Humans have a hair-trigger response when they feel controlled. If members feel manipulated, they'll cancel just to reclaim autonomy. Your retention system will cause the cancellations it was designed to prevent.</p>
+                </div>
+
+                <div class="quote" style="margin-top: 2rem;">
+                    "If a member told me they need a month off, would my system make them feel supported—or guilty?"
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Implementation Blueprint -->
+        <div class="slide" data-slide="14">
+            <div class="slide-content">
+                <h2>Your Implementation Blueprint</h2>
+                <p>Fill this in for your membership. Save your answers — they become your Habit Formation plan.</p>
+
+                <div class="blueprint-section">
+                    <h4>My Membership Hook</h4>
+                    <div class="blueprint-field">
+                        <label>Trigger: Every _______ at _______, members get _______</label>
+                        <textarea id="bp-trigger" rows="2" placeholder="e.g. Every Tuesday at 10am, members get a new retention deep-dive"></textarea>
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Action: They open/click/do _______</label>
+                        <textarea id="bp-action" rows="2" placeholder="e.g. They click the email link and the video auto-plays"></textarea>
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Variable Reward: Sometimes _______, sometimes _______, sometimes _______</label>
+                        <textarea id="bp-reward" rows="2" placeholder="e.g. Sometimes a tactical framework, sometimes a member win, sometimes a bonus resource"></textarea>
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Investment: They then _______, which makes _______</label>
+                        <textarea id="bp-investment" rows="2" placeholder="e.g. Post their implementation result, which loads a notification trigger when peers respond"></textarea>
+                    </div>
+                </div>
+
+                <div class="blueprint-section">
+                    <h4>Friction Audit — Where do members have to think too hard?</h4>
+                    <div class="blueprint-field">
+                        <label>Biggest friction point I need to fix</label>
+                        <textarea id="bp-friction" rows="2" placeholder="e.g. Finding this week's content requires 3 clicks — need a direct email link"></textarea>
+                    </div>
+                </div>
+
+                <div class="blueprint-section">
+                    <h4>My Habit Stack</h4>
+                    <div class="blueprint-field">
+                        <label>Habit #1 (establish first — Month 1)</label>
+                        <input type="text" id="bp-habit1" placeholder="e.g. Watch weekly training video">
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Habit #2 (layer on Month 2)</label>
+                        <input type="text" id="bp-habit2" placeholder="e.g. Post result in community after video">
+                    </div>
+                    <div class="blueprint-field">
+                        <label>Habit #3 (layer on Month 3)</label>
+                        <input type="text" id="bp-habit3" placeholder="e.g. Log weekly metrics on Friday">
+                    </div>
+                </div>
+
+                <button class="save-btn" onclick="saveBlueprint()">Save My Blueprint</button>
+                <p id="bp-saved-msg" style="color: #10b981; font-weight: 600; margin-top: 1rem; display: none;">Blueprint saved ✓</p>
+            </div>
+        </div>
+
+        <!-- Slide 15: Real-World Teardown - Duolingo -->
+        <div class="slide" data-slide="15">
+            <div class="slide-content bg-alternate">
+                <h2>Real-World Teardown</h2>
+                <h3>Duolingo — Master of Habit Formation</h3>
+
+                <div class="framework-box">
+                    <h3>The Hook in Action</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Trigger</h4>
+                            <p>Daily reminder notification at user-selected time</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Action</h4>
+                            <p>Complete one 5-minute lesson (friction is minimal by design)</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Variable Reward</h4>
+                            <p>Sometimes easy words, sometimes challenging sentences, sometimes you level up, sometimes you unlock a new skill</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Investment</h4>
+                            <p>Streak counter increases. "Don't break the streak" becomes a powerful internal motivator.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="checklist" style="margin-top: 1.5rem;">
+                    <li>TTFV is under 5 minutes — you're translating words within 30 seconds of signing up</li>
+                    <li>Variable rewards make progress unpredictable (and therefore compelling)</li>
+                    <li>The streak investment creates a genuine switching cost</li>
+                </ul>
+
+                <div class="callout" style="margin-top: 2rem;">
+                    <h3>What They Do Questionably</h3>
+                    <p>Streak anxiety — guilt if you miss a day. Aggressive notification cadence (Duo the owl memes exist for a reason). <strong>Lesson: Balance habit formation with member wellbeing. Don't create anxiety-driven engagement.</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Real-World Teardown - Peloton -->
+        <div class="slide" data-slide="16">
+            <div class="slide-content">
+                <h2>Real-World Teardown</h2>
+                <h3>Peloton — Ritualistic Schedule + Milestone Recognition</h3>
+
+                <div class="framework-box">
+                    <h3>The Hook in Action</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>Trigger</h4>
+                            <p>Scheduled live class — Mondays 9am = Robin's ride. Predictable, anticipated, planned around.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Action</h4>
+                            <p>Clip in, start riding. First ride is achievable for anyone (low barrier, guaranteed win).</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Variable Reward</h4>
+                            <p>Sometimes a personal record, sometimes a high-five from a stranger, sometimes an instructor shoutout for hitting a milestone.</p>
+                        </div>
+                        <div class="timeline-item">
+                            <h4>Investment</h4>
+                            <p>Output data tracked, leaderboard ranking, total rides logged. Every session makes the dataset richer and leaving feel like a loss.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="checklist" style="margin-top: 1.5rem;">
+                    <li>Milestone rides celebrated publicly (100th ride shoutout) — Reward of the Tribe</li>
+                    <li>Live class schedule creates a predictable external trigger that becomes internal</li>
+                    <li>Community high-fives and leaderboard create immediate social reward</li>
+                </ul>
+
+                <div class="callout green" style="margin-top: 2rem;">
+                    <h3>The Pattern Across All Examples</h3>
+                    <p>Ritualistic schedule + milestone recognition + community engagement = a habit formation engine that runs itself. <strong>You don't need a Peloton bike to apply this.</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: This Week's Mission -->
+        <div class="slide" data-slide="17">
+            <div class="slide-content bg-alternate">
+                <h2>This Week's Mission</h2>
+                <p style="font-size: 1.3rem;">Map your member's ideal weekly ritual.</p>
+
+                <div class="framework-box" style="margin: 3rem 0;">
+                    <h3>Five Questions to Answer</h3>
+                    <ul class="interactive-checklist" id="missionChecklist">
+                        <li data-task="action">What ONE action do you want members to take every single week?</li>
+                        <li data-task="timing">What day and time will this happen?</li>
+                        <li data-task="trigger">What's the trigger? (email, notification, calendar reminder)</li>
+                        <li data-task="reward">What's the reward? (new content, progress update, social recognition)</li>
+                        <li data-task="investment">What's the investment? (post result, track data, help a peer)</li>
+                    </ul>
+
+                    <div class="mission-progress">
+                        <h4>Your Progress</h4>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="missionProgress"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0 of 5 complete (0%)</div>
+                    </div>
+
+                    <p style="margin-top: 1.5rem; color: var(--text-light);"><strong>Bonus:</strong> Announce your weekly ritual to your existing members this week. "Starting next Tuesday, here's what to expect from me every week..."</p>
+                </div>
+
+                <div class="callout blue">
+                    <h3>Format Your Answer</h3>
+                    <p>Use the Hook template: "Every [day] at [time], members [trigger]. They [action]. The reward is [variable reward]. Then they [investment] which [loads next cycle]."</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        const STORAGE_KEY = 'memberengine_module2_progress';
+        const MISSION_STORAGE_KEY = 'memberengine_module2_mission';
+        const BLUEPRINT_STORAGE_KEY = 'memberengine_module2_blueprint';
+
+        // Mission checklist
+        const missionTasks = new Set();
+
+        function loadMissionProgress() {
+            const saved = localStorage.getItem(MISSION_STORAGE_KEY);
+            if (saved) {
+                const tasks = JSON.parse(saved);
+                tasks.forEach(task => {
+                    missionTasks.add(task);
+                    const item = document.querySelector(`[data-task="${task}"]`);
+                    if (item) item.classList.add('checked');
+                });
+                updateMissionProgress();
+            }
+        }
+
+        function saveMissionProgress() {
+            localStorage.setItem(MISSION_STORAGE_KEY, JSON.stringify(Array.from(missionTasks)));
+        }
+
+        function updateMissionProgress() {
+            const total = 5;
+            const completed = missionTasks.size;
+            const percentage = (completed / total) * 100;
+            document.getElementById('missionProgress').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${completed} of ${total} complete (${Math.round(percentage)}%)`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const checklistItems = document.querySelectorAll('.interactive-checklist li');
+            checklistItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const task = item.dataset.task;
+                    if (missionTasks.has(task)) {
+                        missionTasks.delete(task);
+                        item.classList.remove('checked');
+                    } else {
+                        missionTasks.add(task);
+                        item.classList.add('checked');
+                    }
+                    saveMissionProgress();
+                    updateMissionProgress();
+                });
+            });
+            loadMissionProgress();
+            loadBlueprint();
+        });
+
+        // Blueprint save/load
+        function saveBlueprint() {
+            const fields = ['bp-trigger', 'bp-action', 'bp-reward', 'bp-investment', 'bp-friction', 'bp-habit1', 'bp-habit2', 'bp-habit3'];
+            const data = {};
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            localStorage.setItem(BLUEPRINT_STORAGE_KEY, JSON.stringify(data));
+            const msg = document.getElementById('bp-saved-msg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+
+        function loadBlueprint() {
+            const saved = localStorage.getItem(BLUEPRINT_STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.entries(data).forEach(([id, value]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value;
+                });
+            }
+        }
+
+        // Slide navigation
+        function loadProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const savedSlide = parseInt(saved);
+                if (savedSlide >= 1 && savedSlide <= totalSlides) {
+                    currentSlide = savedSlide;
+                }
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem(STORAGE_KEY, currentSlide.toString());
+            showProgressSaved();
+        }
+
+        function showProgressSaved() {
+            const notification = document.getElementById('progressSaved');
+            notification.classList.add('show');
+            setTimeout(() => { notification.classList.remove('show'); }, 2000);
+        }
+
+        function updateSlide() {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index + 1 === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index + 1 < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+
+            const activeSlide = document.querySelector('.slide.active');
+            if (activeSlide) activeSlide.scrollTop = 0;
+
+            saveProgress();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            else if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Init
+        loadProgress();
+        updateSlide();
+    </script>
+</body>
+</html>
