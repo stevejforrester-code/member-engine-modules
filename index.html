@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Member Engine — Retention Not Detention</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+  --grey-dark: #3a3a3a;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--body);
+  background: var(--white);
+  color: var(--black);
+  -webkit-font-smoothing: antialiased;
+  cursor: default;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  background: var(--black);
+  border-bottom: 3px solid var(--pink);
+}
+
+.nav-logo {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.nav-logo .dot { color: var(--pink); }
+
+.nav-badge {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--pink); color: var(--white);
+  padding: 6px 16px; border-radius: 2px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+  border: 2px solid var(--pink);
+}
+.nav-badge:hover { background: transparent; color: var(--pink); transform: rotate(-1deg); }
+
+/* ── TICKER ── */
+.ticker-wrap {
+  background: var(--pink);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+  margin-top: 60px;
+  border-bottom: 2px solid var(--black);
+}
+.ticker-track {
+  display: inline-flex;
+  animation: ticker 30s linear infinite;
+}
+.ticker-item {
+  font-family: var(--display);
+  font-size: 16px;
+  letter-spacing: 0.15em;
+  color: var(--white);
+  padding: 0 40px;
+}
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── HERO ── */
+.hero {
+  background: var(--black);
+  padding: 80px 40px 0;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(92vh - 60px);
+  align-items: end;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: 380px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,20,147,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-left {
+  padding-bottom: 80px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink);
+  border: 1px solid var(--pink);
+  padding: 6px 14px;
+  margin-bottom: 32px;
+}
+
+.hero-h1 {
+  font-family: var(--display);
+  font-size: clamp(72px, 9vw, 130px);
+  line-height: 0.92;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.hero-h1 .line-pink { color: var(--pink); }
+.hero-h1 .line-lime { color: var(--lime); }
+
+.hero-sub {
+  font-size: 18px; font-weight: 300;
+  color: #aaa;
+  line-height: 1.65;
+  max-width: 480px;
+  margin: 28px 0 48px;
+}
+
+.hero-sub em { color: var(--white); font-style: normal; font-weight: 500; }
+
+.hero-buttons { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+.btn-primary {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  color: var(--black);
+  background: var(--lime);
+  padding: 14px 36px;
+  text-decoration: none;
+  border: 3px solid var(--lime);
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+
+.btn-ghost {
+  font-size: 13px; font-weight: 400;
+  color: #666;
+  text-decoration: none;
+}
+.btn-ghost:hover { color: var(--white); }
+
+/* FAKE HERO PHOTO */
+.hero-right {
+  position: relative;
+  align-self: end;
+  z-index: 2;
+}
+
+.fake-photo {
+  width: 420px;
+  height: 520px;
+  background: #1a1a1a;
+  border: 3px solid #333;
+  border-bottom: none;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Fake burning building background */
+.fake-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(255,100,0,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 40%, rgba(255,50,0,0.25) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 80%, rgba(255,150,0,0.2) 0%, transparent 40%),
+    linear-gradient(180deg, #0d0d0d 0%, #1a0a00 60%, #2a1000 100%);
+}
+
+/* Fake building silhouette */
+.building {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 200px;
+  background: #0a0a0a;
+  clip-path: polygon(
+    0% 100%, 0% 55%, 5% 55%, 5% 30%, 12% 30%, 12% 55%,
+    20% 55%, 20% 20%, 28% 20%, 28% 55%,
+    35% 55%, 35% 40%, 42% 40%, 42% 0%, 50% 0%, 50% 40%,
+    58% 40%, 58% 55%, 65% 55%, 65% 25%, 72% 25%, 72% 55%,
+    80% 55%, 80% 35%, 88% 35%, 88% 55%,
+    95% 55%, 95% 45%, 100% 45%, 100% 100%
+  );
+}
+
+/* Flames */
+.flame {
+  position: absolute;
+  bottom: 120px;
+  animation: flicker 0.8s ease-in-out infinite alternate;
+}
+.flame-1 { left: 35%; animation-delay: 0s; }
+.flame-2 { left: 55%; animation-delay: 0.3s; }
+.flame-3 { left: 20%; animation-delay: 0.6s; }
+
+.flame svg { width: 40px; height: 60px; }
+
+@keyframes flicker {
+  0% { transform: scale(1) rotate(-3deg); opacity: 0.8; }
+  100% { transform: scale(1.2) rotate(3deg); opacity: 1; }
+}
+
+/* Steve silhouette — stick figure hero */
+.steve-figure {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.steve-svg { width: 120px; height: 200px; }
+
+/* Baby */
+.baby-bubble {
+  position: absolute;
+  top: 40px; right: 30px;
+  background: var(--yellow);
+  border: 3px solid var(--black);
+  border-radius: 50%;
+  width: 80px; height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  animation: float 2s ease-in-out infinite alternate;
+  box-shadow: 4px 4px 0 var(--black);
+}
+@keyframes float { 0% { transform: translateY(0) rotate(-5deg); } 100% { transform: translateY(-12px) rotate(5deg); } }
+
+/* Photo caption */
+.photo-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--yellow);
+  border-top: 3px solid var(--black);
+  padding: 10px 16px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--black);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Photoshop badge */
+.ps-badge {
+  position: absolute;
+  top: 16px; left: 16px;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid #555;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #aaa;
+  border-radius: 2px;
+}
+
+/* ── SOCIAL PROOF BAR ── */
+.proof-bar {
+  background: var(--grey);
+  border-top: 3px solid var(--black);
+  border-bottom: 3px solid var(--black);
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  flex-wrap: wrap;
+}
+
+.proof-item {
+  text-align: center;
+}
+
+.proof-num {
+  font-family: var(--display);
+  font-size: 42px;
+  letter-spacing: 0.05em;
+  color: var(--black);
+  line-height: 1;
+}
+
+.proof-num .unit { color: var(--pink); }
+
+.proof-label {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: #888;
+  margin-top: 4px;
+}
+
+.proof-divider {
+  width: 1px; height: 48px;
+  background: #ccc;
+}
+
+/* ── FOR SECTION ── */
+.for-section {
+  padding: 100px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.for-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.for-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+
+.for-headline {
+  font-family: var(--display);
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.0;
+  letter-spacing: 0.04em;
+  color: var(--black);
+  margin-bottom: 28px;
+}
+
+.for-body {
+  font-size: 17px; font-weight: 300;
+  line-height: 1.75;
+  color: #444;
+}
+
+.for-body p + p { margin-top: 20px; }
+.for-body strong { color: var(--black); font-weight: 600; }
+
+.for-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.for-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 2px solid var(--grey);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  transition: border-color 0.2s, background 0.2s;
+}
+.for-list li:hover { border-color: var(--pink); background: #fff5fa; }
+
+.for-list .icon {
+  font-size: 22px; flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── METHOD ── */
+.method-section {
+  background: var(--black);
+  padding: 100px 40px;
+  border-top: 4px solid var(--lime);
+}
+
+.method-inner { max-width: 1200px; margin: 0 auto; }
+
+.method-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  margin-bottom: 64px;
+  align-items: end;
+}
+
+.method-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 20px;
+}
+
+.method-headline {
+  font-family: var(--display);
+  font-size: clamp(44px, 5vw, 72px);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: var(--white);
+}
+
+.method-headline .pink { color: var(--pink); }
+
+.method-note {
+  font-size: 16px; font-weight: 300;
+  color: #777;
+  line-height: 1.7;
+  align-self: end;
+}
+
+.method-note em { color: #aaa; font-style: normal; }
+
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+.method-card {
+  background: #111;
+  padding: 48px 36px;
+  border-top: 3px solid #222;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.method-card:hover { background: #161616; border-top-color: var(--lime); }
+
+.card-num {
+  font-family: var(--display);
+  font-size: 80px;
+  color: #1e1e1e;
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+.card-heading {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+.card-body {
+  font-size: 14px; font-weight: 300;
+  color: #777;
+  line-height: 1.8;
+}
+
+/* ── ABOUT ── */
+.about-section {
+  padding: 100px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.about-card {
+  background: var(--black);
+  border: 3px solid var(--black);
+  position: relative;
+}
+
+.about-card-img {
+  width: 100%;
+  height: 320px;
+  background: #1a1a1a;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mini version of the fake photo */
+.about-card-img::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 40% 70%, rgba(255,80,0,0.3) 0%, transparent 55%),
+              linear-gradient(180deg, #111 0%, #1a0800 100%);
+}
+
+.about-emoji {
+  font-size: 80px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 20px rgba(255,100,0,0.5));
+  animation: float 3s ease-in-out infinite alternate;
+}
+
+.about-card-body {
+  padding: 24px;
+  border-top: 3px solid var(--black);
+  background: var(--yellow);
+}
+
+.about-card-name {
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.about-card-title {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: #666;
+  line-height: 1.5;
+}
+
+.about-content-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.about-content-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+
+.about-headline {
+  font-family: var(--display);
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.0;
+  letter-spacing: 0.04em;
+  color: var(--black);
+  margin-bottom: 32px;
+}
+
+.about-body {
+  font-size: 16px; font-weight: 300;
+  line-height: 1.8;
+  color: #444;
+}
+
+.about-body p + p { margin-top: 20px; }
+.about-body strong { color: var(--black); font-weight: 600; }
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.module-pill {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--black);
+  background: var(--grey);
+  border: 2px solid var(--black);
+  padding: 10px 16px;
+  text-align: center;
+  transition: background 0.15s;
+}
+.module-pill:hover { background: var(--lime); }
+
+/* ── CTA ── */
+.cta-section {
+  background: var(--black);
+  border-top: 4px solid var(--pink);
+  padding: 100px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-section::before {
+  content: 'RETENTION NOT DETENTION';
+  position: absolute;
+  font-family: var(--display);
+  font-size: 160px;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.02);
+  white-space: nowrap;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cta-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 2; }
+
+.cta-eyebrow {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink);
+  border: 1px solid var(--pink);
+  padding: 6px 16px;
+  margin-bottom: 32px;
+}
+
+.cta-headline {
+  font-family: var(--display);
+  font-size: clamp(52px, 7vw, 88px);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 24px;
+}
+
+.cta-headline .price { color: var(--lime); }
+
+.cta-sub {
+  font-size: 16px; font-weight: 300;
+  color: #777;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+.cta-sub em { color: #aaa; font-style: normal; }
+
+.cta-btn {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 28px;
+  letter-spacing: 0.1em;
+  color: var(--black);
+  background: var(--pink);
+  padding: 18px 56px;
+  text-decoration: none;
+  border: 3px solid var(--pink);
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  margin-bottom: 20px;
+}
+.cta-btn:hover { background: transparent; color: var(--pink); transform: translateY(-3px); }
+
+.cta-note {
+  font-size: 13px;
+  color: #555;
+  margin-top: 16px;
+}
+
+.cta-note em { color: #777; font-style: normal; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--black);
+  border-top: 1px solid #1e1e1e;
+  padding: 32px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-logo {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--white);
+}
+
+.footer-logo .dot { color: var(--pink); }
+
+.footer-note {
+  font-size: 12px;
+  color: #555;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding: 60px 24px 0; }
+  .hero-right { display: none; }
+  .hero-left { padding-bottom: 60px; }
+  .for-section, .about-section { grid-template-columns: 1fr; padding: 64px 24px; gap: 48px; }
+  .method-section { padding: 64px 24px; }
+  .method-intro { grid-template-columns: 1fr; gap: 24px; }
+  .three-col { grid-template-columns: 1fr; }
+  .proof-bar { gap: 32px; padding: 24px; }
+  .proof-divider { display: none; }
+  .cta-section { padding: 64px 24px; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+  .module-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <a href="#cta" class="nav-badge">Get Founding Access</a>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">RETENTION NOT DETENTION <span class="sep">✦</span></span>
+    <span class="ticker-item">STOP LOSING MEMBERS YOU ALREADY HAVE <span class="sep">✦</span></span>
+    <span class="ticker-item">BEHAVIOURAL SCIENCE. ACTUAL RESULTS. <span class="sep">✦</span></span>
+    <span class="ticker-item">NO DARK PATTERNS. NO BULLSHIT. <span class="sep">✦</span></span>
+    <span class="ticker-item">RETENTION NOT DETENTION <span class="sep">✦</span></span>
+    <span class="ticker-item">STOP LOSING MEMBERS YOU ALREADY HAVE <span class="sep">✦</span></span>
+    <span class="ticker-item">BEHAVIOURAL SCIENCE. ACTUAL RESULTS. <span class="sep">✦</span></span>
+    <span class="ticker-item">NO DARK PATTERNS. NO BULLSHIT. <span class="sep">✦</span></span>
+  </div>
+</div>
+
+<!-- HERO -->
+<div style="background: var(--black); max-width: 100%; overflow: hidden;">
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">A Retention Framework</div>
+    <h1 class="hero-h1">
+      <span class="line-pink">STOP</span><br>
+      LOSING<br>
+      MEMBERS<br>
+      <span class="line-lime">YOU HAVE</span>
+    </h1>
+    <p class="hero-sub">
+      A framework for subscription and membership businesses built on <em>actual behavioural science</em> — not vibes, not guesswork, and definitely not cancellation friction disguised as strategy.
+    </p>
+    <div class="hero-buttons">
+      <a href="#cta" class="btn-primary">Show Me The Framework</a>
+      <a href="#method" class="btn-ghost">How it works ↓</a>
+    </div>
+  </div>
+
+  <!-- FAKE PHOTOSHOPPED HERO IMAGE -->
+  <div class="hero-right">
+    <div class="fake-photo">
+      <div class="ps-badge">📸 100% Real Photo*</div>
+      <div class="baby-bubble">👶</div>
+      <div class="building"></div>
+
+      <!-- Flames SVG -->
+      <div class="flame flame-1">
+        <svg viewBox="0 0 40 60" fill="none">
+          <path d="M20 60 C20 60 0 45 5 30 C8 20 12 22 10 12 C15 18 14 25 20 22 C18 15 22 8 20 0 C28 10 32 25 28 35 C35 28 34 18 30 12 C38 22 42 40 20 60Z" fill="#FF6B00" opacity="0.9"/>
+          <path d="M20 55 C20 55 5 42 9 30 C12 22 16 24 14 16 C18 21 17 27 22 25 C26 32 24 42 20 55Z" fill="#FFB300" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="flame flame-2">
+        <svg viewBox="0 0 40 60" fill="none">
+          <path d="M20 60 C20 60 0 45 5 30 C8 20 12 22 10 12 C15 18 14 25 20 22 C18 15 22 8 20 0 C28 10 32 25 28 35 C35 28 34 18 30 12 C38 22 42 40 20 60Z" fill="#FF4500" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="flame flame-3">
+        <svg viewBox="0 0 40 60" fill="none">
+          <path d="M20 60 C20 60 2 44 7 30 C10 22 13 23 11 14 C16 20 15 26 21 23 C25 30 23 43 20 60Z" fill="#FF8C00" opacity="0.7"/>
+        </svg>
+      </div>
+
+      <!-- Steve as stick figure hero -->
+      <div class="steve-figure">
+        <svg class="steve-svg" viewBox="0 0 120 200" fill="none">
+          <!-- Cape -->
+          <path d="M55 55 L30 120 L45 110 L40 150 L55 130 L60 160 L65 130 L80 150 L75 110 L90 120 L65 55Z" fill="var(--pink)" opacity="0.9"/>
+          <!-- Body -->
+          <line x1="60" y1="55" x2="60" y2="120" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <!-- Head -->
+          <circle cx="60" cy="38" r="18" fill="white" stroke="white" stroke-width="2"/>
+          <!-- Face -->
+          <circle cx="54" cy="36" r="2.5" fill="#0d0d0d"/>
+          <circle cx="66" cy="36" r="2.5" fill="#0d0d0d"/>
+          <path d="M53 44 Q60 50 67 44" stroke="#0d0d0d" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- Arms - heroic pose -->
+          <line x1="60" y1="75" x2="30" y2="60" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <line x1="60" y1="75" x2="90" y2="55" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <!-- Fist left -->
+          <circle cx="30" cy="60" r="6" fill="white"/>
+          <!-- Baby in right hand -->
+          <circle cx="93" cy="48" r="10" fill="var(--yellow)" stroke="white" stroke-width="2"/>
+          <text x="88" y="53" font-size="12" fill="#0d0d0d">👶</text>
+          <!-- Legs - running -->
+          <line x1="60" y1="120" x2="40" y2="165" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <line x1="60" y1="120" x2="80" y2="160" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <!-- Feet -->
+          <line x1="40" y1="165" x2="22" y2="170" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <line x1="80" y1="160" x2="96" y2="168" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <!-- S on chest -->
+          <text x="52" y="95" font-family="Arial" font-size="18" font-weight="bold" fill="var(--pink)">ME</text>
+        </svg>
+      </div>
+
+      <div class="photo-caption">
+        Steve, saving a baby from a burning building.<br>
+        <span style="font-weight:400; font-style:italic; text-transform:none; letter-spacing:0;">*results may vary. baby is fine. building less so.</span>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- PROOF BAR -->
+<div class="proof-bar">
+  <div class="proof-item">
+    <div class="proof-num">6<span class="unit">×</span></div>
+    <div class="proof-label">Evidence-based modules</div>
+  </div>
+  <div class="proof-divider"></div>
+  <div class="proof-item">
+    <div class="proof-num"><span class="unit">↑</span>LTV</div>
+    <div class="proof-label">The only metric that matters</div>
+  </div>
+  <div class="proof-divider"></div>
+  <div class="proof-item">
+    <div class="proof-num">0</div>
+    <div class="proof-label">Dark patterns. Zero.</div>
+  </div>
+  <div class="proof-divider"></div>
+  <div class="proof-item">
+    <div class="proof-num"><span class="unit">∞</span></div>
+    <div class="proof-label">Excuses eliminated</div>
+  </div>
+</div>
+
+<!-- WHO IT'S FOR -->
+<section class="for-section">
+  <div>
+    <div class="for-label">Who it's for</div>
+    <h2 class="for-headline">IS THIS<br>YOU?</h2>
+    <div class="for-body">
+      <p>You run a subscription box, membership community, or SaaS product.</p>
+      <p>People sign up. Some stay. <strong>A lot don't.</strong> You're not sure why, and the advice you've found so far is either obvious or vague.</p>
+      <p>This is for you.</p>
+    </div>
+  </div>
+  <ul class="for-list">
+    <li>
+      <span class="icon">📉</span>
+      <span>You're acquiring members fine. It's keeping them where things go sideways.</span>
+    </li>
+    <li>
+      <span class="icon">🤷</span>
+      <span>Your churn rate is "not terrible" — which is another way of saying you have no idea what's driving it.</span>
+    </li>
+    <li>
+      <span class="icon">🔒</span>
+      <span>You've tried cancellation friction, discount pop-ups, and pause options. They work short-term. Members resent you long-term.</span>
+    </li>
+    <li>
+      <span class="icon">🧪</span>
+      <span>You want a framework grounded in actual psychology — not another "10 retention hacks" blog post.</span>
+    </li>
+  </ul>
+</section>
+
+<!-- METHOD -->
+<section class="method-section" id="method">
+  <div class="method-inner">
+    <div class="method-intro">
+      <div>
+        <div class="method-label">How it works</div>
+        <h2 class="method-headline">RETENTION IS A<br><span class="pink">PSYCHOLOGY</span><br>PROBLEM</h2>
+      </div>
+      <p class="method-note">
+        Not a marketing problem. Not a product problem. Not a pricing problem.<br><br>
+        <em>Six modules. Each one covering a different layer of why members actually stay — and what you can do about it.</em>
+      </p>
+    </div>
+
+    <div class="three-col">
+      <div class="method-card">
+        <div class="card-num">01</div>
+        <div class="card-heading">THE PROBLEM</div>
+        <p class="card-body">Most membership businesses spend 90% of their energy on acquisition. New members, new campaigns, new offers. Meanwhile the bucket is leaking. Churn compounds quietly until suddenly it really, really doesn't.</p>
+      </div>
+      <div class="method-card">
+        <div class="card-num">02</div>
+        <div class="card-heading">THE METHOD</div>
+        <p class="card-body">Six modules built on behavioural psychology and evidence-based retention science. Activation, habit formation, connection, communication architecture, early warning detection, and revenue growth from the members you already have.</p>
+      </div>
+      <div class="method-card">
+        <div class="card-num">03</div>
+        <div class="card-heading">THE RESULT</div>
+        <p class="card-body">Members who stay longer, spend more, and refer others. Without cancellation friction, dark patterns, or manufactured urgency. Retention not detention — because one of those is a garden fence and one is a prison fence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section">
+  <div>
+    <div class="about-card">
+      <div class="about-card-img">
+        <div class="about-emoji">🧠</div>
+      </div>
+      <div class="about-card-body">
+        <div class="about-card-name">MEMBER ENGINE</div>
+        <div class="about-card-title">Retention Framework<br>For Membership Businesses</div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="about-content-label">About the framework</div>
+    <h2 class="about-headline">THE SCIENCE<br>OF STAYING</h2>
+    <div class="about-body">
+      <p>Retention isn't a marketing problem. It's a psychology problem.</p>
+      <p>Member Engine is a structured framework that applies <strong>behavioural science and membership best practice</strong> to the full member lifecycle — from the moment someone signs up to the moment they become your loudest advocate.</p>
+      <p>The methodology draws on established research in habit formation, motivation theory, and community psychology. No fluff. No dark patterns. Just the science of why people stay.</p>
+    </div>
+    <div class="module-grid">
+      <div class="module-pill">Activation</div>
+      <div class="module-pill">Habit Formation</div>
+      <div class="module-pill">Connection</div>
+      <div class="module-pill">Communication</div>
+      <div class="module-pill">Detection</div>
+      <div class="module-pill">Ascension</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-inner">
+    <div class="cta-eyebrow">Founding Member Access</div>
+    <h2 class="cta-headline">
+      JOIN NOW.<br>
+      <span class="price">$197.</span><br>
+      DONE.
+    </h2>
+    <p class="cta-sub">
+      Founding member pricing. <em>Price goes up. This rate doesn't come back.</em><br>
+      One-time payment. Lifetime access. No subscription (obviously).
+    </p>
+    <div>
+      <a href="#" class="cta-btn">Get Founding Access</a>
+    </div>
+    <p class="cta-note">If you're still reading this, you already know you need it. <em>So.</em></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <div class="footer-note">© 2026 Member Engine — Retention not detention.</div>
+</footer>
+
+</body>
+</html>
