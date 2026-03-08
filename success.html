@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're In — Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  background: var(--black);
+  border-bottom: 3px solid var(--lime);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 0.12em;
+  color: var(--white); text-decoration: none;
+}
+.nav-logo .dot { color: var(--lime); }
+.nav-status {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--lime);
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-status::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--lime);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* TICKER */
+.ticker-wrap {
+  background: var(--lime);
+  overflow: hidden; white-space: nowrap;
+  padding: 10px 0; margin-top: 60px;
+  border-bottom: 2px solid var(--black);
+}
+.ticker-track {
+  display: inline-flex;
+  animation: ticker 25s linear infinite;
+}
+.ticker-item {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: 0.15em;
+  color: var(--black); padding: 0 40px;
+}
+.ticker-item .sep { color: var(--pink); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.hero {
+  background: var(--black);
+  padding: 80px 40px 80px;
+  border-bottom: 4px solid var(--lime);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: 'IN';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 500px;
+  letter-spacing: -0.05em;
+  color: rgba(57,255,20,0.03);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.hero-inner {
+  max-width: 900px; margin: 0 auto;
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: center;
+}
+.hero-tag {
+  display: inline-block;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lime); border: 1px solid var(--lime);
+  padding: 6px 14px; margin-bottom: 24px;
+}
+.hero-h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 10vw, 130px);
+  line-height: 0.88; letter-spacing: 0.02em;
+  color: var(--white); margin-bottom: 20px;
+}
+.hero-h1 .green { color: var(--lime); }
+.hero-sub {
+  font-size: 18px; font-weight: 300;
+  color: #aaa; line-height: 1.7;
+  max-width: 560px;
+}
+.hero-sub em { color: var(--white); font-style: normal; font-weight: 500; }
+.hero-sub strong { color: var(--lime); font-weight: 600; }
+
+/* CONFETTI BADGE */
+.confetti-badge {
+  width: 140px; height: 140px;
+  background: var(--yellow);
+  border: 4px solid var(--black);
+  border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 6px 6px 0 var(--lime);
+  animation: badge-spin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform: scale(0);
+}
+@keyframes badge-spin {
+  from { transform: scale(0) rotate(-20deg); }
+  to { transform: scale(1) rotate(0deg); }
+}
+.badge-emoji { font-size: 48px; line-height: 1; }
+.badge-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: 0.1em;
+  color: var(--black); margin-top: 4px;
+}
+
+/* CONTENT AREA */
+.content-wrap {
+  max-width: 900px; margin: 0 auto;
+  padding: 80px 40px;
+}
+
+/* PASSWORD BLOCK */
+.password-block {
+  background: var(--black);
+  border: 3px solid var(--lime);
+  padding: 48px 40px;
+  margin-bottom: 64px;
+  position: relative;
+}
+.password-block::before {
+  content: 'KEEP THIS SAFE';
+  position: absolute; top: -12px; left: 32px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: 0.15em;
+  color: var(--lime);
+  background: var(--black);
+  padding: 0 12px;
+}
+.pw-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: #666; margin-bottom: 16px;
+}
+.pw-display {
+  display: flex; align-items: center;
+  gap: 16px; flex-wrap: wrap;
+}
+.pw-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  letter-spacing: 0.08em;
+  color: var(--yellow);
+  line-height: 1;
+}
+.pw-copy-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; letter-spacing: 0.12em;
+  color: var(--black); background: var(--yellow);
+  border: 2px solid var(--yellow);
+  padding: 10px 20px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.pw-copy-btn:hover { background: transparent; color: var(--yellow); }
+.pw-copy-btn.copied { background: var(--lime); border-color: var(--lime); color: var(--black); }
+.pw-note {
+  font-size: 13px; font-weight: 300;
+  color: #555; margin-top: 16px; line-height: 1.6;
+}
+.pw-note em { color: #777; font-style: normal; }
+
+/* VIDEO SECTION */
+.section-eyebrow {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+}
+.section-eyebrow::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  letter-spacing: 0.04em; line-height: 0.95;
+  color: var(--white); margin-bottom: 16px;
+}
+.section-title .pink { color: var(--pink); }
+
+.section-body {
+  font-size: 17px; font-weight: 300;
+  color: #aaa; line-height: 1.75;
+  max-width: 640px; margin-bottom: 32px;
+}
+.section-body em { color: var(--white); font-style: normal; font-weight: 500; }
+
+.video-wrap {
+  position: relative; padding-bottom: 56.25%;
+  height: 0; overflow: hidden;
+  border: 3px solid #222;
+  margin-bottom: 64px;
+}
+.video-wrap iframe {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; border: none;
+}
+.video-placeholder {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: #0d0d0d;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px;
+}
+.vp-icon {
+  width: 80px; height: 80px;
+  background: var(--pink); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.vp-icon svg { width: 32px; height: 32px; }
+.vp-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 0.12em; color: #444;
+}
+.vp-sub { font-size: 13px; font-weight: 300; color: #333; }
+
+/* WHAT'S NEXT */
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px; margin: 32px 0 64px;
+}
+.next-card {
+  background: #111; padding: 32px 28px;
+  border-top: 3px solid #222;
+  transition: border-color 0.2s, background 0.2s;
+}
+.next-card:hover { border-top-color: var(--lime); background: #161616; }
+.next-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px; letter-spacing: 0.05em;
+  color: #1e1e1e; line-height: 1; margin-bottom: 12px;
+}
+.next-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 0.08em;
+  color: var(--white); margin-bottom: 10px;
+}
+.next-body {
+  font-size: 13px; font-weight: 300;
+  color: #666; line-height: 1.7;
+}
+
+/* CTA BLOCK */
+.cta-block {
+  background: var(--black);
+  border: 3px solid var(--white);
+  padding: 56px 48px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-block::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(57,255,20,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-block-inner { position: relative; z-index: 2; }
+.cta-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--lime); margin-bottom: 20px;
+}
+.cta-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(40px, 6vw, 72px);
+  letter-spacing: 0.04em; line-height: 0.95;
+  color: var(--white); margin-bottom: 16px;
+}
+.cta-heading .green { color: var(--lime); }
+.cta-sub-text {
+  font-size: 16px; font-weight: 300;
+  color: #777; line-height: 1.6;
+  max-width: 480px; margin: 0 auto 40px;
+}
+.cta-sub-text em { color: #aaa; font-style: normal; }
+.enter-btn {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; letter-spacing: 0.1em;
+  color: var(--black); background: var(--lime);
+  padding: 18px 56px; text-decoration: none;
+  border: 3px solid var(--lime);
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.enter-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.enter-note {
+  font-size: 12px; font-weight: 300;
+  color: #444; margin-top: 16px;
+  font-style: italic;
+}
+
+/* FOOTER */
+footer {
+  background: var(--black);
+  border-top: 1px solid #1a1a1a;
+  padding: 32px 40px;
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 16px;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: 0.12em; color: var(--white);
+}
+.footer-logo .dot { color: var(--lime); }
+.footer-note { font-size: 12px; color: #555; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .hero { padding: 60px 24px; }
+  .hero-inner { grid-template-columns: 1fr; }
+  .confetti-badge { display: none; }
+  .content-wrap { padding: 60px 24px; }
+  .password-block { padding: 32px 24px; }
+  .next-grid { grid-template-columns: 1fr; }
+  .cta-block { padding: 40px 24px; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <div class="nav-status">Payment confirmed</div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">YOU'RE IN <span class="sep">✦</span></span>
+  <span class="ticker-item">PAYMENT CONFIRMED <span class="sep">✦</span></span>
+  <span class="ticker-item">WELCOME TO THE FOUNDING COHORT <span class="sep">✦</span></span>
+  <span class="ticker-item">RETENTION NOT DETENTION <span class="sep">✦</span></span>
+  <span class="ticker-item">LET'S GET TO WORK <span class="sep">✦</span></span>
+  <span class="ticker-item">YOU'RE IN <span class="sep">✦</span></span>
+  <span class="ticker-item">PAYMENT CONFIRMED <span class="sep">✦</span></span>
+  <span class="ticker-item">WELCOME TO THE FOUNDING COHORT <span class="sep">✦</span></span>
+  <span class="ticker-item">RETENTION NOT DETENTION <span class="sep">✦</span></span>
+  <span class="ticker-item">LET'S GET TO WORK <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Founding Member Confirmed</div>
+      <h1 class="hero-h1">YOU'RE<br><span class="green">IN.</span></h1>
+      <p class="hero-sub">
+        Payment confirmed. Course unlocked. Your founding member spot is locked in at $197 — permanently. <em>That price doesn't come back.</em><br><br>
+        Watch the video below, grab your password, and go build a membership that doesn't leak.
+      </p>
+    </div>
+    <div class="confetti-badge">
+      <div class="badge-emoji">🎯</div>
+      <div class="badge-text">FOUNDING MEMBER</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+
+  <!-- PASSWORD -->
+  <div class="password-block">
+    <div class="pw-label">Your Course Password</div>
+    <div class="pw-display">
+      <div class="pw-value" id="pwValue">retention2026</div>
+      <button class="pw-copy-btn" id="copyBtn" onclick="copyPassword()">COPY PASSWORD</button>
+    </div>
+    <p class="pw-note">
+      This is what gets you through the door at <strong style="color:var(--white);">memberengine.co/course</strong> — bookmark both. The password doesn't expire. <em>(You'll want to write it down somewhere that isn't "a tab you'll definitely remember to keep open.")</em>
+    </p>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="section-eyebrow">Welcome from Steve</div>
+  <h2 class="section-title">BEFORE YOU<br><span class="pink">DIVE IN</span></h2>
+  <p class="section-body">
+    Two minutes. That's all this is. A quick walk through what you've just bought, where to start, and the one thing most people get wrong in Module 1. <em>Watch it. Then go.</em>
+  </p>
+
+  <div class="video-wrap">
+    <div class="video-placeholder">
+      <div class="vp-icon">
+        <svg viewBox="0 0 32 32" fill="black"><path d="M8 6l20 10L8 26V6z"/></svg>
+      </div>
+      <div class="vp-text">WELCOME VIDEO COMING SOON</div>
+      <div class="vp-sub">Replace this placeholder with your YouTube embed</div>
+    </div>
+  </div>
+
+  <!-- WHAT'S NEXT -->
+  <div class="section-eyebrow">What happens now</div>
+  <h2 class="section-title">THREE<br>STEPS</h2>
+
+  <div class="next-grid">
+    <div class="next-card">
+      <div class="next-num">01</div>
+      <div class="next-heading">COPY THE PASSWORD</div>
+      <div class="next-body">It's right there above. <code style="color:var(--yellow);font-size:12px;">retention2026</code>. Copy it. You'll need it in about 30 seconds.</div>
+    </div>
+    <div class="next-card">
+      <div class="next-num">02</div>
+      <div class="next-heading">HIT THE COURSE</div>
+      <div class="next-body">Click the button below. Enter the password. Start at Module 1. Don't skip to Module 5 because "that's the one you need." Start at Module 1.</div>
+    </div>
+    <div class="next-card">
+      <div class="next-num">03</div>
+      <div class="next-heading">DO THE WORK</div>
+      <div class="next-body">Complete the workbook in each module. Not the "read it and feel productive" version. The actual fill-it-in version. That's where the retention happens.</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <div class="cta-block-inner">
+      <div class="cta-label">You're already paid up. Might as well go.</div>
+      <h2 class="cta-heading">ENTER THE<br><span class="green">COURSE</span></h2>
+      <p class="cta-sub-text">
+        Password: <strong style="color:var(--yellow);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;">retention2026</strong><br><br>
+        <em>Six modules. One framework. Zero excuses now that you've paid for it.</em>
+      </p>
+      <a href="/course/" class="enter-btn">GO TO THE COURSE →</a>
+      <p class="enter-note">memberengine.co/course — bookmark this. it'll be useful.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <div class="footer-note">© 2026 Member Engine — Retention not detention.</div>
+</footer>
+
+<script>
+function copyPassword() {
+  navigator.clipboard.writeText('retention2026').then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'COPIED ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'COPY PASSWORD';
+      btn.classList.remove('copied');
+    }, 2500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const el = document.createElement('textarea');
+    el.value = 'retention2026';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'COPIED ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'COPY PASSWORD';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+</script>
+
+</body>
+</html>
