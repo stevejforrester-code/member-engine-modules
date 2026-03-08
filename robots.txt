@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /course/
+Disallow: /success.html
