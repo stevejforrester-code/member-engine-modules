@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 2: Habit Formation | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--body); background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 60px; background: var(--black); border-bottom: 3px solid var(--pink); }
+.nav-logo { font-family: var(--display); font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--pink); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--lime); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--pink); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: var(--display); font-size: 14px; letter-spacing: 0.15em; color: var(--white); padding: 0 32px; }
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--lime); position: relative; overflow: hidden; }
+.module-hero::before { content: 'HABIT'; position: absolute; font-family: var(--display); font-size: 260px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; }
+.hero-h1 { font-family: var(--display); font-size: clamp(64px, 9vw, 110px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .pink { color: var(--pink); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 560px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: var(--display); font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+.section-title { font-family: var(--display); font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--pink); }
+.section-title:first-child { margin-top: 0; }
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+.pull-quote { font-family: var(--display); font-size: clamp(24px, 3vw, 36px); letter-spacing: 0.04em; line-height: 1.2; color: var(--pink); padding: 32px 40px; border-left: 6px solid var(--pink); background: var(--black); margin: 40px 0; }
+
+/* STATS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.stat-card { background: var(--black); padding: 36px 32px; border-top: 3px solid #222; transition: border-color 0.2s; }
+.stat-card:hover { border-top-color: var(--pink); }
+.stat-num { font-family: var(--display); font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 13px; font-weight: 300; color: #bbb; line-height: 1.5; }
+
+/* CALLOUT */
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: var(--display); font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+.callout-dark { background: var(--black); border-left: 6px solid var(--lime); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--lime); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+/* FRAMEWORK BOX */
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; background: var(--white); }
+.framework-box-title { font-family: var(--display); font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; transition: border-color 0.2s; }
+.checklist li:hover { border-left-color: #1db800; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--pink); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--pink); border: 3px solid var(--white); outline: 2px solid var(--pink); border-radius: 50%; }
+.timeline-heading { font-family: var(--display); font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+/* EXAMPLE BOX */
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+.example-body strong { color: var(--white); font-weight: 500; }
+
+/* WARNING BOX */
+.warning-box { background: var(--black); border-left: 6px solid var(--yellow); padding: 24px 28px; margin: 24px 0; }
+.warning-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.warning-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* STRATEGY */
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: var(--display); font-size: 72px; letter-spacing: 0.05em; color: var(--pink); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: var(--display); font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+/* DARK SECTION */
+.dark-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--pink); border-bottom: 4px solid var(--pink); margin: 60px 0; }
+.dark-section .content-inner { max-width: 900px; margin: 0 auto; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.col-card { padding: 28px 32px; }
+.col-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.col-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.col-card.blue { background: #00001a; border-top: 3px solid #3b82f6; }
+.col-card-title { font-family: var(--display); font-size: 18px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.col-card.good .col-card-title { color: #1db800; }
+.col-card.bad .col-card-title { color: #d93030; }
+.col-card.blue .col-card-title { color: #60a5fa; }
+.col-card-item { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.col-card-item:last-child { border-bottom: none; }
+
+/* HOOK CYCLE */
+.hook-cycle { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 24px 0; }
+.hook-phase { border: 2px solid #222; background: #111; padding: 20px 32px; text-align: center; width: 100%; max-width: 480px; }
+.hook-phase-title { font-family: var(--display); font-size: 18px; letter-spacing: 0.1em; color: var(--pink); margin-bottom: 6px; }
+.hook-phase-body { font-size: 14px; font-weight: 300; color: #ccc; }
+.hook-phase.complete { border-color: #1db800; }
+.hook-phase.complete .hook-phase-title { color: #1db800; }
+.hook-arrow { font-size: 24px; color: var(--pink); padding: 4px 0; line-height: 1; }
+
+/* HABIT STACK */
+.habit-stack { display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.habit-row { display: flex; align-items: center; gap: 16px; }
+.habit-month { font-family: var(--display); font-size: 16px; letter-spacing: 0.08em; color: var(--pink); min-width: 80px; flex-shrink: 0; }
+.habit-bar { flex: 1; padding: 16px 20px; font-size: 14px; font-weight: 300; color: #ccc; border-left: 4px solid var(--pink); background: #111; }
+.habit-bar.m1 { border-left-color: var(--pink); }
+.habit-bar.m2 { border-left-color: #3b82f6; }
+.habit-bar.m3 { border-left-color: #1db800; }
+.habit-bar.m4 { border-left-color: var(--yellow); }
+.habit-tick { font-size: 18px; color: #1db800; flex-shrink: 0; }
+
+/* ETHICS */
+.ethics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 32px 0; }
+.ethics-card { padding: 28px 32px; }
+.ethics-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.ethics-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.ethics-card-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.1em; margin-bottom: 16px; }
+.ethics-card.bad .ethics-card-label { color: #d93030; }
+.ethics-card.good .ethics-card-label { color: #1db800; }
+.ethics-item { font-size: 14px; font-weight: 300; line-height: 1.6; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
+.ethics-item:last-child { border-bottom: none; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 200px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; font-weight: 400; color: #aaa; text-align: center; max-width: 300px; line-height: 1.5; }
+
+/* WORKBOOK */
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--lime); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.workbook-title { font-family: var(--display); font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .pink { color: var(--pink); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: var(--display); font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: var(--body); color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-input.single { min-height: unset; height: 52px; resize: none; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--lime); min-height: 18px; }
+
+/* MISSION */
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--pink); background: #161616; }
+.mission-item.checked { border-color: #1db800; background: #001a00; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: #1db800; border-color: #1db800; }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; transition: opacity 0.2s; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: #1db800; }
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.4s ease; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--lime); min-width: 48px; text-align: right; }
+
+/* PDF BUTTON */
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--lime); padding: 16px 40px; border: 3px solid var(--lime); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 1px solid #1e1e1e; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: var(--display); font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--pink); }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .dark-section { padding: 60px 24px; }
+  .video-section { padding-bottom: 60px; }
+  .stat-grid, .two-col, .ethics-grid { grid-template-columns: 1fr; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 2: Habit Formation</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 2 <span class="sep">✦</span></span>
+  <span class="ticker-item">HABIT FORMATION <span class="sep">✦</span></span>
+  <span class="ticker-item">MAKE ENGAGEMENT AUTOMATIC <span class="sep">✦</span></span>
+  <span class="ticker-item">TRIGGER, ACTION, REWARD, INVESTMENT <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 2 <span class="sep">✦</span></span>
+  <span class="ticker-item">HABIT FORMATION <span class="sep">✦</span></span>
+  <span class="ticker-item">MAKE ENGAGEMENT AUTOMATIC <span class="sep">✦</span></span>
+  <span class="ticker-item">TRIGGER, ACTION, REWARD, INVESTMENT <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 2 of 6</div>
+    <h1 class="hero-h1">HABIT<br><span class="pink">FORM</span>ATION</h1>
+    <p class="hero-sub">Make engagement automatic. Your membership is competing with Netflix, Instagram, sleep, and doing nothing. Habit formation is how you win that fight.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <!-- REPLACE WITH: <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="white"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE PROBLEM</h2>
+
+  <div class="pull-quote">"Members who engage less than once per week have 4x higher churn than those who engage weekly."</div>
+
+  <p class="body-text">Members aren't leaving because your content isn't good enough. They're leaving because they never built the habit of consuming it in the first place. They keep meaning to log in. They keep telling themselves they'll get to it this week. And then the credit card charge hits and they think "What am I even paying for?" Cancel.</p>
+
+  <p class="body-text"><strong>Your membership isn't competing with other memberships.</strong> It's competing with Netflix, Instagram, sleep, and doing nothing. If engagement isn't a habit, you lose that battle every single time.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">4x</div><div class="stat-label">Higher churn for members who don't engage weekly</div></div>
+    <div class="stat-card"><div class="stat-num">20-28%</div><div class="stat-label">Monthly churn for non-habitual members vs. 5-7% for weekly users</div></div>
+    <div class="stat-card"><div class="stat-num">$12,600</div><div class="stat-label">Preventable annual loss per 100 members at $50/month from failed habit formation</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE MISCONCEPTION</div>
+    <p>Most membership owners think they just need to create better content. But members aren't leaving because your content isn't good enough. They're leaving because they <strong>never built the habit of consuming it in the first place.</strong></p>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>Habits are automatic behaviours triggered by situational cues that occur with little or no conscious thought. Your job is to make engagement with your membership the <strong>path of least resistance.</strong></p>
+  </div>
+
+  <p class="body-text">For a behaviour to enter the habit zone it needs two things: high frequency (it happens often enough to become automatic) and high perceived utility (the member genuinely believes it's valuable).</p>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE RETENTION INSIGHT</div>
+    <p class="body-text" style="margin-bottom:12px;">Habitual engagement means members engage longer, benefit longer, and are more likely to stay. Habits are hard to break.</p>
+    <p class="body-text" style="margin-bottom:0;">This is the <strong>lowest-cost retention strategy</strong> available to you. You're not calling members every week or sending personalised emails. You're building systems that allow members to <strong>resell themselves</strong> on your membership through repeated, rewarded behaviours.</p>
+  </div>
+
+  <h2 class="section-title">THE SCIENCE</h2>
+
+</div>
+
+<!-- DARK SECTION: THE HOOK MODEL -->
+<div class="dark-section">
+  <div class="content-inner">
+    <div class="callout-dark">
+      <div class="callout-label">THE HOOK MODEL (NIR EYAL)</div>
+      <p>Four phases. Each cycle through the loop strengthens the habit until the trigger becomes internal and automatic. That's when retention becomes genuinely effortless.</p>
+    </div>
+
+    <div class="pull-quote" style="margin-top:32px;">Trigger. Action. Variable Reward. Investment. Repeat.</div>
+
+    <div class="hook-cycle" style="margin-top:32px;">
+      <div class="hook-phase">
+        <div class="hook-phase-title">TRIGGER</div>
+        <div class="hook-phase-body">Tuesday email: "New training ready"</div>
+      </div>
+      <div class="hook-arrow">↓</div>
+      <div class="hook-phase">
+        <div class="hook-phase-title">ACTION</div>
+        <div class="hook-phase-body">Click link, video auto-plays (minimal friction by design)</div>
+      </div>
+      <div class="hook-arrow">↓</div>
+      <div class="hook-phase">
+        <div class="hook-phase-title">VARIABLE REWARD</div>
+        <div class="hook-phase-body">Sometimes tactical, sometimes motivational, sometimes includes a member win</div>
+      </div>
+      <div class="hook-arrow">↓</div>
+      <div class="hook-phase">
+        <div class="hook-phase-title">INVESTMENT</div>
+        <div class="hook-phase-body">Post result, which loads a notification trigger when peers respond</div>
+      </div>
+      <div class="hook-arrow">↺</div>
+      <div class="hook-phase complete">
+        <div class="hook-phase-title">CYCLE REPEATS</div>
+        <div class="hook-phase-body">Each loop deepens the habit. Eventually the trigger becomes internal.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-wrap">
+
+  <h2 class="section-title">THE FOUR PHASES IN DETAIL</h2>
+
+  <!-- TRIGGER -->
+  <div class="framework-box">
+    <div class="framework-box-title">PHASE 1: TRIGGER (THE SPARK)</div>
+    <p class="body-text">Triggers tell members what to do next. There are two types. Your goal is to move members from one to the other.</p>
+    <div class="two-col">
+      <div class="col-card bad" style="background:#1a001a; border-top-color:#888;">
+        <div class="col-card-title" style="color:#aaa;">EXTERNAL TRIGGERS</div>
+        <div class="col-card-item">Emails: "Your weekly training is ready"</div>
+        <div class="col-card-item">Push notifications: "Sarah just commented"</div>
+        <div class="col-card-item">Calendar reminders: "Monday = new content"</div>
+        <div class="col-card-item">Seeing the app icon in the dock</div>
+      </div>
+      <div class="col-card good">
+        <div class="col-card-title">INTERNAL TRIGGERS (THE GOAL)</div>
+        <div class="col-card-item">Boredom triggers "I'll check the community"</div>
+        <div class="col-card-item">Monday morning triggers "Time for my weekly lesson"</div>
+        <div class="col-card-item">Lunch break triggers "I'll watch today's video"</div>
+        <div class="col-card-item">The situation itself is the trigger. No notification needed.</div>
+      </div>
+    </div>
+    <div class="timeline" style="margin-top:24px;">
+      <div class="timeline-item"><div class="timeline-heading">Weeks 1 to 4: External triggers dominate</div><div class="timeline-body">Email reminder fires. Member logs in. Conscious effort required every time.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Months 2 to 3: Transitioning</div><div class="timeline-body">Monday morning feeling starts to trigger the login. Less conscious effort.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Month 4 onward: Habit formed</div><div class="timeline-body">"It's Monday, I check the app." Notification no longer needed. You've won.</div></div>
+    </div>
+  </div>
+
+  <!-- ACTION -->
+  <div class="framework-box">
+    <div class="framework-box-title">PHASE 2: ACTION (THE BEHAVIOUR)</div>
+    <p class="body-text">The action must be the simplest behaviour done in anticipation of a reward. Recall BJ Fogg's model from Module 1: at the trigger moment, the action must be easier to do than to think about.</p>
+    <div class="two-col">
+      <div class="col-card bad">
+        <div class="col-card-title">HIGH FRICTION</div>
+        <div class="col-card-item">Log in, find the library, search for today's content, click through 3 screens</div>
+      </div>
+      <div class="col-card good">
+        <div class="col-card-title">LOW FRICTION</div>
+        <div class="col-card-item">Click email link. Video auto-plays.</div>
+      </div>
+    </div>
+    <p class="body-text" style="margin-top:16px;margin-bottom:0;"><strong>The simpler the action, the more likely the habit forms.</strong> Reduce friction relentlessly. Every extra click is a dropout opportunity.</p>
+  </div>
+
+  <!-- VARIABLE REWARD -->
+  <div class="framework-box">
+    <div class="framework-box-title">PHASE 3: VARIABLE REWARD (THE CRAVING)</div>
+    <p class="body-text">Unlike predictable loops (do X, always get Y), variable rewards create desire through uncertainty. Think slot machines. You don't win every pull, but the possibility keeps you pulling.</p>
+    <div class="stat-grid" style="margin-top:24px;">
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">TRIBE</div><div class="stat-label">Likes, comments, recognition, belonging, status elevation</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">HUNT</div><div class="stat-label">New content, insights, unlocking bonuses, discovering something valuable</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">SELF</div><div class="stat-label">Progress bars, milestones, mastery, the "I did it!" feeling</div></div>
+    </div>
+  </div>
+
+  <!-- INVESTMENT -->
+  <div class="framework-box">
+    <div class="framework-box-title">PHASE 4: INVESTMENT (THE HOOK)</div>
+    <p class="body-text">Investment asks the member to do a bit of work that stores value in the product and loads the next trigger. <strong>The more a member invests, the more valuable the membership becomes to them personally. And the harder it is to leave.</strong></p>
+    <div class="stat-grid" style="margin-top:24px;">
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">TIME</div><div class="stat-label">Customising profile, building a plan, tracking progress over weeks</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">DATA</div><div class="stat-label">Logging results, completing assessments, filling in preferences</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:32px;color:var(--white);">SOCIAL</div><div class="stat-label">Posting wins, helping peers, building reputation and status</div></div>
+    </div>
+  </div>
+
+  <!-- SIX STRATEGIES -->
+  <h2 class="section-title">THE SIX STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">RITUALISTIC CONTENT</div>
+      <p class="body-text"><strong>What it is:</strong> A predictable rhythm for content delivery. Same day, same time, every week, until it becomes a ritual members plan around.</p>
+      <p class="body-text"><strong>Why it works:</strong> Predictability creates anticipation. When members know "Tuesdays at 10am = new training," their brain starts to expect it. Miss a Tuesday and they notice. Maintain the Tuesday rhythm and it becomes automatic.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">HOW TO IMPLEMENT</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Step 1: Choose your cadence</div><div class="timeline-body">Weekly is ideal. Monthly is too infrequent for habit formation. Daily works for certain memberships. Bi-weekly is acceptable for intensive programs.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 2: Choose your day and time strategically</div><div class="timeline-body">Avoid Monday mornings (chaotic) and Friday afternoons (weekend mode). Best: Tuesday to Thursday mornings. Consider your audience's context and schedule.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 3: Lock it in and never miss it</div><div class="timeline-body">This is your sacred ritual. <strong>Consistency beats perfection.</strong> A solid Tuesday for a year beats an unreliable "when inspiration strikes."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 4: Tell members explicitly</div><div class="timeline-body">"Every Tuesday at 10am, you'll get the Weekly Retention Deep-Dive. Set a reminder. Grab your coffee. This is our time together."</div></div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">REAL EXAMPLE: JAMES CLEAR'S 3-2-1 THURSDAY NEWSLETTER</div>
+    <div class="example-body">Every Thursday, like clockwork, for years. Readers expect it, plan for it, look forward to it. Miss a Thursday and readers email asking if he's okay. That's a ritual. That's what you're building.</div>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">MILESTONES</div>
+      <p class="body-text"><strong>What it is:</strong> Breaking the transformation into clear, achievable milestones that members can see, celebrate, and use as proof of progress.</p>
+      <p class="body-text"><strong>Why it works:</strong> Humans are wired for progress. Small wins build momentum. Visible progress combats the "I'm not getting anywhere" doubt that kills memberships in months 2 and 3.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">HOW TO IMPLEMENT</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Step 1: Define your milestones</div><div class="timeline-body">Map the transformation in concrete checkpoints. Week 1: baseline benchmarked. Month 1: first result achieved. Month 3: intermediate milestone. Month 6: major result. Year 1: transformation complete.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 2: Make progress visible</div><div class="timeline-body">Progress bars (75% complete). Checklists (4 of 6 modules done). Badges ("First Client" unlocked). Charts showing growth over time. If they can see it, they'll chase it.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 3: Celebrate every milestone</div><div class="timeline-body">Automated email: "You just hit [milestone]." Unlock a bonus. Public recognition in community. Make it feel like a real achievement, because it is.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 4: Always show the next milestone</div><div class="timeline-body">"You've hit $5K MRR. Next milestone: $10K in Month 6." Never let them feel they've arrived with nothing ahead. The horizon keeps them moving.</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">GAMIFICATION</div>
+      <p class="body-text"><strong>What it is:</strong> Using game mechanics to provide immediate positive feedback and a sense of status and progress.</p>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-label">CRITICAL WARNING: GAMIFICATION CAN BACKFIRE</div>
+    <div class="warning-body">Done wrong, gamification undermines intrinsic motivation by replacing it with extrinsic rewards. The test: "If I removed the points tomorrow, would members still do these behaviours?" If yes, you're reinforcing intrinsic motivation. If no, you've built extrinsic dependence.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card good">
+      <div class="col-card-title">INCENTIVISE VALUABLE BEHAVIOURS</div>
+      <div class="col-card-item">Points for completing a lesson</div>
+      <div class="col-card-item">Points for sharing a win in the community</div>
+      <div class="col-card-item">Points for helping another member</div>
+      <div class="col-card-item">Badge for "30-Day Streak"</div>
+      <div class="col-card-item">Leaderboard for "Most Workouts Logged"</div>
+    </div>
+    <div class="col-card bad">
+      <div class="col-card-title">NEVER INCENTIVISE VANITY METRICS</div>
+      <div class="col-card-item">Points for just logging in</div>
+      <div class="col-card-item">Points for clicking around</div>
+      <div class="col-card-item">Streaks designed to create guilt</div>
+      <div class="col-card-item">Badges for spending money</div>
+      <div class="col-card-item">Fake engagement that delivers nothing real</div>
+    </div>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">COMMUNITY CONNECTIVITY</div>
+      <p class="body-text"><strong>What it is:</strong> Building habits around community participation that create emotional bonds. When members form relationships with peers, cancelling means losing connection with people who know their story, abandoning accountability partners, and leaving people counting on them.</p>
+    </div>
+  </div>
+
+  <div class="pull-quote">"People join for the content. They stay for the community."</div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE FOUR PHASES</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Phase 1: Onboarding into Community</div><div class="timeline-body">Get members to introduce themselves in the first 72 hours. Respond personally. Tag another member to create a peer-to-peer bond immediately.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Phase 2: Participation Prompts</div><div class="timeline-body">Weekly rhythms: Win Wednesday, Feedback Friday, Challenge Monday. Monthly events: live Q&As, member spotlights, group challenges.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Phase 3: Accountability Partnerships</div><div class="timeline-body">Pair members with shared goals. Weekly check-in prompts: "How did your partner do this week?" This is the deepest relational bond you can build inside a membership.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Phase 4: Recognition Loops</div><div class="timeline-body">Feature top contributors in newsletters. Create a monthly community roundup. Public recognition is a powerful social reward that costs you almost nothing.</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 5 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">05</div>
+    <div>
+      <div class="strategy-title">SMART NOTIFICATIONS</div>
+      <p class="body-text"><strong>What it is:</strong> Using notifications strategically to create external triggers that eventually become internal. The goal is to make yourself unnecessary.</p>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-label">WARNING: POWERFUL BUT IRRITATING WHEN MISUSED</div>
+    <div class="warning-body">Notifications are a tool, not a strategy. Use them to serve members, not to optimise your open rates. Every notification that doesn't earn its place destroys a tiny bit of trust.</div>
+  </div>
+
+  <div class="example-box"><div class="example-label">1. CONTENT DROP</div><div class="example-body">"Your weekly training just dropped." Best time: 8 to 10am when attention is high.</div></div>
+  <div class="example-box"><div class="example-label">2. SOCIAL TRIGGER</div><div class="example-body">"Sarah replied to your comment." Deliver immediately. This is a genuine reason to re-engage.</div></div>
+  <div class="example-box"><div class="example-label">3. MILESTONE PROXIMITY</div><div class="example-body">"One workout away from your 30-day streak." Best time: evening reminder for next-day action.</div></div>
+  <div class="example-box"><div class="example-label">4. INACTIVITY (USE SPARINGLY)</div><div class="example-body">"Here's what you missed this week." Use only after 7 to 14 days of inactivity. Warm tone. Never guilt.</div></div>
+
+  <!-- Strategy 6 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">06</div>
+    <div>
+      <div class="strategy-title">HABIT STACKING</div>
+      <p class="body-text"><strong>What it is:</strong> Instead of overwhelming members with all desired habits at once, you layer habits progressively. Trying to build 5 habits simultaneously is overwhelm. Building 1, then adding another, then another, is retention.</p>
+    </div>
+  </div>
+
+  <div class="habit-stack">
+    <div class="habit-row"><div class="habit-month">MONTH 1</div><div class="habit-bar m1">Content habit: Tuesday email, watch video, complete action item</div><div class="habit-tick">✓</div></div>
+    <div class="habit-row"><div class="habit-month">MONTH 2</div><div class="habit-bar m2">+ Community habit: after video, post result or question in community</div><div class="habit-tick">✓</div></div>
+    <div class="habit-row"><div class="habit-month">MONTH 3</div><div class="habit-bar m3">+ Tracking habit: Friday, log metrics, chart updates</div><div class="habit-tick">✓</div></div>
+    <div class="habit-row"><div class="habit-month">MONTH 4</div><div class="habit-bar m4">+ Peer support: weekly accountability check-in with partner</div><div class="habit-tick">✓</div></div>
+  </div>
+
+  <div class="callout" style="margin-top:24px;">
+    <div class="callout-label">THE KEY RULE</div>
+    <p>Don't introduce Habit 2 until Habit 1 is established. Usually 2 to 4 weeks. Four interlocking habits is deep retention that's genuinely hard to walk away from.</p>
+  </div>
+
+  <!-- ETHICS CHECK -->
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="ethics-grid">
+    <div class="ethics-card good">
+      <div class="ethics-card-label">GARDEN (ETHICAL)</div>
+      <div class="ethics-item">Members engage because they want to</div>
+      <div class="ethics-item">Habits make their lives genuinely better</div>
+      <div class="ethics-item">They'd recommend you to friends</div>
+      <div class="ethics-item">They'd feel supported taking a break</div>
+    </div>
+    <div class="ethics-card bad">
+      <div class="ethics-card-label">PRISON (MANIPULATIVE)</div>
+      <div class="ethics-item">Members feel trapped by streaks or sunk cost</div>
+      <div class="ethics-item">Habits create anxiety, not value</div>
+      <div class="ethics-item">They resent the membership but feel stuck</div>
+      <div class="ethics-item">They'd feel guilty for taking a break</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE REACTANCE WARNING</div>
+    <p>Humans have a hair-trigger response when they feel controlled. If members feel manipulated, they'll cancel just to reclaim autonomy. Your retention system will cause the cancellations it was designed to prevent.</p>
+  </div>
+
+  <div class="pull-quote">"If a member told me they need a month off, would my system make them feel supported or guilty?"</div>
+
+  <!-- REAL WORLD TEARDOWNS -->
+  <h2 class="section-title">REAL WORLD TEARDOWNS</h2>
+
+  <!-- Duolingo -->
+  <div class="framework-box">
+    <div class="framework-box-title">DUOLINGO: MASTER OF HABIT FORMATION</div>
+    <div class="visual-placeholder">
+      <div class="visual-placeholder-icon">📱</div>
+      <div class="visual-placeholder-label">VIDEO OR SCREENSHOT PLACEHOLDER</div>
+      <div class="visual-placeholder-sub">Add a screenshot of the Duolingo streak screen or a clip showing the notification and lesson flow</div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Trigger</div><div class="timeline-body">Daily reminder notification at user-selected time. They chose it themselves.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Action</div><div class="timeline-body">Complete one 5-minute lesson. Friction is minimal by design. You're translating words within 30 seconds of opening the app.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Variable Reward</div><div class="timeline-body">Sometimes easy words, sometimes challenging sentences, sometimes you level up, sometimes you unlock a new skill. Unpredictable enough to stay compelling.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Investment</div><div class="timeline-body">Streak counter increases. "Don't break the streak" becomes a powerful internal motivator that no longer needs an external trigger.</div></div>
+    </div>
+    <div class="callout" style="margin-top:24px;">
+      <div class="callout-label">WHAT THEY DO QUESTIONABLY</div>
+      <p>Streak anxiety. Guilt if you miss a day. Aggressive notification cadence (the Duo the owl memes exist for a reason). <strong>Lesson: Balance habit formation with member wellbeing. Don't create anxiety-driven engagement.</strong></p>
+    </div>
+  </div>
+
+  <!-- Peloton -->
+  <div class="framework-box">
+    <div class="framework-box-title">PELOTON: RITUALISTIC SCHEDULE AND MILESTONE RECOGNITION</div>
+    <div class="visual-placeholder">
+      <div class="visual-placeholder-icon">▶</div>
+      <div class="visual-placeholder-label">VIDEO OR SCREENSHOT PLACEHOLDER</div>
+      <div class="visual-placeholder-sub">Add a screenshot of the Peloton live class schedule or a clip of the milestone ride shoutout moment</div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Trigger</div><div class="timeline-body">Scheduled live class. Mondays 9am = Robin's ride. Predictable, anticipated, and planned around. The schedule is the trigger.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Action</div><div class="timeline-body">Clip in, start riding. First ride is achievable for anyone. Low barrier, guaranteed win.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Variable Reward</div><div class="timeline-body">Sometimes a personal record, sometimes a high-five from a stranger on the leaderboard, sometimes an instructor shoutout for hitting a milestone ride.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Investment</div><div class="timeline-body">Output data tracked. Leaderboard ranking. Total rides logged. Every session makes the dataset richer and leaving feel like a loss.</div></div>
+    </div>
+    <div class="callout" style="margin-top:24px;">
+      <div class="callout-label">THE PATTERN</div>
+      <p>Ritualistic schedule plus milestone recognition plus community engagement equals a habit formation engine that runs itself. <strong>You don't need a Peloton bike to apply this.</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 2 Workbook</div>
+    <h2 class="workbook-title">YOUR <span class="pink">HABIT</span><br>BLUEPRINT</h2>
+    <p class="workbook-sub">Map your member's ideal weekly ritual. Complete this and you'll have a concrete system you can build and launch. Not a plan. An actual system.</p>
+
+    <div class="workbook-field">
+      <div class="field-label">Design your complete Hook cycle</div>
+      <div class="field-why">Use the template: "Every [day] at [time], members [trigger]. They [action]. The reward is [variable reward]. Then they [investment] which [loads next cycle]."</div>
+      <textarea class="field-input" id="wb_hook" style="min-height:140px;" placeholder="Every Tuesday at 10am, members receive a retention deep-dive email. They click the link and the video auto-plays. The reward is..."></textarea>
+      <div class="field-output" id="hook_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Where is your biggest friction point right now?</div>
+      <div class="field-why">The action your Hook depends on must be the simplest possible behaviour. If members have to think about it, you've already lost some of them. Identify the friction and kill it.</div>
+      <textarea class="field-input" id="wb_friction" placeholder="e.g. Finding this week's content requires 3 clicks and a login. Fix: send a direct email link that auto-loads the video."></textarea>
+      <div class="field-output" id="friction_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">What are your 3 variable rewards?</div>
+      <div class="field-why">Predictable always gets Y is boring. Variable creates desire. Map one Tribe reward, one Hunt reward, and one Self reward. Rotate them so members never quite know what's coming.</div>
+      <textarea class="field-input" id="wb_rewards" placeholder="Tribe: recognition/social reward...&#10;Hunt: discovery/content reward...&#10;Self: progress/achievement reward..."></textarea>
+      <div class="field-output" id="rewards_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Map your Habit Stack (3 habits, layered over 3 months)</div>
+      <div class="field-why">Don't try to build all 3 at once. Introduce Habit 1, let it solidify for 2 to 4 weeks, then layer Habit 2 on top. Four interlocking habits is genuine retention that's hard to walk away from.</div>
+      <textarea class="field-input" id="wb_stack" style="min-height:140px;" placeholder="Month 1 habit: ...&#10;Month 2 habit (stack on top): ...&#10;Month 3 habit (stack on top): ...&#10;Month 4 habit (stack on top): ..."></textarea>
+      <div class="field-output" id="stack_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Your Ethics Check</div>
+      <div class="field-why">Before you ship any of this: would your best member feel supported taking a month off, or guilty? If guilty, something in your system needs rethinking.</div>
+      <textarea class="field-input" id="wb_ethics" placeholder="What would I change if a member told me the habit system was making them anxious? What would I keep?"></textarea>
+      <div class="field-output" id="ethics_out"></div>
+    </div>
+
+    <!-- Mission -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--lime);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#aaa;">Map your member's ideal weekly ritual. Then announce it to your existing members this week: "Starting next Tuesday, here's what to expect from me every week."</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="action" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define the one action you want members to take every single week</div>
+        </li>
+        <li class="mission-item" data-task="timing" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Lock in your day and time (and commit to never missing it)</div>
+        </li>
+        <li class="mission-item" data-task="trigger" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define the trigger (email, notification, calendar reminder)</div>
+        </li>
+        <li class="mission-item" data-task="reward" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define at least 3 variable rewards (one Tribe, one Hunt, one Self)</div>
+        </li>
+        <li class="mission-item" data-task="investment" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define the investment that loads the next cycle</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 5</div>
+      </div>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR HABIT BLUEPRINT
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your full Hook cycle, friction audit, habit stack, and ethics check. Keep it. Actually build it.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <nav class="footer-nav">
+    <a href="/course/module-1">← Module 1</a>
+    <a href="/course/">Course Home</a>
+    <a href="/course/module-3">Module 3 →</a>
+  </nav>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// WORKBOOK OUTPUTS
+const fieldMap = [
+  ['wb_hook', 'hook_out'],
+  ['wb_friction', 'friction_out'],
+  ['wb_rewards', 'rewards_out'],
+  ['wb_stack', 'stack_out'],
+  ['wb_ethics', 'ethics_out']
+];
+
+fieldMap.forEach(([inputId, outputId]) => {
+  document.getElementById(inputId).addEventListener('input', function() {
+    document.getElementById(outputId).textContent = this.value.trim().length > 10 ? '✓ Captured' : '';
+    saveWorkbook();
+  });
+});
+
+// MISSION
+const missionTasks = new Set();
+
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / 5 * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / 5';
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module2_v1';
+
+function saveWorkbook() {
+  const data = {};
+  fieldMap.forEach(([id]) => { data[id] = document.getElementById(id).value; });
+  data.mission = Array.from(missionTasks);
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    fieldMap.forEach(([id, outId]) => {
+      if (data[id]) {
+        document.getElementById(id).value = data[id];
+        if (data[id].trim().length > 10) document.getElementById(outId).textContent = '✓ Captured';
+      }
+    });
+    if (data.mission) {
+      data.mission.forEach(task => {
+        missionTasks.add(task);
+        const item = document.querySelector(`[data-task="${task}"]`);
+        if (item) item.classList.add('checked');
+      });
+      document.getElementById('missionFill').style.width = (missionTasks.size / 5 * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / 5';
+    }
+  } catch(e) {}
+}
+
+// PDF
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255, 20, 147], black = [13, 13, 13], white = [248, 247, 244];
+  const lime = [57, 255, 20], yellow = [255, 230, 0];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage(); y = 0;
+    doc.setFillColor(...black); doc.rect(0, 0, W, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(0, 14, W, 1.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 2: HABIT BLUEPRINT', W - M, 9, { align: 'right' });
+    y = 22;
+  }
+
+  function checkY(need) { if (y + need > H - 20) addPage(); }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...pink); doc.rect(0, 0, 6, H, 'F');
+  doc.setFillColor(...lime); doc.rect(6, 78, W - 6, 1.5, 'F');
+  doc.setFillColor(25,25,25); doc.rect(M + 4, 52, 60, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...lime);
+  doc.text('MODULE 2 OF 6: HABIT FORMATION', M + 8, 59);
+  doc.setFontSize(48); doc.setTextColor(...white);
+  doc.text('HABIT', M + 4, 106);
+  doc.setTextColor(...pink);
+  doc.text('BLUEPRINT', M + 4, 128);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Your Hook cycle, friction audit, habit stack,', M + 4, 146);
+  doc.text('and ethics check for making engagement automatic.', M + 4, 154);
+  doc.setFillColor(...yellow); doc.rect(M + 4, 173, CW - 4, 30, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 10, 182);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text('Member Engine: memberengine.co', M + 10, 190);
+  doc.text('Built on behavioural science. Not guesswork.', M + 10, 197);
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'}), M + 4, H - 12);
+
+  addPage();
+
+  doc.setFillColor(...pink); doc.rect(M, y, CW, 0.5, 'F'); y += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...pink);
+  doc.text('YOUR HABIT BLUEPRINT', M, y); y += 10;
+  doc.setFontSize(22); doc.setTextColor(...black);
+  doc.text('YOUR ANSWERS', M, y); y += 6;
+  doc.setFillColor(...black); doc.rect(M, y, 40, 1.5, 'F'); y += 14;
+
+  const fields = [
+    { id: 'wb_hook', title: '01: YOUR COMPLETE HOOK CYCLE', why: 'The Hook is the engine of habit formation. Every element must be deliberately designed. A good Hook cycle documented here becomes the brief for everything you build.' },
+    { id: 'wb_friction', title: '02: BIGGEST FRICTION POINT TO FIX', why: 'The action your Hook depends on must be the simplest possible behaviour. If members have to think, you have already lost some of them. Name the friction. Then kill it.' },
+    { id: 'wb_rewards', title: '03: YOUR 3 VARIABLE REWARDS', why: 'One Tribe reward, one Hunt reward, one Self reward. Rotate them unpredictably. Certainty is boring. Variability is compelling.' },
+    { id: 'wb_stack', title: '04: YOUR HABIT STACK', why: 'Four interlocking habits is deep retention that is genuinely hard to walk away from. But only if you introduce them one at a time, in the right order.' },
+    { id: 'wb_ethics', title: '05: YOUR ETHICS CHECK', why: 'If your system makes members feel guilty for taking a break, it is a prison. If it makes them feel supported, it is a garden. Know which one you have built.' }
+  ];
+
+  fields.forEach(f => {
+    const val = document.getElementById(f.id).value.trim();
+    const hasAnswer = val.length > 0;
+    const answer = val || '(Not completed yet. Return to the module and fill this in.)';
+    checkY(60);
+    doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+    doc.setFillColor(...pink); doc.rect(M, y, 3, 10, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(f.title, M + 7, y + 6.5); y += 14;
+    const whyLines = doc.splitTextToSize('WHY THIS MATTERS: ' + f.why, CW - 16);
+    const whyH = whyLines.length * 4.5 + 10;
+    checkY(whyH + 8);
+    doc.setFillColor(...yellow); doc.rect(M, y, CW, whyH, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...black);
+    whyLines.forEach((line, i) => doc.text(line, M + 8, y + 7 + i * 4.5));
+    y += whyH + 4;
+    const ansLines = doc.splitTextToSize(answer, CW - 12);
+    const ansH = ansLines.length * 5 + 14;
+    checkY(ansH + 4);
+    doc.setFillColor(hasAnswer ? 250 : 240, 250, hasAnswer ? 250 : 240);
+    doc.rect(M, y, CW, ansH, 'F');
+    if (hasAnswer) { doc.setDrawColor(...lime); doc.setLineWidth(0.5); doc.rect(M, y, CW, ansH); }
+    doc.setFont('helvetica', hasAnswer ? 'normal' : 'italic');
+    doc.setFontSize(9); doc.setTextColor(hasAnswer ? 30 : 140, hasAnswer ? 30 : 140, hasAnswer ? 30 : 140);
+    ansLines.forEach((line, i) => doc.text(line, M + 6, y + 8 + i * 5));
+    y += ansH + 16;
+  });
+
+  checkY(80);
+  doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+  doc.setFillColor(...lime); doc.rect(M, y, 3, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text("THIS WEEK'S MISSION: WEEKLY RITUAL CHECKLIST", M + 7, y + 6.5); y += 14;
+
+  const tasks = [
+    ['action', 'Define the one action you want members to take every single week'],
+    ['timing', 'Lock in your day and time (and commit to never missing it)'],
+    ['trigger', 'Define the trigger (email, notification, calendar reminder)'],
+    ['reward', 'Define at least 3 variable rewards (one Tribe, one Hunt, one Self)'],
+    ['investment', 'Define the investment that loads the next cycle']
+  ];
+
+  tasks.forEach(([key, text]) => {
+    checkY(14);
+    const done = missionTasks.has(key);
+    doc.setFillColor(done ? 0 : 240, done ? 26 : 240, done ? 0 : 240);
+    doc.rect(M, y, CW, 11, 'F');
+    doc.setFillColor(done ? 57 : 200, done ? 255 : 200, done ? 20 : 195);
+    doc.rect(M, y, 12, 11, 'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M + 3.5, y + 7.5); }
+    doc.setFont('helvetica', done ? 'bold' : 'normal'); doc.setFontSize(9);
+    doc.setTextColor(done ? 20 : 80, done ? 20 : 80, done ? 20 : 80);
+    doc.text(text, M + 16, y + 7.5); y += 13;
+  });
+
+  y += 8; checkY(16);
+  doc.setFillColor(...yellow); doc.rect(M, y, CW, 14, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission Progress: ${missionTasks.size} of 5 complete (${Math.round(missionTasks.size/5*100)}%)`, M + 8, y + 9);
+  y += 22;
+
+  // BACK COVER
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...lime); doc.rect(0, 0, W, 3, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...white);
+  doc.text('WHAT NEXT?', M, 60);
+  doc.setFillColor(...pink); doc.rect(M, 64, 40, 1.5, 'F');
+
+  const next = [
+    ['01', 'Announce your weekly ritual to existing members this week.'],
+    ['02', 'Audit your onboarding for friction. Kill at least one unnecessary click.'],
+    ['03', 'Launch Habit 1 only. Do not introduce Habit 2 until Habit 1 is established.'],
+    ['04', 'Set up your first milestone and make it visibly trackable for members.'],
+    ['05', 'Move to Module 3: Connection.']
+  ];
+
+  let ny = 82;
+  next.forEach(([num, text]) => {
+    doc.setFillColor(22,22,22); doc.rect(M, ny, CW, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(M, ny, 14, 14, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text(num, M + 4, ny + 9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,200,200);
+    const tl = doc.splitTextToSize(text, CW - 22);
+    tl.forEach((line, i) => doc.text(line, M + 18, ny + 6 + i * 5));
+    ny += 17;
+  });
+
+  doc.setFillColor(...yellow); doc.rect(M, H - 52, CW, 24, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 8, H - 43);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co: The retention framework for subscription businesses', M + 8, H - 36);
+
+  doc.save('member-engine-module-2-habit-blueprint.pdf');
+}
+
+document.addEventListener('DOMContentLoaded', loadWorkbook);
+</script>
+</body>
+</html>

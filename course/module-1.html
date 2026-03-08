@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 1: Activation | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--body); background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  background: var(--black); border-bottom: 3px solid var(--pink);
+}
+.nav-logo { font-family: var(--display); font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--pink); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--lime); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--pink); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: var(--display); font-size: 14px; letter-spacing: 0.15em; color: var(--white); padding: 0 32px; }
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--lime); position: relative; overflow: hidden; }
+.module-hero::before { content: 'ACTIVATION'; position: absolute; font-family: var(--display); font-size: 220px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; }
+.hero-h1 { font-family: var(--display); font-size: clamp(72px, 10vw, 120px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .pink { color: var(--pink); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 560px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: var(--display); font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+
+.section-title { font-family: var(--display); font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--pink); }
+.section-title:first-child { margin-top: 0; }
+
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+
+.pull-quote { font-family: var(--display); font-size: clamp(24px, 3vw, 36px); letter-spacing: 0.04em; line-height: 1.2; color: var(--pink); padding: 32px 40px; border-left: 6px solid var(--pink); background: var(--black); margin: 40px 0; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.stat-card { background: var(--black); padding: 36px 32px; border-top: 3px solid #222; transition: border-color 0.2s; }
+.stat-card:hover { border-top-color: var(--pink); }
+.stat-num { font-family: var(--display); font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 13px; font-weight: 300; color: #bbb; line-height: 1.5; }
+
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: var(--display); font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+
+.callout-dark { background: var(--black); border-left: 6px solid var(--lime); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--lime); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; background: var(--white); }
+.framework-box-title { font-family: var(--display); font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; transition: border-color 0.2s; }
+.checklist li:hover { border-left-color: #1db800; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--pink); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--pink); border: 3px solid var(--white); outline: 2px solid var(--pink); border-radius: 50%; }
+.timeline-heading { font-family: var(--display); font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+.example-body strong { color: var(--white); font-weight: 500; }
+
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: var(--display); font-size: 72px; letter-spacing: 0.05em; color: var(--pink); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: var(--display); font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+.dark-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--pink); border-bottom: 4px solid var(--pink); margin: 60px 0; }
+.dark-section .content-inner { max-width: 900px; margin: 0 auto; }
+
+.calculator { border: 3px solid var(--black); background: var(--white); padding: 40px; margin: 32px 0; }
+.calc-title { font-family: var(--display); font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; }
+.calc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.calc-field label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 8px; }
+.calc-field input { width: 100%; padding: 14px 16px; border: 3px solid var(--grey); background: var(--white); font-size: 20px; font-weight: 500; font-family: var(--body); color: var(--black); transition: border-color 0.2s; }
+.calc-field input:focus { outline: none; border-color: var(--pink); }
+.calc-result { background: var(--black); padding: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.calc-result-label { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #bbb; }
+.calc-result-value { font-family: var(--display); font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; }
+.calc-result-note { font-size: 13px; font-weight: 300; color: #ccc; width: 100%; }
+
+.ethics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 32px 0; }
+.ethics-card { padding: 28px 32px; }
+.ethics-card.bad { background: #1a0000; border-top: 3px solid #ef4444; }
+.ethics-card.good { background: #001a00; border-top: 3px solid var(--lime); }
+.ethics-card-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.1em; margin-bottom: 16px; }
+.ethics-card.bad .ethics-card-label { color: #ef4444; }
+.ethics-card.good .ethics-card-label { color: var(--lime); }
+.ethics-item { font-size: 14px; font-weight: 300; line-height: 1.6; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ethics-item:last-child { border-bottom: none; }
+.ethics-card.bad .ethics-item { color: #ff6b6b; }
+.ethics-card.good .ethics-item { color: #6bff6b; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 200px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: var(--display); font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; font-weight: 400; color: #aaa; text-align: center; max-width: 300px; line-height: 1.5; }
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--lime); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.workbook-title { font-family: var(--display); font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .pink { color: var(--pink); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: var(--display); font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: var(--body); color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--lime); min-height: 18px; }
+
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--pink); background: #161616; }
+.mission-item.checked { border-color: var(--lime); background: #001a00; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: var(--lime); border-color: var(--lime); }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; transition: opacity 0.2s; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: var(--lime); }
+
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.4s ease; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--lime); min-width: 48px; text-align: right; }
+
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--lime); padding: 16px 40px; border: 3px solid var(--lime); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 1px solid #1e1e1e; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: var(--display); font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--pink); }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .dark-section { padding: 60px 24px; }
+  .video-section { padding-bottom: 60px; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .calc-row { grid-template-columns: 1fr; }
+  .ethics-grid { grid-template-columns: 1fr; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 1: Activation</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 1 <span class="sep">✦</span></span>
+  <span class="ticker-item">ACTIVATION <span class="sep">✦</span></span>
+  <span class="ticker-item">TURN PERFECT BUYERS INTO PERFECT MEMBERS <span class="sep">✦</span></span>
+  <span class="ticker-item">TIME TO FIRST VALUE IS YOUR NORTH STAR <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 1 <span class="sep">✦</span></span>
+  <span class="ticker-item">ACTIVATION <span class="sep">✦</span></span>
+  <span class="ticker-item">TURN PERFECT BUYERS INTO PERFECT MEMBERS <span class="sep">✦</span></span>
+  <span class="ticker-item">TIME TO FIRST VALUE IS YOUR NORTH STAR <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 1 of 6</div>
+    <h1 class="hero-h1">ACTIV<span class="pink">-</span><br>ATION</h1>
+    <p class="hero-sub">Turn perfect buyers into perfect members. The sale isn't the finish line. It's the starting gun.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <!-- REPLACE WITH: <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="white"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE PROBLEM</h2>
+
+  <div class="pull-quote">"67% of members who don't complete onboarding cancel within 30 days."</div>
+
+  <p class="body-text">Two out of every three people who buy your membership never even get started. They pay you. They log in once. They look around, feel overwhelmed or confused, and ghost.</p>
+  <p class="body-text"><strong>They don't leave because your product is bad. They leave because you failed to activate them.</strong> You didn't turn them from a buyer into a member.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">67%</div><div class="stat-label">Cancel within 30 days without completing onboarding</div></div>
+    <div class="stat-card"><div class="stat-num">85%</div><div class="stat-label">Churn within 90 days if they don't engage in the first 7 days</div></div>
+    <div class="stat-card"><div class="stat-num">$26k</div><div class="stat-label">Lost per year in preventable first-month churn (100 signups at $50/mo)</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE MISCONCEPTION</div>
+    <p>Most membership owners think their job ends when someone buys. It doesn't. It begins when someone buys. <strong>The sale is not the finish line. It's the starting gun.</strong></p>
+  </div>
+
+  <h2 class="section-title">WHAT'S THIS COSTING YOU?</h2>
+
+  <div class="calculator">
+    <div class="calc-title">CALCULATE YOUR PREVENTABLE CHURN LOSSES</div>
+    <div class="calc-row">
+      <div class="calc-field"><label>New signups per month</label><input type="number" id="signups" value="100" min="1"></div>
+      <div class="calc-field"><label>Monthly membership price ($)</label><input type="number" id="price" value="50" min="1"></div>
+    </div>
+    <div class="calc-result">
+      <div><div class="calc-result-label">Preventable Annual Loss</div><div class="calc-result-value" id="calcResult">$26,796</div></div>
+      <p class="calc-result-note">Based on 67% first-month churn from poor onboarding. Fix activation and most of this stays in your bank account.</p>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>The first 72 hours, and the first 90 days, are when members decide whether your membership becomes a habit or gets forgotten. <strong>Your member's motivation is highest right now and will never be this high again.</strong></p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THREE CRITICAL WINDOWS</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Buyer's Remorse Window</div>
+        <div class="timeline-body">Immediately after purchase, doubt creeps in. "Did I make the right choice? Can I afford this? What will my spouse say?" You need to address this before they do.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Motivation Decay</div>
+        <div class="timeline-body">Motivation peaks at signup and declines rapidly. If you don't capture that energy immediately, you lose it forever. Every day you wait is a day closer to cancel.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">The Success Path Principle</div>
+        <div class="timeline-body">Overwhelm kills retention. Members need a clear, guided journey. Not a library dump. If they can't see the path, they'll make their own exit.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE GOAL OF ACTIVATION</h2>
+  <p class="body-text">Accomplish these six things in your onboarding and you've done your job:</p>
+
+  <ul class="checklist">
+    <li><strong>Validation:</strong> Remind them they just made the right choice</li>
+    <li><strong>Resell the Vision:</strong> Why they bought this. Because they've already forgotten</li>
+    <li><strong>Counter Objections:</strong> Preempt self-doubt, spousal objections, buyer's remorse</li>
+    <li><strong>Clarify the Path:</strong> Tell them exactly what happens next. Eliminate confusion</li>
+    <li><strong>Quick Win:</strong> Get them a tangible result as fast as humanly possible</li>
+    <li><strong>Connection Point:</strong> Get them into the community immediately</li>
+  </ul>
+
+  <h2 class="section-title">THE SCIENCE</h2>
+
+</div>
+
+<!-- DARK SECTION - BJ FOGG -->
+<div class="dark-section">
+  <div class="content-inner">
+    <div class="callout-dark">
+      <div class="callout-label">BJ FOGG'S BEHAVIOR MODEL</div>
+      <p>For any behavior to occur, three elements must converge simultaneously: <strong style="color:var(--white)">Motivation</strong> (desire to do it), <strong style="color:var(--white)">Ability</strong> (ease of doing it), and <strong style="color:var(--white)">Trigger</strong> (prompt to do it). At signup, all three naturally align. Your job is to act before they stop.</p>
+    </div>
+    <div class="stat-grid" style="margin-top:24px;">
+      <div class="stat-card"><div class="stat-num" style="color:var(--white)">M</div><div class="stat-label">Motivation: Desire to do it</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--white)">A</div><div class="stat-label">Ability: Ease of doing it</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--white)">T</div><div class="stat-label">Trigger: Prompt to do it</div></div>
+    </div>
+    <div class="pull-quote" style="margin-top:32px;">"Doing must be easier than thinking. If a new member has to think about what to do next, you've already lost them."</div>
+  </div>
+</div>
+
+<div class="content-wrap">
+
+  <h2 class="section-title">TIME TO FIRST VALUE</h2>
+  <p class="body-text" style="font-size:20px;color:var(--pink);font-weight:500;">Your north star metric for Activation.</p>
+  <p class="body-text"><strong>Definition:</strong> The time between signup and the member achieving their first tangible result. The closer to zero, the better.</p>
+
+  <ul class="checklist">
+    <li>Members who hit a quick win in the first week stay 3x longer</li>
+    <li>Every day you delay first value, churn risk increases by ~5%</li>
+    <li>Trust is built through delivered promises, not content consumed</li>
+  </ul>
+
+  <div class="framework-box" style="margin-top:32px;">
+    <div class="framework-box-title">INDUSTRY BENCHMARKS</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading" style="color:#1db800">Under 7 days: Great</div><div class="timeline-body">You're giving members a win before doubt has time to set in.</div></div>
+      <div class="timeline-item"><div class="timeline-heading" style="color:#1d6dbf">7-14 days: Good</div><div class="timeline-body">Still within the window. Push it earlier if you can.</div></div>
+      <div class="timeline-item"><div class="timeline-heading" style="color:#c97d00">15-30 days: Risky</div><div class="timeline-body">Motivation is fading. Churn risk rising.</div></div>
+      <div class="timeline-item"><div class="timeline-heading" style="color:#d93030">30+ days: Danger Zone</div><div class="timeline-body">You've lost them mentally. The cancel is just paperwork at this point.</div></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE SIX STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">THE WELCOME VIDEO</div>
+      <p class="body-text"><strong>What it is:</strong> A welcome video that actively combats buyer's remorse. Not just "thanks for joining." The first thing a member experiences after purchase sets the tone for everything.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE WELCOME VIDEO SCRIPT FRAMEWORK</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">0:00 to 0:30: Congratulate & Validate</div><div class="timeline-body">"You just made an incredible decision. You invested [money] and committed to [transformation]. You made the right call. Here's why..."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">0:30 to 1:30: Resell the Benefits</div><div class="timeline-body">"You joined because [specific pain point]. Over the next [timeframe], you're going to [transformation]. Here's exactly what that looks like..."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">1:30 to 2:30: Preempt Objections</div><div class="timeline-body">"In the next 24 hours you might have a little voice saying 'Can I really do this?' Here's what to tell that voice: You can. I've seen people just like you succeed."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">2:30 to 3:00: Clarify Next Steps</div><div class="timeline-body">"In the next 5 minutes, you're going to [first action]. Takes under [time] and will give you [quick win]."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">3:00 to 3:30: First Action</div><div class="timeline-body">"Right now, before you do anything else, click the button below and [complete first action]. See you on the other side."</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">FRICTIONLESS FIRST ACTION</div>
+      <p class="body-text">Completable in under 10 minutes. Impossible to mess up. Delivers a tangible result. Design for the guaranteed win. Completion builds momentum. Failure builds doubt.</p>
+    </div>
+  </div>
+
+  <div class="example-box"><div class="example-label">FITNESS MEMBERSHIP</div><div class="example-body"><strong>Action:</strong> "Complete your body composition benchmark"<br><strong>Result:</strong> They have a baseline. They've proven they can track progress.</div></div>
+  <div class="example-box"><div class="example-label">BUSINESS COACHING</div><div class="example-body"><strong>Action:</strong> "Calculate your current monthly recurring revenue"<br><strong>Result:</strong> They know their starting point. They can measure growth.</div></div>
+  <div class="example-box"><div class="example-label">CREATIVE COURSE</div><div class="example-body"><strong>Action:</strong> "Create your first 30-second video using this template"<br><strong>Result:</strong> They've proven they can create. They have something to share.</div></div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">THE SUCCESS PATH</div>
+      <p class="body-text">A clear, linear roadmap. The full transformation must be visible from Day 1. "I'll never catch up" and "I don't know where to start" are silent killers. Both are solved by a visible path.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">90-DAY SUCCESS PATH STRUCTURE</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Week 1: Foundation</div><div class="timeline-body">Day 1: Benchmark/first action · Day 3: Core concept #1 · Day 5: First implementation · Day 7: Community introduction</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Weeks 2 to 4: Momentum</div><div class="timeline-body">Week 2: Core concept #2 + action · Week 3: Core concept #3 + action · Week 4: First milestone review</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Month 2 to 3: Transformation</div><div class="timeline-body">Month 2: Intermediate tactics · Month 3: First major result</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Month 4 to 6: Mastery</div><div class="timeline-body">Advanced strategies, case studies, community leadership</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">COMMUNITY ONBOARDING</div>
+      <p class="body-text">Get members into the community and introducing themselves within 72 hours. Community creates relational switching costs. Members stay because of connections, not just content.</p>
+    </div>
+  </div>
+
+  <div class="stat-grid" style="margin:24px 0;">
+    <div class="stat-card"><div class="stat-num">60%</div><div class="stat-label">Higher 90-day retention for members who engage in community during Week 1</div></div>
+    <div class="stat-card" style="grid-column:span 2;"><div class="stat-label" style="font-size:16px;line-height:1.7;color:#aaa;">The faster you create a connection, the harder it becomes to leave. Don't wait for them to find each other. Introduce them.</div></div>
+  </div>
+
+  <div class="example-box"><div class="example-label">INTRODUCTION TEMPLATE TO GIVE NEW MEMBERS</div><div class="example-body">"Hi, I'm [name], and I joined because [specific pain/goal]. One thing I'm excited to learn is [specific outcome]. One thing I'm nervous about is [vulnerability]. Looking forward to connecting with you all!"</div></div>
+
+  <!-- Strategy 5 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">05</div>
+    <div>
+      <div class="strategy-title">HIGH-TOUCH AUTOMATION</div>
+      <p class="body-text">Automation that feels human. Members want to feel special. You can't personally call 100 signups. Smart automation bridges the gap without the labor.</p>
+    </div>
+  </div>
+
+  <div class="example-box"><div class="example-label">RINGLESS VOICEMAIL: SLYBROADCAST / S2VM (AU)</div><div class="example-body">"Hey [Name], it's [Your Name] from [Membership]. I just saw you joined and wanted to personally welcome you. Check your email for your welcome video. Looking forward to seeing your progress."<br><br><strong>Why it works:</strong> Feels personal. Takes no real-time. Pattern interrupt. Unexpected delight. Costs almost nothing.</div></div>
+
+  <!-- Strategy 6 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">06</div>
+    <div>
+      <div class="strategy-title">RECOUP YOUR INVESTMENT</div>
+      <p class="body-text">Create a first module that shows members how to make their money back immediately. Once they've recouped the investment, every future month feels like pure value, not cost.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE PSYCHOLOGY</div>
+    <p>Subscription math feels completely different when the membership is "free." A business coaching membership that helped you land one client doesn't feel like a $497/month expense anymore. It feels like leverage.</p>
+  </div>
+
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="ethics-grid">
+    <div class="ethics-card bad">
+      <div class="ethics-card-label">❌ DON'T DO THIS</div>
+      <div class="ethics-item">Weaponize buyer's remorse with fear or shame</div>
+      <div class="ethics-item">Create false urgency: "You MUST complete this in 24 hours or fail!"</div>
+      <div class="ethics-item">Dump and ghost: 100  modules and "good luck"</div>
+      <div class="ethics-item">Over-promise: "You'll be a millionaire in 30 days!"</div>
+    </div>
+    <div class="ethics-card good">
+      <div class="ethics-card-label">✓ DO THIS INSTEAD</div>
+      <div class="ethics-item">Validate their decision and counter genuine objections</div>
+      <div class="ethics-item">Show them the path and help them start with confidence</div>
+      <div class="ethics-item">Provide a clear success path with ongoing support</div>
+      <div class="ethics-item">Set realistic expectations with achievable quick wins</div>
+    </div>
+  </div>
+
+  <div class="pull-quote">"If my best friend joined my membership, would I be proud of this onboarding experience?"</div>
+
+  <h2 class="section-title">REAL WORLD TEARDOWNS</h2>
+
+  <div class="framework-box">
+    <div class="framework-box-title">OLEKSY KONONOV'S 21-DAY HANDSTAND CHALLENGE</div>
+    <div class="visual-placeholder">
+      <div class="visual-placeholder-icon">▶</div>
+      <div class="visual-placeholder-label">VIDEO OR SCREENSHOT PLACEHOLDER</div>
+      <div class="visual-placeholder-sub">Add a screenshot of the challenge landing page or embed a short video walkthrough here</div>
+    </div>
+    <ul class="checklist">
+      <li>Clear endpoint: "In 21 days, you'll hold a handstand"</li>
+      <li>Daily structure: Day 1, Day 2, Day 3. No ambiguity.</li>
+      <li>Progression visible: You can see the path from assisted to freestanding from Day 1</li>
+      <li>Quick win: Day 1 is wall-assisted. Everyone succeeds.</li>
+    </ul>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">DUOLINGO</div>
+    <div class="visual-placeholder">
+      <div class="visual-placeholder-icon">📱</div>
+      <div class="visual-placeholder-label">VIDEO OR SCREENSHOT PLACEHOLDER</div>
+      <div class="visual-placeholder-sub">Add a screenshot of the Duolingo onboarding flow or a screen recording of the first lesson experience here</div>
+    </div>
+    <ul class="checklist">
+      <li>Immediate action: No tutorial. You're translating words in 30 seconds</li>
+      <li>Tiny wins: First lesson takes 2 minutes, gives a completion badge</li>
+      <li>Clear path: Entire language tree visible from Day 1</li>
+      <li>Habit formation: "Come back tomorrow" with streak tracking</li>
+    </ul>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">PELOTON</div>
+    <div class="visual-placeholder">
+      <div class="visual-placeholder-icon">▶</div>
+      <div class="visual-placeholder-label">VIDEO OR SCREENSHOT PLACEHOLDER</div>
+      <div class="visual-placeholder-sub">Add a screenshot of the Peloton Welcome Ride screen or a clip showing the milestone recognition moment here</div>
+    </div>
+    <ul class="checklist">
+      <li>Welcome Ride: Dedicated intro class: low pressure, guaranteed win</li>
+      <li>Leaderboard: You see your output immediately, creating a benchmark</li>
+      <li>Milestone Recognition: First ride gets a shoutout. Belonging on Day 1</li>
+      <li>Clear programs: "4-week beginner program" removes decision paralysis</li>
+    </ul>
+    <div class="callout" style="margin-top:24px;">
+      <div class="callout-label">THE PATTERN</div>
+      <p>All successful memberships prioritise <strong>quick wins, clear paths, and immediate engagement</strong> over content dumps. None of them start with a 47-module library and a "start anywhere."</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 1 Workbook</div>
+    <h2 class="workbook-title">YOUR <span class="pink">ACTIVATION</span><br>BLUEPRINT</h2>
+    <p class="workbook-sub">Complete this as you go. Your answers generate a branded PDF you can keep, reference, and actually implement. Theory without action is just expensive entertainment.</p>
+
+    <div class="workbook-field">
+      <div class="field-label">What is your current Time to First Value (TTFV)?</div>
+      <div class="field-why">If you don't know your TTFV, you can't improve it. This becomes your baseline. The number you're working to drive toward zero.</div>
+      <textarea class="field-input" id="wb_ttfv" placeholder="e.g. Members currently get their first result around day 14 when they receive their first box..."></textarea>
+      <div class="field-output" id="ttfv_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">What is your Frictionless First Action?</div>
+      <div class="field-why">This single action determines whether new members build momentum or stall. Must be completable in under 10 minutes and deliver a guaranteed win.</div>
+      <textarea class="field-input" id="wb_first_action" placeholder="e.g. New members will complete a 5-minute benchmark that gives them [specific result] within the first hour..."></textarea>
+      <div class="field-output" id="first_action_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">What are the top 3 objections a new member might have in the first 24 hours?</div>
+      <div class="field-why">If you don't address these first, your members will. And they'll address them with a cancellation. Name them so you can kill them in your welcome video.</div>
+      <textarea class="field-input" id="wb_objections" placeholder="1. 'Did I spend too much?'&#10;2. 'I don't have time to do this properly'&#10;3. 'Will this actually work for my type of business?'"></textarea>
+      <div class="field-output" id="objections_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Write your Welcome Video outline</div>
+      <div class="field-why">The welcome video is the single highest-leverage piece of content you can create. Most membership owners don't have one. This puts you ahead of most of the market immediately.</div>
+      <textarea class="field-input" id="wb_welcome_video" style="min-height:200px;" placeholder="0:00-0:30 Validate: ...&#10;0:30-1:30 Resell: ...&#10;1:30-2:30 Preempt objections: ...&#10;2:30-3:00 Next steps: ...&#10;3:00-3:30 First action CTA: ..."></textarea>
+      <div class="field-output" id="welcome_video_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">What does your 90-day Success Path look like?</div>
+      <div class="field-why">If members can't see where they're going, they assume they're going nowhere. Map the journey clearly enough that they can picture themselves at the end of it.</div>
+      <textarea class="field-input" id="wb_success_path" style="min-height:160px;" placeholder="Week 1: ...&#10;Week 2-4: ...&#10;Month 2: ...&#10;Month 3 (first major result): ..."></textarea>
+      <div class="field-output" id="success_path_out"></div>
+    </div>
+
+    <!-- Mission checklist -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--lime);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#555;">Create your Welcome Video Script. Tick these off as you go. Bonus: record it this week. Phone camera is fine. Done beats perfect.</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="validate" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your Congratulate & Validate section (0:00–0:30)</div>
+        </li>
+        <li class="mission-item" data-task="resell" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your Resell the Benefits section (0:30–1:30)</div>
+        </li>
+        <li class="mission-item" data-task="objections" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your Preempt Objections section (1:30–2:30)</div>
+        </li>
+        <li class="mission-item" data-task="steps" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your Clarify Next Steps section (2:30–3:00)</div>
+        </li>
+        <li class="mission-item" data-task="action" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your First Action CTA (3:00–3:30) and record the video</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 5</div>
+      </div>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR ACTIVATION BLUEPRINT
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your answers and the reasoning behind each one. Keep it. Reference it. Actually implement it.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <nav class="footer-nav">
+    <a href="/index.html">Home</a>
+    <a href="/course/">Course Home</a>
+    <a href="/course/module-2">Module 2 →</a>
+  </nav>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// CALCULATOR
+function updateCalc() {
+  const s = parseInt(document.getElementById('signups').value) || 0;
+  const p = parseInt(document.getElementById('price').value) || 0;
+  document.getElementById('calcResult').textContent = '$' + Math.round(s * 0.67 * p * 12).toLocaleString();
+}
+document.getElementById('signups').addEventListener('input', updateCalc);
+document.getElementById('price').addEventListener('input', updateCalc);
+
+// WORKBOOK OUTPUTS
+const fieldMap = [
+  ['wb_ttfv', 'ttfv_out'],
+  ['wb_first_action', 'first_action_out'],
+  ['wb_objections', 'objections_out'],
+  ['wb_welcome_video', 'welcome_video_out'],
+  ['wb_success_path', 'success_path_out']
+];
+
+fieldMap.forEach(([inputId, outputId]) => {
+  document.getElementById(inputId).addEventListener('input', function() {
+    document.getElementById(outputId).textContent = this.value.trim().length > 10 ? '✓ Captured' : '';
+    saveWorkbook();
+  });
+});
+
+// MISSION
+const missionTasks = new Set();
+
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / 5 * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / 5';
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module1_v2';
+
+function saveWorkbook() {
+  const data = {};
+  fieldMap.forEach(([id]) => { data[id] = document.getElementById(id).value; });
+  data.mission = Array.from(missionTasks);
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    fieldMap.forEach(([id, outId]) => {
+      if (data[id]) {
+        document.getElementById(id).value = data[id];
+        if (data[id].trim().length > 10) document.getElementById(outId).textContent = '✓ Captured';
+      }
+    });
+    if (data.mission) {
+      data.mission.forEach(task => {
+        missionTasks.add(task);
+        const item = document.querySelector(`[data-task="${task}"]`);
+        if (item) item.classList.add('checked');
+      });
+      document.getElementById('missionFill').style.width = (missionTasks.size / 5 * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / 5';
+    }
+  } catch(e) {}
+}
+
+// PDF GENERATION
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255, 20, 147], black = [13, 13, 13], white = [248, 247, 244];
+  const lime = [57, 255, 20], yellow = [255, 230, 0], grey = [232, 231, 227];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage();
+    y = 0;
+    doc.setFillColor(...black); doc.rect(0, 0, W, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(0, 14, W, 1.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 1: ACTIVATION BLUEPRINT', W - M, 9, { align: 'right' });
+    y = 22;
+  }
+
+  function checkY(need) { if (y + need > H - 20) addPage(); }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...pink); doc.rect(0, 0, 6, H, 'F');
+  doc.setFillColor(...lime); doc.rect(6, 78, W - 6, 1.5, 'F');
+
+  doc.setFillColor(25,25,25); doc.rect(M + 4, 52, 56, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...lime);
+  doc.text('MODULE 1 OF 6: ACTIVATION', M + 8, 59);
+
+  doc.setFontSize(52); doc.setTextColor(...white);
+  doc.text('ACTIVATION', M + 4, 108);
+  doc.setTextColor(...pink);
+  doc.text('BLUEPRINT', M + 4, 130);
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Your personalised framework for turning', M + 4, 146);
+  doc.text('buyers into members.', M + 4, 154);
+
+  doc.setFillColor(...yellow); doc.rect(M + 4, 173, CW - 4, 30, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 10, 182);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text('Member Engine: memberengine.co', M + 10, 190);
+  doc.text('Built on behavioural science. Not guesswork.', M + 10, 197);
+
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'}), M + 4, H - 12);
+
+  // CONTENT PAGES
+  addPage();
+
+  // Header
+  doc.setFillColor(...pink); doc.rect(M, y, CW, 0.5, 'F'); y += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...pink);
+  doc.text('YOUR ACTIVATION BLUEPRINT', M, y); y += 10;
+  doc.setFontSize(22); doc.setTextColor(...black);
+  doc.text('YOUR ANSWERS', M, y); y += 6;
+  doc.setFillColor(...black); doc.rect(M, y, 40, 1.5, 'F'); y += 14;
+
+  const fields = [
+    { id: 'wb_ttfv', title: '01: TIME TO FIRST VALUE', why: "If you don't know your TTFV, you can't improve it. This is your baseline. The number you're working to drive toward zero." },
+    { id: 'wb_first_action', title: '02: FRICTIONLESS FIRST ACTION', why: "This single action determines whether new members build momentum or stall. Design for the guaranteed win. Completion builds confidence, failure builds doubt." },
+    { id: 'wb_objections', title: '03: TOP 3 OBJECTIONS TO PREEMPT', why: "If you don't address these first, your members will. And they'll address them with a cancellation. Name them so you can kill them in your welcome video." },
+    { id: 'wb_welcome_video', title: '04: WELCOME VIDEO OUTLINE', why: "The welcome video is the single highest-leverage piece of content you can create. Most membership owners don't have one." },
+    { id: 'wb_success_path', title: '05: 90-DAY SUCCESS PATH', why: "If members can't see where they're going, they assume they're going nowhere. Map it clearly enough they can picture themselves at the end." }
+  ];
+
+  fields.forEach(f => {
+    const val = document.getElementById(f.id).value.trim();
+    const hasAnswer = val.length > 0;
+    const answer = val || '(Not completed yet. Return to the module and fill this in)';
+
+    checkY(60);
+
+    doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+    doc.setFillColor(...pink); doc.rect(M, y, 3, 10, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(f.title, M + 7, y + 6.5); y += 14;
+
+    const whyLines = doc.splitTextToSize('WHY THIS MATTERS: ' + f.why, CW - 16);
+    const whyH = whyLines.length * 4.5 + 10;
+    checkY(whyH + 8);
+    doc.setFillColor(...yellow); doc.rect(M, y, CW, whyH, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...black);
+    whyLines.forEach((line, i) => doc.text(line, M + 8, y + 7 + i * 4.5));
+    y += whyH + 4;
+
+    const ansLines = doc.splitTextToSize(answer, CW - 12);
+    const ansH = ansLines.length * 5 + 14;
+    checkY(ansH + 4);
+    doc.setFillColor(hasAnswer ? 250 : 240, 250, hasAnswer ? 250 : 240);
+    doc.rect(M, y, CW, ansH, 'F');
+    if (hasAnswer) { doc.setDrawColor(...lime); doc.setLineWidth(0.5); doc.rect(M, y, CW, ansH); }
+    doc.setFont('helvetica', hasAnswer ? 'normal' : 'italic');
+    doc.setFontSize(9);
+    doc.setTextColor(hasAnswer ? 30 : 140, hasAnswer ? 30 : 140, hasAnswer ? 30 : 140);
+    ansLines.forEach((line, i) => doc.text(line, M + 6, y + 8 + i * 5));
+    y += ansH + 16;
+  });
+
+  // MISSION PAGE
+  checkY(80);
+  doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+  doc.setFillColor(...lime); doc.rect(M, y, 3, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text("THIS WEEK'S MISSION: WELCOME VIDEO CHECKLIST", M + 7, y + 6.5); y += 14;
+
+  const tasks = [
+    ['validate', 'Write your Congratulate & Validate section (0:00–0:30)'],
+    ['resell', 'Write your Resell the Benefits section (0:30–1:30)'],
+    ['objections', 'Write your Preempt Objections section (1:30–2:30)'],
+    ['steps', 'Write your Clarify Next Steps section (2:30–3:00)'],
+    ['action', 'Write your First Action CTA (3:00–3:30) and record the video']
+  ];
+
+  tasks.forEach(([key, text]) => {
+    checkY(14);
+    const done = missionTasks.has(key);
+    doc.setFillColor(done ? 0 : 240, done ? 26 : 240, done ? 0 : 240);
+    doc.rect(M, y, CW, 11, 'F');
+    doc.setFillColor(done ? ...lime : [200,200,195]);
+    doc.rect(M, y, 12, 11, 'F');
+    if (done) {
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black);
+      doc.text('✓', M + 3.5, y + 7.5);
+    }
+    doc.setFont('helvetica', done ? 'bold' : 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(done ? 20 : 80, done ? 20 : 80, done ? 20 : 80);
+    doc.text(text, M + 16, y + 7.5); y += 13;
+  });
+
+  y += 8;
+  checkY(16);
+  doc.setFillColor(...yellow); doc.rect(M, y, CW, 14, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission Progress: ${missionTasks.size} of 5 complete (${Math.round(missionTasks.size/5*100)}%)`, M + 8, y + 9);
+  y += 22;
+
+  // BACK COVER
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...lime); doc.rect(0, 0, W, 3, 'F');
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...white);
+  doc.text('WHAT NEXT?', M, 60);
+  doc.setFillColor(...pink); doc.rect(M, 64, 40, 1.5, 'F');
+
+  const next = [
+    ['01', 'Implement your Frictionless First Action this week.'],
+    ['02', 'Record your Welcome Video. Phone camera is fine. Done beats perfect.'],
+    ['03', 'Map your 90-day Success Path and make it visible to members.'],
+    ['04', 'Set up at least one High-Touch Automation touchpoint.'],
+    ['05', 'Move to Module 2: Habit Formation.']
+  ];
+
+  let ny = 82;
+  next.forEach(([num, text]) => {
+    doc.setFillColor(22,22,22); doc.rect(M, ny, CW, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(M, ny, 14, 14, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text(num, M + 4, ny + 9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,200,200);
+    const tl = doc.splitTextToSize(text, CW - 22);
+    tl.forEach((line, i) => doc.text(line, M + 18, ny + 6 + i * 5));
+    ny += 17;
+  });
+
+  doc.setFillColor(...yellow); doc.rect(M, H - 52, CW, 24, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 8, H - 43);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co: The retention framework for subscription businesses', M + 8, H - 36);
+
+  doc.save('member-engine-module-1-activation-blueprint.pdf');
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadWorkbook(); updateCalc(); });
+</script>
+</body>
+</html>

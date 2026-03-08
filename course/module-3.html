@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 3: Connection | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 60px; background: var(--black); border-bottom: 3px solid var(--pink); }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--pink); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--lime); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--pink); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--white); padding: 0 32px; }
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--lime); position: relative; overflow: hidden; }
+.module-hero::before { content: 'CONNECT'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 220px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; }
+.hero-h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(64px, 9vw, 110px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .pink { color: var(--pink); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 560px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--pink); }
+.section-title:first-child { margin-top: 0; }
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+.pull-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(24px, 3vw, 36px); letter-spacing: 0.04em; line-height: 1.2; color: var(--pink); padding: 32px 40px; border-left: 6px solid var(--pink); background: var(--black); margin: 40px 0; }
+
+/* STATS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.stat-card { background: var(--black); padding: 36px 32px; border-top: 3px solid #222; transition: border-color 0.2s; }
+.stat-card:hover { border-top-color: var(--pink); }
+.stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 13px; font-weight: 300; color: #bbb; line-height: 1.5; }
+
+/* CALLOUT */
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+.callout-dark { background: var(--black); border-left: 6px solid var(--lime); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--lime); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+/* FRAMEWORK BOX */
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; background: var(--white); }
+.framework-box-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; transition: border-color 0.2s; }
+.checklist li:hover { border-left-color: #1db800; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--pink); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--pink); border: 3px solid var(--white); outline: 2px solid var(--pink); border-radius: 50%; }
+.timeline-heading { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+/* EXAMPLE BOX */
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+.example-body strong { color: var(--white); font-weight: 500; }
+
+/* WARNING BOX */
+.warning-box { background: var(--black); border-left: 6px solid var(--yellow); padding: 24px 28px; margin: 24px 0; }
+.warning-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.warning-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* STRATEGY */
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 0.05em; color: var(--pink); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+/* DARK SECTION */
+.dark-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--pink); border-bottom: 4px solid var(--pink); margin: 60px 0; }
+.dark-section .content-inner { max-width: 900px; margin: 0 auto; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.col-card { padding: 28px 32px; }
+.col-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.col-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.col-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.col-card.good .col-card-title { color: #1db800; }
+.col-card.bad .col-card-title { color: #d93030; }
+.col-card-item { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.col-card-item:last-child { border-bottom: none; }
+
+/* FLYWHEEL */
+.flywheel { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 24px auto; max-width: 500px; }
+.flywheel-node { border: 2px solid #222; background: #111; padding: 18px 28px; text-align: center; width: 100%; font-size: 15px; font-weight: 300; color: #ccc; }
+.flywheel-result { border: 2px solid var(--lime); background: #001a00; padding: 18px 28px; text-align: center; width: 100%; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--lime); }
+.flywheel-arrow { font-size: 20px; color: var(--pink); padding: 2px 0; line-height: 1; }
+
+/* IDENTITY GRID */
+.identity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.identity-card { background: var(--black); padding: 28px 32px; border-top: 3px solid var(--pink); }
+.identity-brand { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.identity-sub { font-size: 13px; font-weight: 300; color: #aaa; font-style: italic; margin-bottom: 16px; }
+.identity-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.identity-tag { background: #1a1a1a; border: 1px solid #333; padding: 5px 12px; font-size: 12px; font-weight: 400; color: #bbb; }
+
+/* METRIC BOX */
+.metric-box { background: var(--black); border: 3px solid var(--yellow); padding: 32px 36px; margin: 32px 0; }
+.metric-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 16px; }
+.metric-formula { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.06em; color: var(--white); background: #111; padding: 16px 20px; margin-bottom: 16px; line-height: 1.4; }
+.metric-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* ETHICS TRAPS */
+.trap-section { margin: 28px 0; }
+.trap-heading { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: #d93030; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #1a0000; }
+.trap-do { font-size: 15px; font-weight: 300; color: #1db800; line-height: 1.7; padding: 8px 0 8px 28px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.trap-do::before { content: '✓'; position: absolute; left: 0; color: #1db800; font-weight: 700; }
+.trap-dont { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; padding: 8px 0 8px 28px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.trap-dont::before { content: '✗'; position: absolute; left: 0; color: #d93030; font-weight: 700; }
+.trap-do:last-child, .trap-dont:last-child { border-bottom: none; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 180px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; font-weight: 400; color: #aaa; text-align: center; max-width: 320px; line-height: 1.5; }
+
+/* WORKBOOK */
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--lime); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.workbook-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .pink { color: var(--pink); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-input.single { min-height: unset; height: 52px; resize: none; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--lime); min-height: 18px; }
+
+/* MISSION */
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--pink); background: #161616; }
+.mission-item.checked { border-color: #1db800; background: #001a00; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: #1db800; border-color: #1db800; }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; transition: opacity 0.2s; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: #1db800; }
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.4s ease; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--lime); min-width: 48px; text-align: right; }
+
+/* PDF BUTTON */
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--lime); padding: 16px 40px; border: 3px solid var(--lime); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 1px solid #1e1e1e; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--pink); }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .dark-section { padding: 60px 24px; }
+  .video-section { padding-bottom: 60px; }
+  .stat-grid, .two-col, .identity-grid { grid-template-columns: 1fr; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 3: Connection</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 3 <span class="sep">✦</span></span>
+  <span class="ticker-item">CONNECTION <span class="sep">✦</span></span>
+  <span class="ticker-item">FROM CONSUMERS TO TRIBE MEMBERS <span class="sep">✦</span></span>
+  <span class="ticker-item">BELONGING IS NOT AN ACCIDENT <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 3 <span class="sep">✦</span></span>
+  <span class="ticker-item">CONNECTION <span class="sep">✦</span></span>
+  <span class="ticker-item">FROM CONSUMERS TO TRIBE MEMBERS <span class="sep">✦</span></span>
+  <span class="ticker-item">BELONGING IS NOT AN ACCIDENT <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 3 of 6</div>
+    <h1 class="hero-h1">CON<span class="pink">NECT</span>ION</h1>
+    <p class="hero-sub">From consumers to tribe members. People don't cancel memberships they feel part of. The question is whether you've actually built one.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <!-- REPLACE WITH: <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="white"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE PROBLEM</h2>
+
+  <div class="pull-quote">"People join for the content. They stay for the community. But 80% of membership communities are ghost towns."</div>
+
+  <p class="body-text">Members join, lurk for a week, feel invisible, and leave. The problem isn't that you don't have a community. <strong>It's that your members don't feel connected.</strong></p>
+
+  <p class="body-text">You're competing with their default mode: Netflix, scrolling, doing nothing. And you're losing. Not because your content is bad. Because there's no relational reason to stay.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">3-4x</div><div class="stat-label">Higher churn for members who don't feel connected vs. those who do</div></div>
+    <div class="stat-card"><div class="stat-num">80%</div><div class="stat-label">Of membership communities are ghost towns. Members lurk, feel invisible, and leave.</div></div>
+    <div class="stat-card"><div class="stat-num">$0</div><div class="stat-label">Cost of a relational switching cost. But only if you've actually built one. Most haven't.</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE SHIFT</div>
+    <p>Connection isn't about building a Facebook group. It's about creating a space where members feel <strong>seen, heard, validated, and part of something bigger than themselves.</strong> The difference between a transactional relationship and a relational one. One is easy to cancel. The other genuinely isn't.</p>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>Connection transforms members from consumers into tribe members whose <strong>identity is tied to your membership.</strong> When they say "I'm a CrossFitter" or "I'm a Pelotoner," the membership has become part of who they are. That's the goal. And it's not an accident.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR PILLARS OF CONNECTION PSYCHOLOGY</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Belonging as Identity</div>
+        <div class="timeline-body">When membership becomes part of someone's self-concept, leaving feels like abandoning part of yourself. Social Identity Theory: we derive part of who we are from the groups we belong to. Design for identity, not just access.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Shared Values as Superpower</div>
+        <div class="timeline-body">People are drawn to those like them. When you're clear about what you stand for, you attract the right people and repel the wrong ones. Both outcomes are good for retention.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Emotional Safety</div>
+        <div class="timeline-body">Deep connection requires members to feel safe showing up as themselves without fear of judgment. This is a conscious design choice, not a default state. It doesn't happen by itself.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Rewards of the Tribe</div>
+        <div class="timeline-body">Our brains are wired to seek social acceptance, status, and inclusion. These social rewards are more powerful than any badge or point system. Content keeps them interested. Community keeps them loyal.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE SCIENCE</h2>
+
+  <div class="framework-box">
+    <div class="framework-box-title">RELATIONAL SWITCHING COSTS</div>
+    <p class="body-text" style="margin-bottom:16px;">It's easy to cancel a software subscription. It's genuinely hard to leave a community where:</p>
+    <ul class="checklist">
+      <li>People know your name</li>
+      <li>You've shared your struggles openly</li>
+      <li>Someone is counting on you as an accountability partner</li>
+      <li>You've contributed and been publicly recognised</li>
+      <li>Your identity is tied to the group's shared mission</li>
+    </ul>
+    <p class="body-text" style="margin-top:20px;margin-bottom:0;">Each of those bullets is a retention mechanism you can deliberately design. None of them require better content. All of them require better architecture.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE HOOK MODEL: CONNECTION EDITION</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Trigger</div><div class="timeline-body">Someone posts a win, asks a question, or celebrates a milestone in the community.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Action</div><div class="timeline-body">You comment, congratulate, or offer advice. A single click.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Variable Reward</div><div class="timeline-body">Sometimes you get thanked. Sometimes you make a real friend. Sometimes you get recognised by the leader. Variable. Always compelling.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Investment</div><div class="timeline-body">You've contributed to the community's value. You're now more invested in staying. Leaving means losing what you've built here.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DARK SECTION: THE FLYWHEEL -->
+<div class="dark-section">
+  <div class="content-inner">
+    <div class="callout-dark">
+      <div class="callout-label">THE CONNECTION FLYWHEEL</div>
+      <p>Each step makes the next more likely. And departure less likely. Once it's in motion, it becomes self-sustaining. But you have to start it. Deliberately.</p>
+    </div>
+
+    <div class="flywheel" style="margin-top:40px;">
+      <div class="flywheel-node">Member feels welcome</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Introduces themselves</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Gets a personal, specific response</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Feels seen</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Contributes value to the community</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Gets publicly recognised</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-node">Identity deepens</div>
+      <div class="flywheel-arrow">↓</div>
+      <div class="flywheel-result">INVESTS MORE. STAYS LONGER.</div>
+    </div>
+
+    <div class="callout" style="margin-top:40px; background:var(--yellow);">
+      <div class="callout-label">THE KEY INSIGHT</div>
+      <p>Every step in this flywheel is something you can design and trigger deliberately. None of this happens by accident. But once the flywheel is spinning, it becomes self-sustaining and genuinely difficult to stop.</p>
+    </div>
+  </div>
+</div>
+
+<div class="content-wrap">
+
+  <!-- FOUR STRATEGIES -->
+  <h2 class="section-title">THE FOUR STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">ONBOARDING INTO COMMUNITY</div>
+      <p class="body-text"><strong>What it is:</strong> Don't just onboard members into your content. Onboard them into your people.</p>
+      <p class="body-text"><strong>Why it works:</strong> The first 72 hours determine whether someone becomes a participant or a ghost. You need to make them feel seen immediately, before motivation decays and before they quietly decide "this isn't for me."</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE INTRODUCTION FRAMEWORK</div>
+    <p class="body-text">Don't just say "introduce yourself." That's like telling someone to "be interesting" at a party. Give them a template that creates genuine connection points:</p>
+
+    <div class="example-box">
+      <div class="example-label">TEMPLATE TO GIVE NEW MEMBERS</div>
+      <div class="example-body">
+        "Hi, I'm [name], and I joined because [specific pain or goal]."<br><br>
+        "One thing I'm excited to learn here is [specific outcome]."<br><br>
+        "One thing I'm nervous about is [vulnerability point]."
+      </div>
+    </div>
+
+    <div class="timeline" style="margin-top:24px;">
+      <div class="timeline-item"><div class="timeline-heading">Specific pain creates peer matching</div><div class="timeline-body">Now you can immediately connect them with someone who has solved that exact problem. That introduction can create a bond that lasts years.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Vulnerability creates emotional safety</div><div class="timeline-body">When they share what they're nervous about, they've already gone first. The community responds in kind. Safety compounds.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Structured format removes friction</div><div class="timeline-body">Nobody wants to stare at a blank box wondering "what do I even say?" Give them the scaffold. They'll fill it in.</div></div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FIRST RESPONSE PROTOCOL</div>
+    <p class="body-text" style="margin-bottom:20px;">Respond to every introduction within 24 hours. But not generically.</p>
+
+    <div class="example-box" style="border-left-color:#d93030;">
+      <div class="example-label" style="color:#d93030;">KILLS CONNECTION</div>
+      <div class="example-body">"Welcome Sarah! Great to have you here!"</div>
+    </div>
+    <div class="example-box">
+      <div class="example-label">BUILDS CONNECTION</div>
+      <div class="example-body">"Welcome Sarah! Saw you mentioned struggling with [specific thing]. We just covered that in Module 3. Dropping you the link now. You should also connect with @JaneDoe. Same challenge. She crushed it."</div>
+    </div>
+
+    <p class="body-text" style="margin-top:20px;margin-bottom:0;"><strong>Real photos. Real bios. No grey circles.</strong> Building a relationship with an avatar is impossible. Human-to-human connection requires faces. Make it a rule.</p>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">CONTENT ABOUT THE MEMBERS</div>
+      <p class="body-text"><strong>What it is:</strong> Shift from "look at what I'm teaching" to "look at what our members are accomplishing." Make them the heroes of the story.</p>
+      <p class="body-text"><strong>Why it works:</strong> Being featured creates status and social proof. Others see themselves in the wins and think "if they can, I can." It's your best retention tool and your best marketing tool simultaneously.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE COMMUNITY NEWSPAPER</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Member Spotlights</div>
+        <div class="timeline-body">Weekly or monthly feature: video, written interview, or before and after. One member. Their journey. Their result. The featured member stays. Everyone else aspires.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Win Celebrations</div>
+        <div class="timeline-body">Dedicated channel or thread where members share progress. Amplify the best ones in your newsletter. Gushing about member results is not embarrassing. It's your best retention and marketing asset, running simultaneously, for free.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Member-Generated Content</div>
+        <div class="timeline-body">Invite members to contribute guest posts, case studies, or advice. People support what they help create. This is the Investment phase of the Hook Model applied directly to content. Those who contribute stay significantly longer.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">The Hero Flip</div>
+        <div class="timeline-body">"This week, three members hit [milestone]" beats "This week, I taught [topic]" every single time. Make this a rule in all your communications. You are not the hero. They are.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">PEER-TO-PEER BONDS</div>
+      <p class="body-text"><strong>What it is:</strong> You can't personally connect with 500 members. But 500 members can connect with each other. If you design the architecture.</p>
+    </div>
+  </div>
+
+  <div class="callout-dark">
+    <div class="callout-label">THE SCALE INSIGHT</div>
+    <p>Horizontal relationships (peer-to-peer) scale better than vertical relationships (member-to-you) and create <strong>distributed relational switching costs.</strong> Every peer bond formed is a reason to stay that has nothing to do with you. This is the system working even when you're asleep.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR WAYS TO ENGINEER PEER BONDS</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Matchmaking</div>
+        <div class="timeline-body">Use intake forms to connect "Member A with problem X" to "Member B who solved X." One introduction at the right moment can create a bond that lasts years. You do it once. It runs forever.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Accountability Partners</div>
+        <div class="timeline-body">Pair members with shared goals. Automate weekly check-in prompts. This makes them more likely to complete your content and creates a relational switching cost that makes cancellation genuinely difficult.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Cohort-Based Onboarding</div>
+        <div class="timeline-body">Start new members in "classes" together so they bond through shared newness. The March cohort has a shared starting point. They arrived together. They are more likely to stay together.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Live Events</div>
+        <div class="timeline-body">Virtual or in-person meetups. Nothing deepens relationships faster than real-time interaction. Even on Zoom. Social presence is irreplaceable. One live event is worth months of asynchronous community posts.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">COHORT EXAMPLE IN PRACTICE</div>
+    <div class="example-body">"Welcome to the March cohort. You're starting this journey with 23 other members. Here's your accountability buddy: @JaneDoe. You'll check in with each other every Friday using this simple template..." That's it. That's a relational switching cost you just created for free.</div>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">RITUALS AND INSIDER CULTURE</div>
+      <p class="body-text"><strong>What it is:</strong> Create symbols, language, and traditions that signal "you're one of us." Insider status is a powerful social reward. If only members understand the language or have access to the symbols, it reinforces exclusivity and belonging simultaneously.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR ELEMENTS OF INSIDER CULTURE</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Insider Language</div>
+        <div class="timeline-body">Develop community-specific vocabulary. CrossFit has "WOD," "AMRAP," "the box." If only members understand the language, it reinforces the feeling of being in a club worth belonging to. Language is free. Start using it.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Recurring Rituals</div>
+        <div class="timeline-body">Win Wednesday. Feedback Friday. Monthly Milestone Celebrations. Recurring rituals give members something to look forward to and participate in. They're both triggers and rewards simultaneously.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Symbols of Belonging</div>
+        <div class="timeline-body">Physical or digital identifiers. T-shirts, stickers, member badges. These become identity markers members display publicly, which is free marketing and identity reinforcement at the same time.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Origin Stories</div>
+        <div class="timeline-body">Share the founding story of your membership. Let members feel like they're part of something with history and purpose. "We started because..." creates shared narrative. Shared narrative creates loyalty.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE IDENTITY TEST</div>
+    <p>Ask yourself: what would a member of my community call themselves? If they'd say "I use [your product]" rather than "I'm a [identity]" — you haven't built insider culture yet. That's the gap to close. It's not a content problem.</p>
+  </div>
+
+  <!-- IDENTITY IN THE WILD -->
+  <h2 class="section-title">REAL WORLD TEARDOWN</h2>
+
+  <p class="body-text">Both of these examples go far beyond the product. Members defend these brands, wear the merch, and recruit friends. All unpaid.</p>
+
+  <div class="identity-grid">
+    <div class="identity-card">
+      <div class="identity-brand">PELOTON</div>
+      <div class="identity-sub">"I'm a Pelotoner"</div>
+      <div class="identity-tags">
+        <span class="identity-tag">High-five strangers</span>
+        <span class="identity-tag">Milestone shoutouts</span>
+        <span class="identity-tag">Instructor loyalty</span>
+        <span class="identity-tag">PR (personal record)</span>
+        <span class="identity-tag">FTP test</span>
+        <span class="identity-tag">Clip in</span>
+        <span class="identity-tag">Leaderboard status</span>
+      </div>
+    </div>
+    <div class="identity-card">
+      <div class="identity-brand">CROSSFIT</div>
+      <div class="identity-sub">"I'm a CrossFitter"</div>
+      <div class="identity-tags">
+        <span class="identity-tag">WOD</span>
+        <span class="identity-tag">AMRAP</span>
+        <span class="identity-tag">EMOM</span>
+        <span class="identity-tag">The box</span>
+        <span class="identity-tag">RX vs. scaled</span>
+        <span class="identity-tag">Whiteboard times</span>
+        <span class="identity-tag">Gym leaderboard</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="visual-placeholder">
+    <div class="visual-placeholder-icon">🏷</div>
+    <div class="visual-placeholder-label">SCREENSHOT OR VIDEO PLACEHOLDER</div>
+    <div class="visual-placeholder-sub">Add a screenshot or short clip showing the Peloton high-five mechanic or CrossFit whiteboard culture in action</div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE PATTERN</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Identity Language</div><div class="timeline-body">"I'm a ___" not "I use ___." The membership becomes a noun, not a verb. That is the difference between a product and a tribe.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Insider Vocabulary</div><div class="timeline-body">Jargon only members understand. Signals belonging. Creates exclusivity. Costs nothing to develop.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Public Rituals</div><div class="timeline-body">Visible behaviours that mark you as a member. The Peloton high-five. The whiteboard time. Social reinforcement loop that runs without you.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Status Architecture</div><div class="timeline-body">Clear levels and recognition that reward contribution and consistency. People will work for status if you make it visible and meaningful.</div></div>
+    </div>
+  </div>
+
+  <!-- ETHICS CHECK -->
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="callout">
+    <div class="callout-label">RETENTION VS DETENTION</div>
+    <p>Connection should make people want to stay. Not make them feel trapped by social obligation or manipulated by manufactured belonging. There is a difference. Your members can feel it even if they can't name it.</p>
+  </div>
+
+</div>
+
+<!-- DARK SECTION: ETHICAL TRAPS -->
+<div class="dark-section">
+  <div class="content-inner">
+    <div class="callout-dark">
+      <div class="callout-label">THE FOUR ETHICAL TRAPS</div>
+      <p>Most of these aren't malicious. They're just thoughtless. That's almost worse, because they erode trust quietly before anyone notices.</p>
+    </div>
+
+    <div class="trap-section">
+      <div class="trap-heading">TRAP 1: THE TAKER MINDSET</div>
+      <div class="trap-do">Give value, recognition, and support before asking for anything</div>
+      <div class="trap-dont">First contact is a request for a testimonial, a review, or an upsell</div>
+      <div class="trap-dont">All communications start with "I" instead of "you"</div>
+      <div class="trap-dont">You only contact members when raising prices or selling something</div>
+    </div>
+
+    <div class="trap-section">
+      <div class="trap-heading">TRAP 2: THE CONTENT FIREHOSE</div>
+      <div class="trap-do">Clear success path with flexible participation. Allow for quiet periods.</div>
+      <div class="trap-dont">Dump new members into a massive archive with no guidance</div>
+      <div class="trap-dont">Assume more content equals more value. It creates overwhelm, not connection.</div>
+    </div>
+
+    <div class="trap-section">
+      <div class="trap-heading">TRAP 3: ALOOF LEADERSHIP</div>
+      <div class="trap-do">Be human, present, and real. "Go first" with vulnerability.</div>
+      <div class="trap-dont">Hide behind a logo or use formal corporate language</div>
+      <div class="trap-dont">Welcome new members with apologies about problems they didn't know existed</div>
+    </div>
+
+    <div class="trap-section">
+      <div class="trap-heading">TRAP 4: THE CREEPINESS LINE</div>
+      <div class="trap-do">Personalisation that feels thoughtful and genuinely human</div>
+      <div class="trap-dont">Use data in ways that make members think "how did they know that?"</div>
+      <div class="trap-dont">Fake testimonials or manufactured social proof</div>
+    </div>
+  </div>
+</div>
+
+<div class="content-wrap">
+
+  <div class="two-col">
+    <div class="col-card bad">
+      <div class="col-card-title">THE DEATH SPIRAL</div>
+      <div class="col-card-item">One loud complaint halts all strategy</div>
+      <div class="col-card-item">You cater so much to longtime members that newbies feel like outsiders</div>
+      <div class="col-card-item">The community becomes cliquey, unwelcoming to new blood</div>
+      <div class="col-card-item">Existing members age out. New members don't stay.</div>
+      <div class="col-card-item">Membership slowly dies. Nobody knows why.</div>
+    </div>
+    <div class="col-card good">
+      <div class="col-card-title">DESIGNING FOR TOMORROW</div>
+      <div class="col-card-item">Design for tomorrow's members while honouring your core</div>
+      <div class="col-card-item">The front door must always be welcoming to new blood</div>
+      <div class="col-card-item">Strategic decisions made for the silent majority, not the loudest voice</div>
+      <div class="col-card-item">Balance longtimer status with newcomer integration</div>
+      <div class="col-card-item">Culture that grows without becoming insular</div>
+    </div>
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-title">YOUR NORTH STAR METRIC</div>
+    <div class="metric-formula">(Members who posted or commented in last 30 days ÷ Total active members) × 100</div>
+    <div class="metric-body">This is your Community Health Score. Aim for 30% or above as a healthy baseline. Below 10% means your community is a ghost town regardless of how good your content is. Track it monthly. Act on it.</div>
+  </div>
+
+  <div class="pull-quote">"Would I want to be a member of this community? Do I feel seen, heard, and safe here?"</div>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 3 Workbook</div>
+    <h2 class="workbook-title">YOUR <span class="pink">CONNECTION</span><br>CANVAS</h2>
+    <p class="workbook-sub">Your connection architecture. Answer these and you'll have a concrete system that turns new members into tribe members. Not a philosophy. An actual plan you can build.</p>
+
+    <div class="workbook-field">
+      <div class="field-label">What does your membership stand for?</div>
+      <div class="field-why">Shared values are not a marketing exercise. They're the filter that attracts the right people and repels the wrong ones. Both outcomes are good for retention. Be specific. "We believe in X over Y" is better than vague aspiration.</div>
+      <textarea class="field-input" id="wb_values" placeholder="e.g. Ethical retention over manipulation. Evidence-based decisions. Long-term relationships over short-term extraction. Anyone looking for dark pattern tactics is not a fit."></textarea>
+      <div class="field-output" id="values_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">What would a member call themselves?</div>
+      <div class="field-why">"I'm a ___" not "I use ___." If you can't fill this in with something proud and specific, you haven't built insider culture yet. That's the gap this module closes.</div>
+      <textarea class="field-input single" id="wb_identity" placeholder="e.g. Retention Engineer, Ethical Founder, Growth Strategist..."></textarea>
+      <div class="field-output" id="identity_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Your introduction framework template</div>
+      <div class="field-why">Don't tell new members to "introduce themselves." Give them the scaffold. Specific pain, excited about, nervous about. Three lines that create genuine connection points you can act on immediately.</div>
+      <textarea class="field-input" style="min-height:140px;" id="wb_intro" placeholder="Hi, I'm [name], and I joined because [specific pain or goal].&#10;One thing I'm excited to learn here is [specific outcome].&#10;One thing I'm nervous about is [vulnerability point]."></textarea>
+      <div class="field-output" id="intro_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">How you'll spotlight members</div>
+      <div class="field-why">The featured member stays. Everyone else aspires. This is the cheapest and most powerful retention tool you have. Commit to a frequency and format. Then actually do it.</div>
+      <textarea class="field-input single" id="wb_spotlight" placeholder="e.g. Monthly written interview, shared in newsletter and community. First one goes out week 3 of launch."></textarea>
+      <div class="field-output" id="spotlight_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">Your peer-matching or accountability system</div>
+      <div class="field-why">Every peer bond is a reason to stay that has nothing to do with you. Design the architecture. Automate what you can. One good pairing can outlast years of content.</div>
+      <textarea class="field-input" id="wb_peers" placeholder="e.g. Use intake form to pair members with shared goals within 48 hours of joining. Send Friday check-in prompt template to each pair weekly."></textarea>
+      <div class="field-output" id="peers_out"></div>
+    </div>
+
+    <div class="workbook-field">
+      <div class="field-label">One insider ritual you'll launch this month</div>
+      <div class="field-why">One. Start with one. Win Wednesday. Feedback Friday. Monthly member spotlight. Pick the one most likely to stick and launch it this month before you add anything else.</div>
+      <textarea class="field-input single" id="wb_ritual" placeholder="e.g. Win Wednesday: every Wednesday, members share one win from the week. I seed it myself first."></textarea>
+      <div class="field-output" id="ritual_out"></div>
+    </div>
+
+    <!-- MISSION -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--lime);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#aaa;">Design your New Member Welcome Ritual. The system that makes someone feel seen in the first 72 hours. Then use it on your next new member and track whether they engage further within 72 hours.</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="intro" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write your introduction framework template (the one you'll give new members)</div>
+        </li>
+        <li class="mission-item" data-task="response" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Design your personal response protocol (specific, not generic)</div>
+        </li>
+        <li class="mission-item" data-task="connection" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Set up one connection point: peer match, accountability pair, or community spotlight</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 3</div>
+      </div>
+
+      <div class="callout" style="margin-top:32px;">
+        <div class="callout-label">THE STANDARD TO AIM FOR</div>
+        <p>After your welcome ritual, a new member should be able to answer three questions. I know why I'm here. I know someone who understands my situation. I feel like I belong. If they can't answer all three, the ritual needs work.</p>
+      </div>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR CONNECTION CANVAS
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your values, identity, intro framework, spotlight plan, peer system, and ritual. Keep it. Actually build it.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <nav class="footer-nav">
+    <a href="/course/module-2">← Module 2</a>
+    <a href="/course/">Course Home</a>
+    <a href="/course/module-4">Module 4 →</a>
+  </nav>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// WORKBOOK
+const fieldMap = [
+  ['wb_values', 'values_out'],
+  ['wb_identity', 'identity_out'],
+  ['wb_intro', 'intro_out'],
+  ['wb_spotlight', 'spotlight_out'],
+  ['wb_peers', 'peers_out'],
+  ['wb_ritual', 'ritual_out']
+];
+
+fieldMap.forEach(([inputId, outputId]) => {
+  document.getElementById(inputId).addEventListener('input', function() {
+    document.getElementById(outputId).textContent = this.value.trim().length > 6 ? '✓ Captured' : '';
+    saveWorkbook();
+  });
+});
+
+// MISSION
+const missionTasks = new Set();
+const TOTAL_TASKS = 3;
+
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL_TASKS * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL_TASKS;
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module3_v1';
+
+function saveWorkbook() {
+  const data = {};
+  fieldMap.forEach(([id]) => { data[id] = document.getElementById(id).value; });
+  data.mission = Array.from(missionTasks);
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    fieldMap.forEach(([id, outId]) => {
+      if (data[id]) {
+        document.getElementById(id).value = data[id];
+        if (data[id].trim().length > 6) document.getElementById(outId).textContent = '✓ Captured';
+      }
+    });
+    if (data.mission) {
+      data.mission.forEach(task => {
+        missionTasks.add(task);
+        const item = document.querySelector(`[data-task="${task}"]`);
+        if (item) item.classList.add('checked');
+      });
+      document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL_TASKS * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL_TASKS;
+    }
+  } catch(e) {}
+}
+
+// PDF
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255, 20, 147], black = [13, 13, 13], white = [248, 247, 244];
+  const lime = [57, 255, 20], yellow = [255, 230, 0];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage(); y = 0;
+    doc.setFillColor(...black); doc.rect(0, 0, W, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(0, 14, W, 1.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 3: CONNECTION CANVAS', W - M, 9, { align: 'right' });
+    y = 22;
+  }
+
+  function checkY(need) { if (y + need > H - 20) addPage(); }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...pink); doc.rect(0, 0, 6, H, 'F');
+  doc.setFillColor(...lime); doc.rect(6, 78, W - 6, 1.5, 'F');
+  doc.setFillColor(25,25,25); doc.rect(M + 4, 52, 60, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...lime);
+  doc.text('MODULE 3 OF 6: CONNECTION', M + 8, 59);
+  doc.setFontSize(48); doc.setTextColor(...white);
+  doc.text('CONNECTION', M + 4, 106);
+  doc.setTextColor(...pink);
+  doc.text('CANVAS', M + 4, 128);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Your values, identity, intro framework,', M + 4, 146);
+  doc.text('spotlight plan, peer system, and insider ritual.', M + 4, 154);
+  doc.setFillColor(...yellow); doc.rect(M + 4, 173, CW - 4, 30, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 10, 182);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text('Member Engine: memberengine.co', M + 10, 190);
+  doc.text('Belonging is not an accident.', M + 10, 197);
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'}), M + 4, H - 12);
+
+  addPage();
+
+  doc.setFillColor(...pink); doc.rect(M, y, CW, 0.5, 'F'); y += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...pink);
+  doc.text('YOUR CONNECTION CANVAS', M, y); y += 10;
+  doc.setFontSize(22); doc.setTextColor(...black);
+  doc.text('YOUR ANSWERS', M, y); y += 6;
+  doc.setFillColor(...black); doc.rect(M, y, 40, 1.5, 'F'); y += 14;
+
+  const fields = [
+    { id: 'wb_values', title: '01: WHAT YOUR MEMBERSHIP STANDS FOR', why: 'Shared values are the filter that attracts the right people and repels the wrong ones. Both outcomes are good for retention. Specificity here is a competitive advantage.' },
+    { id: 'wb_identity', title: '02: WHAT MEMBERS CALL THEMSELVES', why: '"I\'m a ___" not "I use ___." When a member has a name for themselves, the membership has become part of their identity. That is the goal of this entire module.' },
+    { id: 'wb_intro', title: '03: YOUR INTRODUCTION FRAMEWORK TEMPLATE', why: 'Give new members the scaffold. Specific pain creates peer matching. Vulnerability creates emotional safety. Structure removes friction. Three lines. Enormous impact.' },
+    { id: 'wb_spotlight', title: '04: HOW YOU WILL SPOTLIGHT MEMBERS', why: 'The featured member stays. Everyone else aspires. This is your cheapest and most powerful retention tool. Commit to a frequency and format and do not negotiate with yourself.' },
+    { id: 'wb_peers', title: '05: YOUR PEER-MATCHING SYSTEM', why: 'Every peer bond is a reason to stay that has nothing to do with you. One good pairing can outlast years of content. Design the architecture. Automate what you can.' },
+    { id: 'wb_ritual', title: '06: ONE INSIDER RITUAL TO LAUNCH THIS MONTH', why: 'One. Start with one. Pick the one most likely to stick and launch it this month before adding anything else. Rituals compound. A small ritual done consistently beats a grand plan that launches never.' }
+  ];
+
+  fields.forEach(f => {
+    const val = document.getElementById(f.id).value.trim();
+    const hasAnswer = val.length > 0;
+    const answer = val || '(Not completed yet. Return to the module and fill this in.)';
+    checkY(60);
+    doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+    doc.setFillColor(...pink); doc.rect(M, y, 3, 10, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(f.title, M + 7, y + 6.5); y += 14;
+    const whyLines = doc.splitTextToSize('WHY THIS MATTERS: ' + f.why, CW - 16);
+    const whyH = whyLines.length * 4.5 + 10;
+    checkY(whyH + 8);
+    doc.setFillColor(...yellow); doc.rect(M, y, CW, whyH, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...black);
+    whyLines.forEach((line, i) => doc.text(line, M + 8, y + 7 + i * 4.5));
+    y += whyH + 4;
+    const ansLines = doc.splitTextToSize(answer, CW - 12);
+    const ansH = ansLines.length * 5 + 14;
+    checkY(ansH + 4);
+    doc.setFillColor(hasAnswer ? 250 : 240, 250, hasAnswer ? 250 : 240);
+    doc.rect(M, y, CW, ansH, 'F');
+    if (hasAnswer) { doc.setDrawColor(...lime); doc.setLineWidth(0.5); doc.rect(M, y, CW, ansH); }
+    doc.setFont('helvetica', hasAnswer ? 'normal' : 'italic');
+    doc.setFontSize(9); doc.setTextColor(hasAnswer ? 30 : 140, hasAnswer ? 30 : 140, hasAnswer ? 30 : 140);
+    ansLines.forEach((line, i) => doc.text(line, M + 6, y + 8 + i * 5));
+    y += ansH + 16;
+  });
+
+  checkY(60);
+  doc.setFillColor(...black); doc.rect(M, y, CW, 10, 'F');
+  doc.setFillColor(...lime); doc.rect(M, y, 3, 10, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text("THIS WEEK'S MISSION: WELCOME RITUAL CHECKLIST", M + 7, y + 6.5); y += 14;
+
+  const tasks = [
+    ['intro', 'Write your introduction framework template'],
+    ['response', 'Design your personal response protocol (specific, not generic)'],
+    ['connection', 'Set up one connection point: peer match, accountability pair, or spotlight']
+  ];
+
+  tasks.forEach(([key, text]) => {
+    checkY(14);
+    const done = missionTasks.has(key);
+    doc.setFillColor(done ? 0 : 240, done ? 26 : 240, done ? 0 : 240);
+    doc.rect(M, y, CW, 11, 'F');
+    doc.setFillColor(done ? 57 : 200, done ? 255 : 200, done ? 20 : 195);
+    doc.rect(M, y, 12, 11, 'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M + 3.5, y + 7.5); }
+    doc.setFont('helvetica', done ? 'bold' : 'normal'); doc.setFontSize(9);
+    doc.setTextColor(done ? 20 : 80, done ? 20 : 80, done ? 20 : 80);
+    doc.text(text, M + 16, y + 7.5); y += 13;
+  });
+
+  y += 8; checkY(16);
+  doc.setFillColor(...yellow); doc.rect(M, y, CW, 14, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission Progress: ${missionTasks.size} of 3 complete (${Math.round(missionTasks.size/3*100)}%)`, M + 8, y + 9);
+  y += 22;
+
+  // BACK COVER
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0, 0, W, H, 'F');
+  doc.setFillColor(...lime); doc.rect(0, 0, W, 3, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...white);
+  doc.text('WHAT NEXT?', M, 60);
+  doc.setFillColor(...pink); doc.rect(M, 64, 40, 1.5, 'F');
+
+  const next = [
+    ['01', 'Implement your introduction framework with your next new member this week.'],
+    ['02', 'Launch one insider ritual. Announce it publicly. Commit to it.'],
+    ['03', 'Set up your first peer match or accountability pair.'],
+    ['04', 'Calculate your Community Health Score. Write it down. Track it monthly.'],
+    ['05', 'Move to Module 4: Communication Architecture.']
+  ];
+
+  let ny = 82;
+  next.forEach(([num, text]) => {
+    doc.setFillColor(22,22,22); doc.rect(M, ny, CW, 14, 'F');
+    doc.setFillColor(...pink); doc.rect(M, ny, 14, 14, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text(num, M + 4, ny + 9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,200,200);
+    const tl = doc.splitTextToSize(text, CW - 22);
+    tl.forEach((line, i) => doc.text(line, M + 18, ny + 6 + i * 5));
+    ny += 17;
+  });
+
+  doc.setFillColor(...yellow); doc.rect(M, H - 52, CW, 24, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M + 8, H - 43);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co: The retention framework for subscription businesses', M + 8, H - 36);
+
+  doc.save('member-engine-module-3-connection-canvas.pdf');
+}
+
+document.addEventListener('DOMContentLoaded', loadWorkbook);
+</script>
+</body>
+</html>

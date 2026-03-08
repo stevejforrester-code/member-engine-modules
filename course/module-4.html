@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4: Communication Architecture | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 60px; background: var(--black); border-bottom: 3px solid var(--pink); }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--pink); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--lime); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--pink); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--white); padding: 0 32px; }
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--lime); position: relative; overflow: hidden; }
+.module-hero::before { content: 'COMMS'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 240px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; }
+.hero-h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 8vw, 100px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .pink { color: var(--pink); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 580px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--pink); }
+.section-title:first-child { margin-top: 0; }
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+.pull-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(22px, 3vw, 32px); letter-spacing: 0.04em; line-height: 1.3; color: var(--pink); padding: 32px 40px; border-left: 6px solid var(--pink); background: var(--black); margin: 40px 0; }
+
+/* STATS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.stat-card { background: var(--black); padding: 36px 32px; border-top: 3px solid #222; transition: border-color 0.2s; }
+.stat-card:hover { border-top-color: var(--pink); }
+.stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 13px; font-weight: 300; color: #bbb; line-height: 1.5; }
+
+/* CALLOUT */
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+.callout-dark { background: var(--black); border-left: 6px solid var(--lime); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--lime); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+/* FRAMEWORK BOX */
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; background: var(--white); }
+.framework-box-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--pink); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--pink); border: 3px solid var(--white); outline: 2px solid var(--pink); border-radius: 50%; }
+.timeline-heading { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+/* EXAMPLE BOX */
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* WARNING BOX */
+.warning-box { background: var(--black); border-left: 6px solid var(--yellow); padding: 24px 28px; margin: 24px 0; }
+.warning-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.warning-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* STRATEGY */
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 0.05em; color: var(--pink); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+/* DARK SECTION */
+.dark-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--pink); border-bottom: 4px solid var(--pink); margin: 60px 0; }
+.dark-section .content-inner { max-width: 900px; margin: 0 auto; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.col-card { padding: 28px 32px; }
+.col-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.col-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.col-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.col-card.good .col-card-title { color: #1db800; }
+.col-card.bad .col-card-title { color: #d93030; }
+.col-card-item { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.col-card-item:last-child { border-bottom: none; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 180px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; color: #aaa; text-align: center; max-width: 320px; line-height: 1.5; }
+
+/* RHYTHM MAP */
+.rhythm-map { display: flex; flex-direction: column; gap: 3px; margin: 32px 0; }
+.rhythm-row { display: grid; grid-template-columns: 160px 1fr; gap: 3px; }
+.rhythm-phase-label { background: var(--black); padding: 20px 24px; display: flex; align-items: center; }
+.rhythm-phase-label span { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.1em; }
+.rhythm-phase-label.onboard span { color: var(--pink); }
+.rhythm-phase-label.weekly span { color: var(--lime); }
+.rhythm-phase-label.month3 span { color: var(--yellow); }
+.rhythm-phase-label.triggered span { color: #60a5fa; }
+.rhythm-items { background: #111; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rhythm-item { font-size: 13px; font-weight: 400; color: #ccc; background: #1a1a1a; border: 1px solid #222; padding: 6px 12px; }
+
+/* CAMPAIGN TABLE */
+.campaign-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+.campaign-table th { background: var(--black); color: var(--white); font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; padding: 14px 16px; text-align: left; border-right: 1px solid #222; }
+.campaign-table td { padding: 14px 16px; font-size: 14px; font-weight: 300; border-bottom: 1px solid var(--grey); border-right: 1px solid var(--grey); }
+.campaign-table tr:hover td { background: #f0efe9; }
+.churn-good { color: #1db800; font-weight: 600; }
+.churn-bad { color: #d93030; font-weight: 600; }
+.churn-neutral { color: #888; }
+.verdict { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.08em; padding: 4px 10px; }
+.verdict.good { background: #001a00; color: #1db800; }
+.verdict.bad { background: #1a0000; color: #d93030; }
+.verdict.warn { background: #1a1500; color: var(--yellow); }
+
+/* BILLING CHECKLIST */
+.billing-checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.billing-checklist li { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s; user-select: none; }
+.billing-checklist li:hover { border-color: var(--pink); }
+.billing-checklist li.checked { border-color: #1db800; background: #001a00; }
+.billing-checkbox { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.billing-checklist li.checked .billing-checkbox { background: #1db800; border-color: #1db800; }
+.billing-check-inner { font-size: 13px; font-weight: 700; color: var(--black); opacity: 0; }
+.billing-checklist li.checked .billing-check-inner { opacity: 1; }
+.billing-text { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.billing-checklist li.checked .billing-text { color: #1db800; }
+
+/* ONBOARDING GRID */
+.onboarding-grid { display: grid; grid-template-columns: 100px 1fr; gap: 8px 16px; align-items: center; margin: 16px 0; }
+.onboarding-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--white); }
+.onboarding-input { background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 12px 16px; font-size: 14px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); transition: border-color 0.2s; }
+.onboarding-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.onboarding-input::placeholder { color: #333; }
+
+/* WORKBOOK */
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--lime); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.workbook-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .pink { color: var(--pink); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-input.single { min-height: unset; height: 52px; resize: none; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--lime); min-height: 18px; }
+
+/* MISSION */
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--pink); background: #161616; }
+.mission-item.checked { border-color: #1db800; background: #001a00; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: #1db800; border-color: #1db800; }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: #1db800; }
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.4s; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--lime); min-width: 48px; text-align: right; }
+
+/* PDF BUTTON */
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--lime); padding: 16px 40px; border: 3px solid var(--lime); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 1px solid #1e1e1e; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--pink); }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .dark-section { padding: 60px 24px; }
+  .video-section { padding-bottom: 60px; }
+  .stat-grid, .two-col { grid-template-columns: 1fr; }
+  .rhythm-row { grid-template-columns: 1fr; }
+  .onboarding-grid { grid-template-columns: 80px 1fr; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 4: Communication Architecture</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 4 <span class="sep">✦</span></span>
+  <span class="ticker-item">COMMUNICATION ARCHITECTURE <span class="sep">✦</span></span>
+  <span class="ticker-item">WHEN HOW AND WHY YOU COMMUNICATE MATTERS <span class="sep">✦</span></span>
+  <span class="ticker-item">ANTICIPATION RITUAL TRUST <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 4 <span class="sep">✦</span></span>
+  <span class="ticker-item">COMMUNICATION ARCHITECTURE <span class="sep">✦</span></span>
+  <span class="ticker-item">WHEN HOW AND WHY YOU COMMUNICATE MATTERS <span class="sep">✦</span></span>
+  <span class="ticker-item">ANTICIPATION RITUAL TRUST <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 4 of 6</div>
+    <h1 class="hero-h1">COMM<span class="pink">UNIC</span>ATION<br>ARCHITECTURE</h1>
+    <p class="hero-sub">When, how, and why you communicate matters as much as what you say. Most memberships die quietly between billing cycles. This module fixes that.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <!-- REPLACE WITH: <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="white"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE PROBLEM</h2>
+
+  <div class="pull-quote">"Your members are drowning in noise. 100+ emails per day. Infinite scroll. Endless pings. And your membership is competing with all of it."</div>
+
+  <p class="body-text">Members forget you exist between billing cycles. They disengage. And when the charge hits, they think "wait, what even is this?" and cancel. Not out of malice. Out of forgetting.</p>
+
+  <p class="body-text">Most membership owners think the solution is to send more emails. It is not. The solution is to build a Communication Architecture: a strategic system of when, how, and why you communicate that turns your membership from a forgettable subscription into a ritualistic part of their life.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">4x</div><div class="stat-label">Higher cancellation rate for members who don't open or click your emails</div></div>
+    <div class="stat-card"><div class="stat-num">#1</div><div class="stat-label">Churn driver in most dashboards is lack of email engagement. Not product quality. Not price.</div></div>
+    <div class="stat-card"><div class="stat-num">$0</div><div class="stat-label">Difference between "what is this charge?" and a loyal member is your communication system</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE SHIFT</div>
+    <p>Communication Architecture is not about what you say. It is about creating <strong>anticipation, ritual, and trust</strong> through predictable, valuable touchpoints that members actually look forward to receiving. That's a higher bar than most memberships clear.</p>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>Transform your relationship from a transactional financial exchange into a relational "Forever Transaction." Stop talking about what you deliver. Start talking about the problems you solve for them. The first is a product pitch. The second is a relationship.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR PSYCHOLOGICAL DRIVERS</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Anticipation and Ritual</div>
+        <div class="timeline-body">Humans crave predictability. A newsletter every Friday becomes part of their weekly rhythm. They expect it, which means they miss it when it's gone. That anticipation is a retention asset you can build deliberately.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Relationship Over Message</div>
+        <div class="timeline-body">People respond to real humans, not corporate jargon. Your communications should sound like they come from a person who cares, not a marketing automation sequence that was set and forgotten in 2022.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Proactive Problem Solving</div>
+        <div class="timeline-body">Reach out before they have to reach out to you. Proactive transparency builds trust. Reactive transparency erodes it. Hiding problems destroys it. The sequence is not reversible.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Value Nurturing</div>
+        <div class="timeline-body">Post-sale communication should reinforce that they made the right decision. Give them evidence of progress and wins, especially in the first 90 days when buyer's remorse is most likely to strike.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE RHYTHM MAP</h2>
+
+  <p class="body-text">Every touchpoint in your first year should be intentional. Here's what a well-architected communication calendar looks like. Every row is deliberate. Nothing is accidental.</p>
+
+  <div class="rhythm-map">
+    <div class="rhythm-row">
+      <div class="rhythm-phase-label onboard"><span>DAYS 1-90</span></div>
+      <div class="rhythm-items">
+        <span class="rhythm-item">Day 0: Welcome video</span>
+        <span class="rhythm-item">Day 1: Success path orientation</span>
+        <span class="rhythm-item">Day 3: First quick win</span>
+        <span class="rhythm-item">Day 7: Community intro</span>
+        <span class="rhythm-item">Weeks 2-4: Weekly check-ins</span>
+      </div>
+    </div>
+    <div class="rhythm-row">
+      <div class="rhythm-phase-label weekly"><span>ONGOING WEEKLY</span></div>
+      <div class="rhythm-items">
+        <span class="rhythm-item">Ritual content delivery</span>
+        <span class="rhythm-item">Member wins spotlight</span>
+        <span class="rhythm-item">Progress validation</span>
+      </div>
+    </div>
+    <div class="rhythm-row">
+      <div class="rhythm-phase-label month3"><span>MONTH 3</span></div>
+      <div class="rhythm-items">
+        <span class="rhythm-item">Happiness Bomb (unexpected delight)</span>
+        <span class="rhythm-item">Personal check-in</span>
+      </div>
+    </div>
+    <div class="rhythm-row">
+      <div class="rhythm-phase-label month3" style="background:#001220;"><span style="color:#60a5fa;">MONTH 6+</span></div>
+      <div class="rhythm-items">
+        <span class="rhythm-item">Milestone review</span>
+        <span class="rhythm-item">Renewal reminder (annual billing)</span>
+        <span class="rhythm-item">Ascension offer</span>
+      </div>
+    </div>
+    <div class="rhythm-row">
+      <div class="rhythm-phase-label triggered"><span>EVENT-TRIGGERED</span></div>
+      <div class="rhythm-items">
+        <span class="rhythm-item">Failed payment</span>
+        <span class="rhythm-item">7-14 day inactivity</span>
+        <span class="rhythm-item">Milestone achievement</span>
+        <span class="rhythm-item">Pre-renewal (3-7 days prior)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE KEY PRINCIPLE</div>
+    <p>Every communication needs a <strong>clear goal</strong> (reassurance, action, progress validation, or trust-building) and a <strong>trigger</strong> (time-based or event-based). If you can't answer both, the communication shouldn't exist. Full stop.</p>
+  </div>
+
+  <h2 class="section-title">THE SIX STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">THE 90-DAY ONBOARDING SEQUENCE</div>
+      <p class="body-text"><strong>What it is:</strong> Heavy, intentional communication in the first 90 days that builds the engagement habit before doubt creeps in.</p>
+      <p class="body-text"><strong>Why it works:</strong> Motivation is highest at signup and decays fast. The first 90 days are when members decide if your membership becomes a habit or gets forgotten. You get one shot at this window.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">WEEK BY WEEK BREAKDOWN</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Week 1: Reassurance and Activation</div>
+        <div class="timeline-body">Day 0: Welcome video (congratulate, resell the vision, counter buyer's remorse before it happens). Day 1: "Here is what happens next" (the success path). Day 3: First quick win prompt. Day 7: Community introduction invite.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Weeks 2 to 4: Momentum Building</div>
+        <div class="timeline-body">Weekly check-ins: "Here is your focus for this week." Progress validation: "Here is what you have accomplished so far." Transition from intensive onboarding to ritualistic content delivery.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Month 3: The Happiness Bomb</div>
+        <div class="timeline-body">Send an unexpected surprise at the typical drop-off point. Physical postcard, digital bonus, or personal video. Month 3 is where most memberships lose members. Make it memorable enough that they remember why they joined.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">PRE-EMPTING THE SPOUSAL OBJECTION</div>
+    <div class="example-body">Give members the script to defend their purchase: "When your partner asks why you spent money on this, here is what to tell them: 'I invested in [specific outcome] because [specific pain]. The ROI happens when [timeframe]. This is not an expense. It is an investment in [transformation].'" Nobody teaches this. You should.</div>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">RITUALISTIC CONTENT DELIVERY</div>
+      <p class="body-text"><strong>What it is:</strong> A predictable rhythm for your core content delivery. Same day, same time, every week. No exceptions, no "this week I'm a bit busy."</p>
+      <p class="body-text"><strong>Why it works:</strong> Ritual creates habit. If members know "Tuesdays at 10am = new training drops," they build that into their schedule. Miss a Tuesday and they notice. Maintain the Tuesday and it becomes automatic.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">HOW TO LOCK IT IN</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Pick your cadence</div><div class="timeline-body">Weekly is ideal. Monthly is too infrequent for habit formation. Daily works for certain memberships. Choose what you can sustain for 52 weeks, not what sounds impressive in week one.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Pick your day and time strategically</div><div class="timeline-body">Avoid Monday mornings (chaos) and Friday afternoons (weekend mode). Best: Tuesday to Thursday mornings when attention is high. Know your audience's actual schedule.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Pick your format</div><div class="timeline-body">Newsletter, video, podcast episode, or live session. The format matters less than the consistency. Choose what you can actually produce every single week without burning out.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Announce it explicitly</div><div class="timeline-body">"Every Tuesday at 10am, you will get the Weekly Retention Breakdown. Set a reminder. Grab your coffee. This is our time together." Don't assume they'll figure out the pattern. Tell them.</div></div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">REAL EXAMPLE: JAMES CLEAR'S 3-2-1 THURSDAY</div>
+    <div class="example-body">Every Thursday, like clockwork, for years. Readers expect it, plan for it, look forward to it. Miss a Thursday and readers email asking if everything is okay. That is what ritual does. It turns your audience into people who notice your absence.</div>
+  </div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">THE LOCAL NEWSPAPER STRATEGY</div>
+      <p class="body-text"><strong>What it is:</strong> Shift your communications from "here is what I am teaching" to "here is what our members are accomplishing." Make them the heroes. Consistently.</p>
+      <p class="body-text"><strong>Why it works:</strong> People care more about themselves than about you. When you spotlight members, everyone pays attention hoping to be featured next. It is a self-reinforcing loop that costs you almost nothing to run.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR CONTENT FORMATS</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Member Wins</div><div class="timeline-body">"This week, three members hit [milestone]." Short, specific, celebratory. Appears in every newsletter. Creates aspiration in the readers who haven't hit it yet.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Member Spotlight</div><div class="timeline-body">Weekly or monthly feature interview. One member, their journey, their result. The featured member stays and tells everyone about it. Everyone else aspires to be featured next.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Circle of Awesomeness</div><div class="timeline-body">Curated member-generated content from the week. The best posts, questions, and insights from your community surfaced for everyone. Rewards contribution with visibility. Visibility drives more contribution.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Progress Leaderboard</div><div class="timeline-body">Who completed the most lessons, who helped the most members, who hit the biggest milestone. Gamification tied directly to your newsletter. Works best when the behaviours being rewarded are genuinely valuable.</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">FLEXIBLE PARTICIPATION</div>
+      <p class="body-text"><strong>What it is:</strong> Giving members explicit permission to engage at their own pace without guilt. This sounds soft. It is actually a hard retention strategy.</p>
+      <p class="body-text"><strong>Why it works:</strong> "Always-on" programming creates burnout. When members feel like they're falling behind, they disengage completely rather than partially. The shame-spiral is real and it kills memberships.</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card good">
+      <div class="col-card-title">BUILD THIS IN</div>
+      <div class="col-card-item">TL;DR summaries on every email and video</div>
+      <div class="col-card-item">Intentional rest phases: "This week is catch-up week"</div>
+      <div class="col-card-item">Multiple consumption modes: video, transcript, audio</div>
+      <div class="col-card-item">"Behind? Start here" with a clear re-entry point</div>
+    </div>
+    <div class="col-card bad">
+      <div class="col-card-title">AVOID THIS</div>
+      <div class="col-card-item">Daily content pressure with no rest built in</div>
+      <div class="col-card-item">No guidance for members who have fallen behind</div>
+      <div class="col-card-item">Single consumption format with no alternatives</div>
+      <div class="col-card-item">Guilt-implying language: "Don't fall behind!"</div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">THE "LIFE HAPPENS" MESSAGE</div>
+    <div class="example-body">"Life happens. If you've fallen behind, don't try to catch up on everything. Just jump in here: [link to current focus]. The rest will be here when you need it." Three sentences. Removes the shame. Saves the membership.</div>
+  </div>
+
+  <!-- Strategy 5 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">05</div>
+    <div>
+      <div class="strategy-title">ETHICAL BILLING COMMUNICATION</div>
+      <p class="body-text"><strong>What it is:</strong> How you communicate around money. This matters more than most membership owners realise, and the failure modes are expensive.</p>
+      <p class="body-text"><strong>Why it works:</strong> Money is emotional. Surprise charges, confusing billing, and defensive language erode trust instantly and permanently. The "I don't recognise this charge" fraud report is entirely preventable.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">FOUR BILLING FIXES</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">31-Day Billing Cycles</div>
+        <div class="timeline-body">Standard 30-day cycles can charge twice in one calendar month (August 1st and August 31st). This triggers "double charge" complaints and chargebacks. Billing every 31 days eliminates this friction entirely at zero cost to you. Switch this today.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Pre-Renewal Notifications</div>
+        <div class="timeline-body">Send a reminder 3 to 7 days before any annual renewal. Include: the amount, the date, and how to cancel. Required by law in many jurisdictions. Non-negotiable on ethical grounds regardless of what the law says in yours.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Merchant Descriptor Optimisation</div>
+        <div class="timeline-body">Your credit card statement line must include your brand name (not a cryptic LLC), your website URL, and a support contact. The "I don't recognise this charge" chargeback is entirely preventable and costs you far more than fixing the descriptor.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">The "Missing Info" Dunning Script</div>
+        <div class="timeline-body">When a card fails, don't say "Payment Failed" (accusatory). Say "We're Missing Some Info" (collaborative). Same situation. Radically different emotional response from the member. Words matter when money is involved.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy 6 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">06</div>
+    <div>
+      <div class="strategy-title">FEEDBACK LOOPS AND GRACEFUL EXITS</div>
+      <p class="body-text">Two things most memberships neglect: asking members what they want, and making it easy to leave. Both seem counterintuitive. Both drive retention.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">DIAGNOSTIC FEEDBACK LOOPS</div>
+    <ul class="checklist">
+      <li>Quarterly roadmap survey: "What should we build or focus on next?"</li>
+      <li>Feature voting: Let members prioritise upcoming content</li>
+      <li>Beta testing: Invite members to test new things early</li>
+      <li>"You asked, we built it" announcements that explicitly close the loop</li>
+    </ul>
+    <div class="example-box" style="margin-top:20px;">
+      <div class="example-label">WHY THIS BUILDS RETENTION</div>
+      <div class="example-body">"Last month, 47 of you asked for more implementation templates. So we built them. Here they are." When members help create the solution, they are more invested in staying to use it. This is the Investment phase of the Hook Model running inside your newsletter.</div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">GRACEFUL OFFBOARDING OPTIONS</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">The Pause Option</div><div class="timeline-body">Offer the option to pause for 1 to 3 months before cancelling. "A break, not a breakup." They retain their status and pricing. You retain the member long-term. Costs you nothing in the short run.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">The Downgrade Path</div><div class="timeline-body">Offer a lower-tier option before they leave entirely. Some revenue beats none. And a downgraded member is far easier to upgrade later than a cancelled one is to re-acquire.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">The Store Credit Pivot</div><div class="timeline-body">If a member requests a refund, offer double the value in store credit instead of cash. Keeps them inside your ecosystem. Resolves the immediate financial objection without losing them forever.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">The Easy Exit</div><div class="timeline-body">If they signed up online, they can cancel online. No "call to cancel" when they signed up with a click. The FTC's Click to Cancel rule is law in many jurisdictions. Build the easy exit before you're forced to.</div></div>
+    </div>
+  </div>
+
+  <!-- ETHICS CHECK -->
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="callout">
+    <div class="callout-label">THE GOLDEN RULE</div>
+    <p>Make the exit process as easy as the sign-up process. Full stop. Every obstacle you add to cancellation is borrowed trust you'll pay back with interest in chargebacks, reviews, and reputation damage.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card good">
+      <div class="col-card-title">GARDEN FENCE (ETHICAL)</div>
+      <div class="col-card-item">Protect and nurture members who want to be there</div>
+      <div class="col-card-item">Visible "Cancel anytime" on the signup page</div>
+      <div class="col-card-item">Pre-renewal reminders for annual billing</div>
+      <div class="col-card-item">Clear, honest language in all financial communications</div>
+      <div class="col-card-item">You contact them about failed payments before they contact you</div>
+    </div>
+    <div class="col-card bad">
+      <div class="col-card-title">PRISON FENCE (MANIPULATIVE)</div>
+      <div class="col-card-item">Hidden cancel buttons or "call to cancel" flows</div>
+      <div class="col-card-item">Guilt-tripping surveys that block the cancellation button</div>
+      <div class="col-card-item">Surprise charges without any prior warning</div>
+      <div class="col-card-item">Billing descriptors that don't match your brand name</div>
+      <div class="col-card-item">Making them contact support to do something they did online</div>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-label">REGULATORY REALITY</div>
+    <div class="warning-body">The FTC's "Click to Cancel" rule is now law in many jurisdictions. Adding obstacles to cancellation is not just unethical. It is illegal and will destroy your brand reputation when it surfaces publicly. Build the easy exit now, before you're forced to under worse circumstances.</div>
+  </div>
+
+  <div class="pull-quote">"If I were the member, would I feel respected and valued in how this business communicates with me about money?"</div>
+
+  <!-- REAL WORLD TEARDOWN -->
+  <h2 class="section-title">REAL WORLD TEARDOWN</h2>
+
+  <p class="body-text">This is what data-driven communication architecture looks like. Every campaign you send should be analysed for its impact on retention, not just opens and clicks. The metric that matters is what happens to members after they receive each email.</p>
+
+  <div class="visual-placeholder">
+    <div class="visual-placeholder-icon">📊</div>
+    <div class="visual-placeholder-label">SCREENSHOT PLACEHOLDER</div>
+    <div class="visual-placeholder-sub">Add a screenshot of your email platform's campaign analytics, annotated with retention impact per campaign type</div>
+  </div>
+
+  <table class="campaign-table">
+    <thead>
+      <tr>
+        <th>Campaign</th>
+        <th>Open Rate</th>
+        <th>Click Rate</th>
+        <th>Recipient Churn</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Monthly Newsletter</td>
+        <td>42%</td>
+        <td>18%</td>
+        <td class="churn-good">5.2%</td>
+        <td><span class="verdict good">Retain</span></td>
+      </tr>
+      <tr>
+        <td>Welcome Series</td>
+        <td>93.3%</td>
+        <td class="churn-neutral">0%</td>
+        <td>6.1%</td>
+        <td><span class="verdict warn">Fix CTA</span></td>
+      </tr>
+      <tr>
+        <td>Feature Update</td>
+        <td>31%</td>
+        <td>9%</td>
+        <td class="churn-bad">7.8%</td>
+        <td><span class="verdict bad">Killing Retention</span></td>
+      </tr>
+      <tr>
+        <td>Member Spotlight</td>
+        <td>58%</td>
+        <td>27%</td>
+        <td class="churn-good">4.1%</td>
+        <td><span class="verdict good">Retain</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="framework-box">
+    <div class="framework-box-title">HOW TO READ THIS DATA</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">Monthly Newsletter: 5.2% churn (below the 6.7% average)</div>
+        <div class="timeline-body">This email actively prevents churn. It delivers value predictably. Protect the ritual. Never skip this one.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Feature Update: 7.8% churn (well above average)</div>
+        <div class="timeline-body">Members who receive this email are more likely to cancel. This is content for the creator, not the member. Either kill it or reframe it entirely around member benefit. "We built this because you asked for it" is different from "here's what we've been working on."</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">Welcome Series: 93.3% open rate but 0% click rate</div>
+        <div class="timeline-body">Members are curious enough to open but not compelled enough to act. The message is right. The next step is wrong. Fix the CTA, not the subject line.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="body-text">The metric to track: <strong>Recipient Churn Rate by Campaign.</strong> Which emails help retention? Which ones hurt it? This is your communication audit. Run it quarterly.</p>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 4 Workbook</div>
+    <h2 class="workbook-title">YOUR COMM<span class="pink">UNIC</span>ATION<br>ARCHITECTURE CANVAS</h2>
+    <p class="workbook-sub">Map your 90-day onboarding sequence, lock in your ritual content plan, and audit your billing communications. This is the blueprint you'll actually build from.</p>
+
+    <!-- 90-Day Map -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR 90-DAY ONBOARDING MAP</div>
+      <div class="field-why">Map what happens at each touchpoint. What's the trigger? What's the goal? What ritual are you establishing? If you can't answer all three for each row, the communication doesn't exist yet.</div>
+      <div class="onboarding-grid" id="onboardingGrid">
+        <span class="onboarding-label">DAY 0</span>
+        <input class="onboarding-input" id="bp_d0" placeholder="Welcome video content and goal">
+        <span class="onboarding-label">DAY 1</span>
+        <input class="onboarding-input" id="bp_d1" placeholder="Success path orientation">
+        <span class="onboarding-label">DAY 3</span>
+        <input class="onboarding-input" id="bp_d3" placeholder="First quick win prompt">
+        <span class="onboarding-label">DAY 7</span>
+        <input class="onboarding-input" id="bp_d7" placeholder="Community introduction invite">
+        <span class="onboarding-label">WEEKS 2-4</span>
+        <input class="onboarding-input" id="bp_w24" placeholder="Weekly check-ins and progress validation">
+        <span class="onboarding-label">MONTH 2</span>
+        <input class="onboarding-input" id="bp_m2" placeholder="Transition to ritual content cadence">
+        <span class="onboarding-label">MONTH 3</span>
+        <input class="onboarding-input" id="bp_m3" placeholder="Happiness Bomb: unexpected surprise">
+      </div>
+      <div class="field-output" id="onboard_out"></div>
+    </div>
+
+    <!-- Ritual Content -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR RITUAL CONTENT PLAN</div>
+      <div class="field-why">One format, one cadence, locked in for 52 weeks. Not "I'll try a newsletter and see how it goes." A commitment to a specific time and format that members can build their routine around.</div>
+      <textarea class="field-input" id="wb_ritual" placeholder="My weekly ritual: every [day] at [time], members receive [format] containing [what]. TL;DR included: yes/no. I will sustain this for at least 12 months because [reason it's achievable]."></textarea>
+      <div class="field-output" id="ritual_out"></div>
+    </div>
+
+    <!-- Failed comms -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR CAMPAIGN AUDIT</div>
+      <div class="field-why">Name one email in your current sequence that's probably working against retention. Describe how you'll reframe it from creator-centric to member-centric. "Here's what I built" vs "Here's what you asked for."</div>
+      <textarea class="field-input" id="wb_audit" placeholder="The email that's probably hurting retention: [name]. Why: it talks about what I'm delivering, not what they're getting. Reframe: ..."></textarea>
+      <div class="field-output" id="audit_out"></div>
+    </div>
+
+    <!-- Billing Ethics -->
+    <div class="workbook-field">
+      <div class="field-label">BILLING ETHICS CHECKLIST</div>
+      <div class="field-why">These aren't suggestions. Tick them off. Each one you haven't done is a preventable churn event waiting to happen.</div>
+      <ul class="billing-checklist" id="billingChecklist">
+        <li data-task="billing31" onclick="toggleBilling(this)">
+          <div class="billing-checkbox"><div class="billing-check-inner">✓</div></div>
+          <div class="billing-text">Billing cycle set to 31 days, not 30</div>
+        </li>
+        <li data-task="prerenewal" onclick="toggleBilling(this)">
+          <div class="billing-checkbox"><div class="billing-check-inner">✓</div></div>
+          <div class="billing-text">Pre-renewal notifications scheduled 3 to 7 days before any annual charge</div>
+        </li>
+        <li data-task="descriptor" onclick="toggleBilling(this)">
+          <div class="billing-checkbox"><div class="billing-check-inner">✓</div></div>
+          <div class="billing-text">Merchant descriptor includes brand name, website URL, and support contact</div>
+        </li>
+        <li data-task="cancel" onclick="toggleBilling(this)">
+          <div class="billing-checkbox"><div class="billing-check-inner">✓</div></div>
+          <div class="billing-text">Cancel process is no harder than the sign-up process</div>
+        </li>
+        <li data-task="dunning" onclick="toggleBilling(this)">
+          <div class="billing-checkbox"><div class="billing-check-inner">✓</div></div>
+          <div class="billing-text">Failed payment uses "We're missing some info" language, not "Payment Failed"</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- MISSION -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--lime);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#aaa;">Build your 90-Day Onboarding Communication Map. For each touchpoint, define the trigger, the goal, and the ritual. Then audit your billing communications against the checklist above.</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="trigger" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define what triggers each communication (time-based or event-based)</div>
+        </li>
+        <li class="mission-item" data-task="goal" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Define the goal of each message (reassurance, action, or progress validation)</div>
+        </li>
+        <li class="mission-item" data-task="ritual" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Lock in your ritual content cadence (day, time, format, for 52 weeks)</div>
+        </li>
+        <li class="mission-item" data-task="billing" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Complete the billing ethics checklist above (all five items)</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 4</div>
+      </div>
+
+      <div class="callout" style="margin-top:32px;">
+        <div class="callout-label">THE STANDARD TO AIM FOR</div>
+        <p>Every member should be able to predict when they will hear from you, what they will receive, and what action you want them to take. Predictability is the foundation of trust. Trust is the foundation of retention. Build the predictability first.</p>
+      </div>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR COMMUNICATION CANVAS
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your 90-day map, ritual content plan, campaign audit, billing checklist, and mission progress. The blueprint you'll actually build from.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <nav class="footer-nav">
+    <a href="/course/module-3">← Module 3</a>
+    <a href="/course/">Course Home</a>
+    <a href="/course/module-5">Module 5 →</a>
+  </nav>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// WORKBOOK TEXT FIELDS
+const fieldMap = [
+  ['wb_ritual', 'ritual_out'],
+  ['wb_audit', 'audit_out']
+];
+fieldMap.forEach(([id, outId]) => {
+  document.getElementById(id).addEventListener('input', function() {
+    document.getElementById(outId).textContent = this.value.trim().length > 6 ? '✓ Captured' : '';
+    saveWorkbook();
+  });
+});
+
+// ONBOARDING GRID INPUTS
+const onboardIds = ['bp_d0','bp_d1','bp_d3','bp_d7','bp_w24','bp_m2','bp_m3'];
+onboardIds.forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    const filled = onboardIds.filter(i => document.getElementById(i).value.trim().length > 2).length;
+    document.getElementById('onboard_out').textContent = filled > 0 ? `✓ ${filled} of 7 touchpoints mapped` : '';
+    saveWorkbook();
+  });
+});
+
+// BILLING
+const billingTasks = new Set();
+function toggleBilling(item) {
+  const task = item.dataset.task;
+  billingTasks.has(task) ? billingTasks.delete(task) : billingTasks.add(task);
+  item.classList.toggle('checked', billingTasks.has(task));
+  saveWorkbook();
+}
+
+// MISSION
+const missionTasks = new Set();
+const TOTAL = 4;
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module4_v1';
+function saveWorkbook() {
+  const data = {};
+  fieldMap.forEach(([id]) => { data[id] = document.getElementById(id).value; });
+  onboardIds.forEach(id => { data[id] = document.getElementById(id).value; });
+  data.billing = Array.from(billingTasks);
+  data.mission = Array.from(missionTasks);
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    fieldMap.forEach(([id, outId]) => {
+      if (data[id]) { document.getElementById(id).value = data[id]; if (data[id].trim().length > 6) document.getElementById(outId).textContent = '✓ Captured'; }
+    });
+    onboardIds.forEach(id => { if (data[id]) document.getElementById(id).value = data[id]; });
+    const filled = onboardIds.filter(i => document.getElementById(i).value.trim().length > 2).length;
+    if (filled > 0) document.getElementById('onboard_out').textContent = `✓ ${filled} of 7 touchpoints mapped`;
+    if (data.billing) data.billing.forEach(t => { billingTasks.add(t); const el = document.querySelector(`#billingChecklist [data-task="${t}"]`); if (el) el.classList.add('checked'); });
+    if (data.mission) {
+      data.mission.forEach(t => { missionTasks.add(t); const el = document.querySelector(`#missionList [data-task="${t}"]`); if (el) el.classList.add('checked'); });
+      document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+    }
+  } catch(e) {}
+}
+
+// PDF
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255,20,147], black = [13,13,13], white = [248,247,244], lime = [57,255,20], yellow = [255,230,0];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage(); y = 0;
+    doc.setFillColor(...black); doc.rect(0,0,W,14,'F');
+    doc.setFillColor(...pink); doc.rect(0,14,W,1.5,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 4: COMMUNICATION CANVAS', W-M, 9, {align:'right'});
+    y = 22;
+  }
+  function checkY(n) { if (y+n > H-20) addPage(); }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...pink); doc.rect(0,0,6,H,'F');
+  doc.setFillColor(...lime); doc.rect(6,78,W-6,1.5,'F');
+  doc.setFillColor(25,25,25); doc.rect(M+4,52,80,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...lime);
+  doc.text('MODULE 4 OF 6: COMMUNICATION ARCHITECTURE', M+8, 59);
+  doc.setFontSize(40); doc.setTextColor(...white);
+  doc.text('COMMUNICATION', M+4, 104);
+  doc.setTextColor(...pink);
+  doc.text('ARCHITECTURE CANVAS', M+4, 126);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Your 90-day onboarding map, ritual content plan,', M+4, 144);
+  doc.text('campaign audit, and billing ethics checklist.', M+4, 152);
+  doc.setFillColor(...yellow); doc.rect(M+4,171,CW-4,30,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M+10, 180);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Member Engine: memberengine.co', M+10, 188);
+  doc.text('When, how, and why you communicate matters.', M+10, 195);
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}), M+4, H-12);
+
+  addPage();
+
+  // ONBOARDING MAP
+  doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+  doc.setFillColor(...pink); doc.rect(M,y,3,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text('YOUR 90-DAY ONBOARDING MAP', M+7, y+6.5); y+=14;
+
+  const onboardRows = [
+    ['DAY 0', 'bp_d0'], ['DAY 1', 'bp_d1'], ['DAY 3', 'bp_d3'], ['DAY 7', 'bp_d7'],
+    ['WEEKS 2-4', 'bp_w24'], ['MONTH 2', 'bp_m2'], ['MONTH 3', 'bp_m3']
+  ];
+  onboardRows.forEach(([label, id]) => {
+    checkY(14);
+    const val = document.getElementById(id).value.trim() || '(not filled in yet)';
+    doc.setFillColor(20,20,20); doc.rect(M,y,34,11,'F');
+    doc.setFillColor(hasVal(id)?30:18, hasVal(id)?30:18, hasVal(id)?30:18); doc.rect(M+34,y,CW-34,11,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...pink);
+    doc.text(label, M+4, y+7.5);
+    doc.setFont('helvetica', hasVal(id)?'normal':'italic'); doc.setTextColor(hasVal(id)?200:100, hasVal(id)?200:100, hasVal(id)?200:100);
+    const lines = doc.splitTextToSize(val, CW-42);
+    doc.text(lines[0], M+38, y+7.5);
+    y+=13;
+  });
+  y+=8;
+
+  // TEXT FIELDS
+  const pdfFields = [
+    { id: 'wb_ritual', title: 'YOUR RITUAL CONTENT PLAN', why: 'One format, one cadence, locked in for 52 weeks. If you cannot describe when, what, and why you will sustain it, you do not have a ritual yet. You have an intention.' },
+    { id: 'wb_audit', title: 'YOUR CAMPAIGN AUDIT', why: 'Name the email that is probably working against retention. The Feature Update that talks about what you built instead of what they asked for. The one that would score above your average churn rate. Fix it.' }
+  ];
+
+  pdfFields.forEach(f => {
+    const val = document.getElementById(f.id).value.trim();
+    const has = val.length > 0;
+    checkY(60);
+    doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(...pink); doc.rect(M,y,3,10,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(f.title, M+7, y+6.5); y+=14;
+    const wl = doc.splitTextToSize('WHY THIS MATTERS: '+f.why, CW-16);
+    const wh = wl.length*4.5+10;
+    checkY(wh+8);
+    doc.setFillColor(...yellow); doc.rect(M,y,CW,wh,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...black);
+    wl.forEach((line,i) => doc.text(line, M+8, y+7+i*4.5));
+    y+=wh+4;
+    const answer = val || '(Not completed yet.)';
+    const al = doc.splitTextToSize(answer, CW-12);
+    const ah = al.length*5+14;
+    checkY(ah+4);
+    doc.setFillColor(has?250:240, 250, has?250:240); doc.rect(M,y,CW,ah,'F');
+    if (has) { doc.setDrawColor(...lime); doc.setLineWidth(0.5); doc.rect(M,y,CW,ah); }
+    doc.setFont('helvetica',has?'normal':'italic'); doc.setFontSize(9);
+    doc.setTextColor(has?30:140, has?30:140, has?30:140);
+    al.forEach((line,i) => doc.text(line, M+6, y+8+i*5));
+    y+=ah+16;
+  });
+
+  // BILLING CHECKLIST
+  checkY(60);
+  doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+  doc.setFillColor(...yellow); doc.rect(M,y,3,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text('BILLING ETHICS CHECKLIST', M+7, y+6.5); y+=14;
+
+  const bItems = [
+    ['billing31','Billing cycle set to 31 days, not 30'],
+    ['prerenewal','Pre-renewal notifications 3 to 7 days before annual charge'],
+    ['descriptor','Merchant descriptor: brand name, URL, and support contact'],
+    ['cancel','Cancel process is no harder than the sign-up process'],
+    ['dunning','"We\'re missing some info" language on failed payments']
+  ];
+  bItems.forEach(([k,txt]) => {
+    checkY(12);
+    const done = billingTasks.has(k);
+    doc.setFillColor(done?0:240, done?26:240, done?0:240); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(done?57:200,done?255:200,done?20:195); doc.rect(M,y,12,10,'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M+3.5, y+7); }
+    doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+    doc.setTextColor(done?20:80, done?20:80, done?20:80);
+    doc.text(txt, M+16, y+7); y+=12;
+  });
+  y+=8;
+
+  // MISSION
+  checkY(50);
+  doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+  doc.setFillColor(...lime); doc.rect(M,y,3,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+  doc.text("THIS WEEK'S MISSION", M+7, y+6.5); y+=14;
+  const mItems = [
+    ['trigger','Define what triggers each communication (time-based or event-based)'],
+    ['goal','Define the goal of each message (reassurance, action, progress validation)'],
+    ['ritual','Lock in your ritual content cadence (day, time, format, 52 weeks)'],
+    ['billing','Complete the billing ethics checklist (all five items)']
+  ];
+  mItems.forEach(([k,txt]) => {
+    checkY(12);
+    const done = missionTasks.has(k);
+    doc.setFillColor(done?0:240,done?26:240,done?0:240); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(done?57:200,done?255:200,done?20:195); doc.rect(M,y,12,10,'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M+3.5, y+7); }
+    doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+    doc.setTextColor(done?20:80,done?20:80,done?20:80);
+    const lines = doc.splitTextToSize(txt, CW-22);
+    lines.forEach((l,i) => doc.text(l, M+16, y+6+i*4.5));
+    y+=12;
+  });
+  y+=8; checkY(14);
+  doc.setFillColor(...yellow); doc.rect(M,y,CW,12,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission: ${missionTasks.size} of 4 complete (${Math.round(missionTasks.size/4*100)}%)`, M+8, y+8.5);
+  y+=20;
+
+  // BACK COVER
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...lime); doc.rect(0,0,W,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...white);
+  doc.text('WHAT NEXT?', M, 60);
+  doc.setFillColor(...pink); doc.rect(M,64,40,1.5,'F');
+  const next = [
+    ['01','Map your full 90-day onboarding sequence. Every touchpoint, every goal, every trigger.'],
+    ['02','Lock in your ritual content cadence. Announce it to members this week.'],
+    ['03','Identify your highest-churn campaign. Reframe it around member benefit, not your delivery.'],
+    ['04','Complete the billing ethics checklist. Fix whatever is not ticked.'],
+    ['05','Move to Module 5: Detection.']
+  ];
+  let ny = 82;
+  next.forEach(([n,t]) => {
+    doc.setFillColor(22,22,22); doc.rect(M,ny,CW,14,'F');
+    doc.setFillColor(...pink); doc.rect(M,ny,14,14,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text(n, M+4, ny+9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,200,200);
+    const tl = doc.splitTextToSize(t, CW-22);
+    tl.forEach((l,i) => doc.text(l, M+18, ny+6+i*5));
+    ny+=17;
+  });
+  doc.setFillColor(...yellow); doc.rect(M,H-52,CW,24,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M+8, H-43);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co: The retention framework for subscription businesses', M+8, H-36);
+
+  doc.save('member-engine-module-4-communication-canvas.pdf');
+}
+
+function hasVal(id) { return document.getElementById(id).value.trim().length > 2; }
+document.addEventListener('DOMContentLoaded', loadWorkbook);
+</script>
+</body>
+</html>

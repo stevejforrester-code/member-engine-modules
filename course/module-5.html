@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 5: Detection | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 60px; background: var(--black); border-bottom: 3px solid var(--pink); }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--pink); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--lime); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--pink); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--white); padding: 0 32px; }
+.ticker-item .sep { color: var(--yellow); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--lime); position: relative; overflow: hidden; }
+.module-hero::before { content: 'DETECT'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 240px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; }
+.hero-h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 8vw, 100px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .pink { color: var(--pink); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 580px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--pink); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--pink); }
+.section-title:first-child { margin-top: 0; }
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+.pull-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(22px, 3vw, 32px); letter-spacing: 0.04em; line-height: 1.3; color: var(--pink); padding: 32px 40px; border-left: 6px solid var(--pink); background: var(--black); margin: 40px 0; }
+
+/* STATS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.stat-card { background: var(--black); padding: 36px 32px; border-top: 3px solid #222; transition: border-color 0.2s; }
+.stat-card:hover { border-top-color: var(--pink); }
+.stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; letter-spacing: 0.03em; color: var(--pink); line-height: 1; margin-bottom: 8px; }
+.stat-label { font-size: 13px; font-weight: 300; color: #bbb; line-height: 1.5; }
+
+/* CALLOUT */
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+.callout-dark { background: var(--black); border-left: 6px solid var(--lime); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--lime); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+.callout-red { background: #1a0000; border-left: 6px solid var(--pink); padding: 32px 36px; margin: 32px 0; }
+.callout-red .callout-label { color: var(--pink); }
+.callout-red p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+/* FRAMEWORK BOX */
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; background: var(--white); }
+.framework-box-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--pink); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--pink); border: 3px solid var(--white); outline: 2px solid var(--pink); border-radius: 50%; }
+.timeline-heading { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-heading.danger { color: var(--pink); }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+/* EXAMPLE BOX */
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+.example-body p { margin-bottom: 8px; }
+.example-body p:last-child { margin-bottom: 0; }
+
+/* WARNING BOX */
+.warning-box { background: var(--black); border-left: 6px solid var(--yellow); padding: 24px 28px; margin: 24px 0; }
+.warning-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.warning-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* STRATEGY */
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 0.05em; color: var(--pink); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.col-card { padding: 28px 32px; }
+.col-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.col-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.col-card.amber { background: #1a1200; border-top: 3px solid var(--yellow); }
+.col-card.blue { background: #001020; border-top: 3px solid #60a5fa; }
+.col-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.col-card.good .col-card-title { color: #1db800; }
+.col-card.bad .col-card-title { color: #d93030; }
+.col-card.amber .col-card-title { color: var(--yellow); }
+.col-card.blue .col-card-title { color: #60a5fa; }
+.col-card-item { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.col-card-item:last-child { border-bottom: none; }
+.col-card p { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; margin-bottom: 8px; }
+.col-card p:last-child { margin-bottom: 0; }
+
+/* FOUR COL WIN-BACK */
+.four-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+
+/* CHURN TIMELINE VISUAL */
+.churn-timeline { margin: 32px 0; display: flex; flex-direction: column; gap: 3px; }
+.churn-row { display: grid; grid-template-columns: 90px 1fr; gap: 3px; align-items: stretch; }
+.churn-label { background: var(--black); padding: 14px 16px; display: flex; align-items: center; }
+.churn-label span { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; color: #888; }
+.churn-label.w8 span { color: #888; }
+.churn-label.w6 span { color: #a0a0a0; }
+.churn-label.w4 span { color: #d97706; }
+.churn-label.w2 span { color: #ef4444; }
+.churn-label.w0 span { color: var(--pink); font-size: 16px; }
+.churn-bar { padding: 14px 20px; display: flex; align-items: center; font-size: 14px; font-weight: 300; line-height: 1.4; }
+.churn-bar.w8 { background: #161616; color: #888; width: 40%; min-width: 200px; border-left: 3px solid #333; }
+.churn-bar.w6 { background: #1a1600; color: #ccc; width: 55%; min-width: 250px; border-left: 3px solid #d97706; }
+.churn-bar.w4 { background: #1a0800; color: #ccc; width: 70%; min-width: 300px; border-left: 3px solid #ef4444; }
+.churn-bar.w2 { background: #200000; color: #ccc; width: 85%; min-width: 350px; border-left: 3px solid var(--pink); }
+.churn-bar.w0 { background: #2a0000; color: var(--pink); width: 100%; border-left: 3px solid var(--pink); font-weight: 600; }
+.opportunity-band { background: var(--black); border: 2px solid var(--lime); border-left: 6px solid var(--lime); padding: 20px 28px; margin: 16px 0; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.06em; color: var(--lime); }
+
+/* ENGAGEMENT SCORING */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+.score-col-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 16px; }
+.score-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--grey); }
+.score-row:last-child { border-bottom: none; }
+.score-badge { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.06em; padding: 4px 10px; min-width: 64px; text-align: center; flex-shrink: 0; }
+.score-badge.pts { background: #001a00; color: #1db800; }
+.score-badge.healthy { background: #001a00; color: #1db800; }
+.score-badge.atrisk { background: #1a1200; color: var(--yellow); }
+.score-badge.critical { background: #1a0000; color: #d93030; }
+.score-desc { font-size: 14px; font-weight: 300; color: #444; }
+.redflag-list { list-style: none; margin: 16px 0; }
+.redflag-item { font-size: 14px; font-weight: 300; color: #444; padding: 8px 0 8px 20px; border-bottom: 1px solid var(--grey); position: relative; }
+.redflag-item:last-child { border-bottom: none; }
+.redflag-item::before { content: '⚠'; position: absolute; left: 0; color: #d97706; font-size: 13px; }
+
+/* PLAYBOOK CARDS */
+.playbook-card { border: 3px solid var(--black); margin: 16px 0; }
+.playbook-title { background: var(--black); padding: 14px 20px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; color: var(--white); }
+.playbook-row { display: grid; grid-template-columns: 80px 1fr; gap: 0; border-top: 1px solid var(--grey); }
+.playbook-label { background: var(--grey); padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #666; display: flex; align-items: center; }
+.playbook-val { padding: 12px 16px; font-size: 14px; font-weight: 300; color: #333; line-height: 1.5; }
+
+/* DUNNING */
+.dunning-seq { display: flex; flex-direction: column; gap: 3px; margin: 24px 0; }
+.dunning-row { display: grid; grid-template-columns: 100px 1fr; gap: 3px; }
+.dunning-day-badge { padding: 20px 16px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; text-align: center; }
+.dunning-day-badge.d0 { background: #001220; color: #60a5fa; }
+.dunning-day-badge.d3 { background: #1a1200; color: var(--yellow); }
+.dunning-day-badge.d7 { background: #1a0000; color: #d93030; }
+.dunning-day-badge.pre { background: #001a00; color: #1db800; }
+.dunning-content { background: #111; padding: 20px 24px; }
+.dunning-subject { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+.dunning-body { font-size: 13px; font-weight: 300; color: #aaa; line-height: 1.6; font-style: italic; }
+
+/* METRICS GRID */
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 24px 0; }
+.metric-card { background: var(--black); padding: 24px 20px; }
+.metric-val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 0.04em; line-height: 1; margin-bottom: 6px; }
+.metric-val.good { color: #1db800; }
+.metric-val.warn { color: var(--yellow); }
+.metric-val.great { color: var(--lime); }
+.metric-val.neutral { color: var(--white); }
+.metric-name { font-size: 12px; font-weight: 600; color: #ccc; margin-bottom: 4px; line-height: 1.3; }
+.metric-sub { font-size: 11px; font-weight: 300; color: #666; line-height: 1.4; }
+.metrics-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+
+/* CAMPAIGN TABLE */
+.campaign-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+.campaign-table th { background: var(--black); color: var(--white); font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; padding: 14px 16px; text-align: left; border-right: 1px solid #222; }
+.campaign-table td { padding: 14px 16px; font-size: 14px; font-weight: 300; border-bottom: 1px solid var(--grey); border-right: 1px solid var(--grey); }
+.campaign-table tr:hover td { background: #f0efe9; }
+.churn-good { color: #1db800; font-weight: 600; }
+.churn-bad { color: #d93030; font-weight: 600; }
+.verdict { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.08em; padding: 4px 10px; }
+.verdict.good { background: #001a00; color: #1db800; }
+.verdict.bad { background: #1a0000; color: #d93030; }
+.verdict.warn { background: #1a1500; color: var(--yellow); }
+
+/* ETHICS DO/DONT */
+.ethics-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.ethics-item { padding: 12px 16px 12px 44px; font-size: 15px; font-weight: 300; line-height: 1.5; position: relative; }
+.ethics-item.do { background: #001a00; color: #ccc; }
+.ethics-item.do::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; }
+.ethics-item.dont { background: #1a0000; color: #ccc; }
+.ethics-item.dont::before { content: '✗'; position: absolute; left: 16px; color: #d93030; font-weight: 700; }
+
+/* METRICS CHECKLIST */
+.metrics-checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.metrics-checklist li { display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s; user-select: none; }
+.metrics-checklist li:hover { border-color: var(--pink); }
+.metrics-checklist li.checked { border-color: #1db800; background: #001a00; }
+.metrics-checkbox { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.metrics-checklist li.checked .metrics-checkbox { background: #1db800; border-color: #1db800; }
+.metrics-check-inner { font-size: 13px; font-weight: 700; color: var(--black); opacity: 0; }
+.metrics-checklist li.checked .metrics-check-inner { opacity: 1; }
+.metrics-text { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.metrics-checklist li.checked .metrics-text { color: #1db800; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 180px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; color: #aaa; text-align: center; max-width: 320px; line-height: 1.5; }
+
+/* WORKBOOK */
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--lime); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); margin-bottom: 16px; }
+.workbook-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .pink { color: var(--pink); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-input.single { min-height: unset; height: 52px; resize: none; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--lime); min-height: 18px; }
+
+/* DUNNING GRID */
+.dunning-grid { display: grid; grid-template-columns: 72px 1fr; gap: 8px 16px; align-items: center; margin: 16px 0; }
+.dunning-grid-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; }
+.dunning-grid-label.d0 { color: #60a5fa; }
+.dunning-grid-label.d3 { color: var(--yellow); }
+.dunning-grid-label.d7 { color: #d93030; }
+.dunning-input { background: #111; border: 2px solid #222; border-bottom: 2px solid var(--pink); padding: 12px 16px; font-size: 14px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); transition: border-color 0.2s; width: 100%; }
+.dunning-input:focus { outline: none; border-color: var(--pink); background: #161616; }
+.dunning-input::placeholder { color: #333; }
+
+/* MISSION */
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--pink); background: #161616; }
+.mission-item.checked { border-color: #1db800; background: #001a00; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: #1db800; border-color: #1db800; }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: #1db800; }
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--lime); width: 0%; transition: width 0.4s; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--lime); min-width: 48px; text-align: right; }
+
+/* PDF BUTTON */
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--lime); padding: 16px 40px; border: 3px solid var(--lime); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--lime); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 1px solid #1e1e1e; padding: 32px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--pink); }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .video-section { padding-bottom: 60px; }
+  .stat-grid, .two-col, .four-col, .metrics-grid, .score-grid { grid-template-columns: 1fr; }
+  .metrics-grid-2 { grid-template-columns: 1fr; }
+  .churn-bar { width: 100% !important; min-width: unset !important; }
+  footer { padding: 24px; flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 5: Detection</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 5 <span class="sep">✦</span></span>
+  <span class="ticker-item">DETECTION <span class="sep">✦</span></span>
+  <span class="ticker-item">SPOT THE SIGNALS BEFORE MEMBERS CANCEL <span class="sep">✦</span></span>
+  <span class="ticker-item">LEADING INDICATORS NOT LAGGING ONES <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 5 <span class="sep">✦</span></span>
+  <span class="ticker-item">DETECTION <span class="sep">✦</span></span>
+  <span class="ticker-item">SPOT THE SIGNALS BEFORE MEMBERS CANCEL <span class="sep">✦</span></span>
+  <span class="ticker-item">LEADING INDICATORS NOT LAGGING ONES <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 5 of 6</div>
+    <h1 class="hero-h1">DE<span class="pink">TEC</span>TION</h1>
+    <p class="hero-sub">Members don't cancel. They ghost. The decision is made weeks before the click. This module is about reading the signals while you can still do something about them.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="white"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE PROBLEM</h2>
+
+  <div class="pull-quote">"Members don't cancel impulsively. They ghost you first. They mentally check out weeks or months before they ever click cancel."</div>
+
+  <p class="body-text">By the time you see the cancellation, the decision was already made. The credit card has been refunded, the account is closed, and you're left wondering what happened. Spoiler: it happened six weeks ago and you missed all the signs.</p>
+
+  <p class="body-text">The problem is not that you lack data. <strong>It is that you are not detecting the signals until it is too late.</strong> You're a historian when you need to be a forecaster.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">5-7%</div><div class="stat-label">Average monthly member loss across most memberships. Every month. Quietly.</div></div>
+    <div class="stat-card"><div class="stat-num">40%</div><div class="stat-label">Of that churn is involuntary. Failed payments you could have recovered with a single email.</div></div>
+    <div class="stat-card"><div class="stat-num">60%</div><div class="stat-label">Is voluntary churn from disengaged members you could have saved with early intervention.</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE SHIFT</div>
+    <p>Detection transforms you from a historian (analysing what already happened) to a forecaster (predicting and preventing what is about to happen). The difference between lagging indicators and leading indicators. One tells you the final score. The other tells you the score at half-time, when you can still do something about it.</p>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout-red">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>Detection is a behaviour-triggered, reactive discipline that monitors member signals to intervene before cancellation occurs. It is the counterpart to Communication Architecture, which is calendar-based and proactive. You need both. One is planned. The other watches for what you didn't plan for.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE CHURN DECISION PROCESS</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">Members rarely wake up and impulsively cancel. Churn is the final action in a long disengagement sequence. Here is the sequence. Your job is to interrupt it before it reaches Step 6.</p>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Step 1: Stop logging in as frequently</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 2: Stop consuming content</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 3: Stop engaging with peers</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 4: Mental decision: "I am not getting value"</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 5: Trigger event: Credit card charge hits</div></div>
+      <div class="timeline-item"><div class="timeline-heading danger">Step 6: Final action: Cancel</div></div>
+    </div>
+  </div>
+
+  <div class="opportunity-band">YOUR INTERVENTION WINDOW IS BETWEEN STEPS 3 AND 4. THAT IS WHERE DETECTION LIVES.</div>
+
+  <div class="callout">
+    <div class="callout-label">THE MINDSET SHIFT</div>
+    <p>Stop asking "Why did they cancel?" Start asking "What signals did I miss three weeks before they cancelled?" The first question is useful for a post-mortem. The second question is useful for running a business.</p>
+  </div>
+
+  <h2 class="section-title">LEADING VS LAGGING INDICATORS</h2>
+
+  <p class="body-text">Most membership owners only track lagging metrics. These tell you the score after the game is already over. The team that wins is the one watching the leading metrics while they still have time to adjust.</p>
+
+  <div class="two-col">
+    <div class="col-card bad">
+      <div class="col-card-title">LAGGING METRICS (PAST)</div>
+      <div class="col-card-item">Monthly Churn Rate</div>
+      <div class="col-card-item">Customer Lifetime Value</div>
+      <div class="col-card-item">MRR Lost This Month</div>
+      <div class="col-card-item" style="font-style:italic;color:#888;font-size:13px;margin-top:8px;">These tell you what happened. The game is already over.</div>
+    </div>
+    <div class="col-card good">
+      <div class="col-card-title">LEADING METRICS (FUTURE)</div>
+      <div class="col-card-item">Customer Engagement Score</div>
+      <div class="col-card-item">Time to First Value (TTFV)</div>
+      <div class="col-card-item">Login frequency and recency</div>
+      <div class="col-card-item">Email open and click rates</div>
+      <div class="col-card-item">Community participation rate</div>
+      <div class="col-card-item" style="font-style:italic;color:#1db800;font-size:13px;margin-top:8px;">These predict what will happen while you can still change it.</div>
+    </div>
+  </div>
+
+  <p class="body-text" style="margin-top:32px;"><strong>The churn prediction timeline.</strong> Here is what the disengagement sequence looks like mapped to weeks before cancellation. Each row is a signal you could have caught.</p>
+
+  <div class="churn-timeline">
+    <div class="churn-row">
+      <div class="churn-label w8"><span>WEEK -8</span></div>
+      <div class="churn-bar w8">Login frequency drops. First detectable signal. Most people miss this one entirely.</div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-label w6"><span>WEEK -6</span></div>
+      <div class="churn-bar w6">Email opens stop. Communication disengagement. They're still a member but mentally they're already gone.</div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-label w4"><span>WEEK -4</span></div>
+      <div class="churn-bar w4">Community activity ceases. Social disconnection. The membership has become a line item, not a community.</div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-label w2"><span>WEEK -2</span></div>
+      <div class="churn-bar w2">Mental checkout: "I am not getting value." The decision is made here, not at cancellation.</div>
+    </div>
+    <div class="churn-row">
+      <div class="churn-label w0"><span>WEEK 0</span></div>
+      <div class="churn-bar w0">Credit card charge hits. Cancellation. The historian's data point. The forecaster's failure.</div>
+    </div>
+  </div>
+
+  <div class="opportunity-band">YOUR OPPORTUNITY WINDOW: WEEKS -8 TO -2. SIX WEEKS TO INTERVENE.</div>
+
+  <h2 class="section-title">THE SIX STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">CHURN PREDICTION: BUILD YOUR EARLY WARNING SYSTEM</div>
+      <p class="body-text"><strong>What it is:</strong> Identifying at-risk members before they ever think about cancelling, using behavioural signals to score engagement.</p>
+      <p class="body-text"><strong>Why it works:</strong> Intervening when someone is thinking about cancelling is 10x easier than winning them back after they have already left. You are catching it at Week -6, not trying to reverse it at Week 0.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE ENGAGEMENT SCORING SYSTEM</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:24px;">Build a simple 0-100 score for each member. Start in a spreadsheet. Automate it later. The point is to have a number you can sort by, not a vague feeling about which members seem quiet lately.</p>
+    <div class="score-grid">
+      <div>
+        <div class="score-col-title">SCORE COMPONENTS</div>
+        <div class="score-row"><div class="score-badge pts">+20 pts</div><div class="score-desc">Logged in this week</div></div>
+        <div class="score-row"><div class="score-badge pts">+20 pts</div><div class="score-desc">Consumed content this week</div></div>
+        <div class="score-row"><div class="score-badge pts">+20 pts</div><div class="score-desc">Engaged in community</div></div>
+        <div class="score-row"><div class="score-badge pts">+20 pts</div><div class="score-desc">Opened last 2 emails</div></div>
+        <div class="score-row"><div class="score-badge pts">+20 pts</div><div class="score-desc">Completed a milestone</div></div>
+      </div>
+      <div>
+        <div class="score-col-title">RISK THRESHOLDS</div>
+        <div class="score-row"><div class="score-badge healthy">80-100</div><div class="score-desc">Healthy and engaged</div></div>
+        <div class="score-row"><div class="score-badge atrisk">50-79</div><div class="score-desc">At-risk: needs a nudge</div></div>
+        <div class="score-row"><div class="score-badge critical">0-49</div><div class="score-desc">Critical: needs direct intervention</div></div>
+        <div class="score-col-title" style="margin-top:20px;">BEHAVIOURAL RED FLAGS</div>
+        <ul class="redflag-list">
+          <li class="redflag-item">No login in 14 or more days</li>
+          <li class="redflag-item">Zero email opens in last 3 sends</li>
+          <li class="redflag-item">Onboarding incomplete after 30 days</li>
+          <li class="redflag-item">Failed to achieve first quick win</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">ADVANCED: COHORT ANALYSIS</div>
+    <div class="example-body">Track retention by signup source. Organic signups: 95% retention at 90 days. Flash sale signups: 70% retention at 90 days. The insight: flash sale members need a completely different onboarding sequence. They came in on price. You have to give them reasons to stay on value.</div>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">INTERVENTION PLAYBOOKS</div>
+      <p class="body-text"><strong>What it is:</strong> Pre-built responses triggered by specific behavioural signals. Automated or manual, depending on your scale. The key word is "pre-built." You decide what to do before the crisis, not during it.</p>
+      <p class="body-text"><strong>Why it works:</strong> Proactive outreach before they decide to cancel shows you noticed them. Most members re-engage simply because someone noticed them. That's it. That's the whole strategy.</p>
+    </div>
+  </div>
+
+  <div class="playbook-card">
+    <div class="playbook-title">PLAYBOOK A: THE "WE MISS YOU" NUDGE</div>
+    <div class="playbook-row"><div class="playbook-label">Trigger</div><div class="playbook-val">No login in 14 days</div></div>
+    <div class="playbook-row"><div class="playbook-label">Action</div><div class="playbook-val">Personalised email or SMS</div></div>
+    <div class="playbook-row"><div class="playbook-label">Message</div><div class="playbook-val">"Hey [Name], we noticed you haven't been around lately. Here's what you missed... and here's your next step: [link]"</div></div>
+    <div class="playbook-row"><div class="playbook-label">Bonus</div><div class="playbook-val">Attach a "catch up in 5 minutes" resource to reduce re-entry friction. The barrier to returning is higher than the barrier to staying. Lower it.</div></div>
+  </div>
+
+  <div class="playbook-card">
+    <div class="playbook-title">PLAYBOOK B: THE ONBOARDING RESCUE</div>
+    <div class="playbook-row"><div class="playbook-label">Trigger</div><div class="playbook-val">30 days since signup, onboarding still incomplete</div></div>
+    <div class="playbook-row"><div class="playbook-label">Action</div><div class="playbook-val">Personal video message or a genuine 1:1 call offer</div></div>
+    <div class="playbook-row"><div class="playbook-label">Message</div><div class="playbook-val">"I see you haven't completed [first action] yet. Can I help you get unstuck? Here's a 5-minute walkthrough."</div></div>
+  </div>
+
+  <div class="playbook-card">
+    <div class="playbook-title">PLAYBOOK C: THE HAPPINESS BOMB</div>
+    <div class="playbook-row"><div class="playbook-label">Trigger</div><div class="playbook-val">Month 3: the typical drop-off point, not a coincidence</div></div>
+    <div class="playbook-row"><div class="playbook-label">Action</div><div class="playbook-val">Unexpected surprise: physical postcard, bonus content, or exclusive access</div></div>
+    <div class="playbook-row"><div class="playbook-label">Message</div><div class="playbook-val">"You've been with us for 3 months! Here's a little thank you..." (no ask, just give)</div></div>
+  </div>
+
+  <div class="playbook-card">
+    <div class="playbook-title">PLAYBOOK D: THE HIGH-VALUE VIP SAVE</div>
+    <div class="playbook-row"><div class="playbook-label">Trigger</div><div class="playbook-val">High-LTV member showing disengagement signals</div></div>
+    <div class="playbook-row"><div class="playbook-label">Action</div><div class="playbook-val">Personal phone call or video from you directly</div></div>
+    <div class="playbook-row"><div class="playbook-label">Why</div><div class="playbook-val">For members worth $500 or more in LTV, 15 minutes of your time can save thousands in revenue. The maths is embarrassingly obvious once you do it.</div></div>
+  </div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">DUNNING SEQUENCES: RECOVER 40% OF YOUR CHURN</div>
+      <p class="body-text"><strong>What it is:</strong> Automated communication to recover failed credit card payments before they result in cancellation.</p>
+      <p class="body-text"><strong>Why it works:</strong> Most failed payments are not intentional cancellations. Expired cards, insufficient funds, bank declines. You can recover 70-80% of these with a well-structured dunning sequence. This is the most straightforward revenue recovery in the whole module.</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card bad">
+      <div class="col-card-title">WRONG FRAMING</div>
+      <p style="font-size:18px;font-weight:500;color:var(--white);margin-bottom:8px;">"Your payment failed."</p>
+      <p style="color:#888;font-size:13px;">Accusatory. Puts the blame on the member. Creates defensiveness at exactly the moment you need openness.</p>
+    </div>
+    <div class="col-card good">
+      <div class="col-card-title">RIGHT FRAMING</div>
+      <p style="font-size:18px;font-weight:500;color:var(--white);margin-bottom:8px;">"We're missing some info."</p>
+      <p style="color:#888;font-size:13px;">Collaborative. Takes ownership. Invites the member to solve it together rather than defend themselves.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE DUNNING SEQUENCE</div>
+    <div class="dunning-seq">
+      <div class="dunning-row">
+        <div class="dunning-day-badge d0">DAY 0</div>
+        <div class="dunning-content">
+          <div class="dunning-subject">Subject: "We're missing some info for your account"</div>
+          <div class="dunning-body">"Hey [Name], looks like we're missing some billing info. Can you update your card here? [Link]. No worries if it's just an expired card. That happens all the time!"</div>
+        </div>
+      </div>
+      <div class="dunning-row">
+        <div class="dunning-day-badge d3">DAY 3</div>
+        <div class="dunning-content">
+          <div class="dunning-subject">Smart retry + reminder</div>
+          <div class="dunning-body">Auto-retry on likely payday. Email: "Quick reminder, we still need your updated card info. Here's a 1-click link: [Link]"</div>
+        </div>
+      </div>
+      <div class="dunning-row">
+        <div class="dunning-day-badge d7">DAY 7</div>
+        <div class="dunning-content">
+          <div class="dunning-subject">Final attempt before pause</div>
+          <div class="dunning-body">"Hey [Name], your account will be paused in 48 hours. Update here to keep your access: [Link]. Need help? [Phone / live chat]"</div>
+        </div>
+      </div>
+      <div class="dunning-row">
+        <div class="dunning-day-badge pre">PRE-EMPTIVE</div>
+        <div class="dunning-content">
+          <div class="dunning-subject">30 days before card expiry</div>
+          <div class="dunning-body">"Your card ending in [1234] expires soon. Update now to avoid any interruption to your access." Most platforms can trigger this automatically. Use it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-dark">
+    <div class="callout-label">TECH STACK NOTE</div>
+    <p>Most payment processors (Stripe, Paddle) have built-in smart retry logic. Tools like Churn Buster or ProfitWell Retain add advanced dunning on top. Start with what your processor already provides before buying additional tools. (This advice applies more broadly than just dunning.)</p>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">WIN-BACK CAMPAIGNS</div>
+      <p class="body-text"><strong>What it is:</strong> Targeted sequences to reactivate members who have already cancelled.</p>
+      <p class="body-text"><strong>Why it works:</strong> Churned members require far less education than cold prospects. They already know what you offer. They've already made one decision to buy. You're asking them to make a second one, not a first.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">SEGMENT BY EXIT REASON</div>
+    <div class="four-col">
+      <div class="col-card amber">
+        <div class="col-card-title">PRICE</div>
+        <p>Win-back offer: 30% off for 3 months to return</p>
+        <p>Message: Acknowledge the constraint, make it affordable</p>
+      </div>
+      <div class="col-card blue">
+        <div class="col-card-title">NOT ENOUGH TIME</div>
+        <p>Win-back offer: "We added flexible catch-up weeks and async options since you left"</p>
+        <p>Message: Show how the product now fits their actual life</p>
+      </div>
+      <div class="col-card bad">
+        <div class="col-card-title">NOT GETTING RESULTS</div>
+        <p>Win-back offer: Free 1:1 session to build a personal success path</p>
+        <p>Message: Take responsibility. Offer hands-on help. Don't get defensive.</p>
+      </div>
+      <div class="col-card good">
+        <div class="col-card-title">FOUND A COMPETITOR</div>
+        <p>Win-back offer: "Here is what we've launched since you left"</p>
+        <p>Message: Show innovation, create genuine FOMO about what they're missing</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">WIN-BACK SEQUENCE: 4 EMAILS OVER 3 MONTHS</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Week 1: Exit Survey</div><div class="timeline-body">"We're sorry to see you go. Can you tell us why?" If they didn't complete one during cancellation, this is your last chance to understand what went wrong.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Week 2: Emotional Connection</div><div class="timeline-body">"We miss you." No hard sell. Just a genuine human touchpoint. This sounds soft. It is actually quite effective because nobody else does it.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Month 1: What's New</div><div class="timeline-body">"Here's what has changed since you left." Feature updates, member wins, new additions. Shows the product is alive and improving.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Month 3: Comeback Offer</div><div class="timeline-body">"Special offer: 30% off to rejoin." Limited time. Creates urgency without desperation. This is your last contact. Make it count.</div></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">PRIORITISE YOUR WIN-BACK EFFORT</div>
+    <p>During cancellation, ask: "How likely are you to return? (1-10)." Scores of 8 to 10 are high priority. Scores of 1 to 4 are not worth your energy. Do not spend time convincing people who have genuinely moved on. Spend it on people who might come back.</p>
+  </div>
+
+  <!-- Strategy 5 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">05</div>
+    <div>
+      <div class="strategy-title">THE PAUSE AND THE STORE CREDIT PIVOT</div>
+      <p class="body-text">Two interventions at the exact point of cancellation. Both convert members who were about to leave into members who stay. Both are genuinely easy to implement. Most people don't do either.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE PAUSE OPTION</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">Offer a pause for 1 to 3 months before completing cancellation. Frame it as a break, not a breakup. They keep their account, their progress, and their grandfathered pricing. You keep the member long-term.</p>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Step 1: Exit Survey</div><div class="timeline-body">"Before you go, can you tell us why you're cancelling?" Too expensive / Not enough time / Not getting results / Found a better option / Other. One click each. Takes six seconds. Gives you everything.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 2: Contextual Offer</div><div class="timeline-body">If too expensive: "Would pausing for 1 to 3 months help? You keep your account, progress, and grandfathered pricing." If not enough time: "Life gets busy. Pause for up to 3 months and come back when you're ready." If not getting results: "Would a free 1:1 call help? Or pause while you catch up."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Step 3: If They Still Cancel</div><div class="timeline-body">Make it easy. FTC compliance requires it. Set an auto-reminder two weeks before their pause ends if they chose to pause. Catch them before they forget they're on pause.</div></div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE STORE CREDIT PIVOT</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">When a member requests a refund, offer double the value in store credit instead of cash. Keeps them inside your ecosystem. Resolves the financial objection without losing them permanently.</p>
+    <div class="example-box">
+      <div class="example-label">THE SCRIPT</div>
+      <div class="example-body">
+        <p>Member: "I'd like a refund."</p>
+        <p>You: "Absolutely, I can process that. Quick question: would you be open to double the value in store credit instead? That way you can try [other product] or use it when timing is better. But if you need the cash refund, totally understand."</p>
+      </div>
+    </div>
+    <ul class="checklist" style="margin-top:20px;">
+      <li>They feel heard (you honoured the refund request without refusing)</li>
+      <li>You offered a genuinely better deal (2x value)</li>
+      <li>You retained the customer relationship</li>
+      <li>Reported to reduce refunds by 33% or more when consistently applied</li>
+    </ul>
+    <p class="body-text" style="font-size:14px;color:#888;margin-top:16px;margin-bottom:0;"><strong>When not to use it:</strong> Members citing serious service failures. Just refund those. No pivot. Some situations call for a clean exit, not a retention tactic.</p>
+  </div>
+
+  <!-- Strategy 6 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">06</div>
+    <div>
+      <div class="strategy-title">YOUR DETECTION METRICS DASHBOARD</div>
+      <p class="body-text">You cannot improve what you do not measure. Here are the metrics that turn retention from a feeling into a system. Track these weekly. All of them. "I check it roughly monthly" is how you miss the Week -8 signal.</p>
+    </div>
+  </div>
+
+  <p class="body-text"><strong>Top-level metrics.</strong> The headline numbers. If these are moving in the wrong direction, something in the operational metrics is the cause.</p>
+
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-val good">99.3%</div><div class="metric-name">Customer Retention Rate</div><div class="metric-sub">Your north star. Industry avg: 85-90%</div></div>
+    <div class="metric-card"><div class="metric-val neutral">0.7%</div><div class="metric-name">Member Churn Rate</div><div class="metric-sub">Voluntary cancellations only</div></div>
+    <div class="metric-card"><div class="metric-val warn">1.2%</div><div class="metric-name">MRR Churn Rate</div><div class="metric-sub">Higher if high-value members leave</div></div>
+    <div class="metric-card"><div class="metric-val great">-4.2%</div><div class="metric-name">Net Churn Rate</div><div class="metric-sub">Negative = expansions offset losses</div></div>
+  </div>
+
+  <p class="body-text" style="margin-top:32px;"><strong>Operational metrics.</strong> These tell you where the problem lives.</p>
+
+  <div class="metrics-grid-2">
+    <div class="metric-card"><div class="metric-val neutral">8.2 mo</div><div class="metric-name">Average Member Lifespan</div><div class="metric-sub">How long the average member stays. This is your LTV denominator.</div></div>
+    <div class="metric-card"><div class="metric-val warn">2.1 mo</div><div class="metric-name">Time to First Value (TTFV)</div><div class="metric-sub">Target: under 1 month. At 2.1 months you're losing people before they've seen the value.</div></div>
+  </div>
+
+  <div class="framework-box" style="margin-top:32px;">
+    <div class="framework-box-title">THE TOP 3 CHURN DRIVERS</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading">1. Consistent Low Engagement and Platform Inactivity</div>
+        <div class="timeline-body">The biggest driver by far. Members who do not engage regularly are far more likely to cancel. This is your engagement scoring signal. Not a surprise. What surprises people is how early it starts showing up.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">2. Multiple Failed Payments</div>
+        <div class="timeline-body">Involuntary churn that should be near-fully recoverable with a good dunning sequence. If you are losing members this way, it is an operational fix, not a product one. Fix it once and it runs itself.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading">3. Lack of Email Communication Engagement</div>
+        <div class="timeline-body">Members who stop opening your emails have mentally checked out. Email disengagement predicts cancellation by 4 to 6 weeks. This is the Week -6 signal. If you track nothing else, track this one.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REAL WORLD TEARDOWN -->
+  <h2 class="section-title">REAL WORLD TEARDOWN</h2>
+
+  <p class="body-text">Detection applied to your email program. The metric that matters is not open rate or click rate. It is <strong>recipient churn rate by campaign.</strong> Which emails help retention? Which ones trigger cancellation? The answers are usually surprising.</p>
+
+  <div class="visual-placeholder">
+    <div class="visual-placeholder-icon">📊</div>
+    <div class="visual-placeholder-label">SCREENSHOT PLACEHOLDER</div>
+    <div class="visual-placeholder-sub">Add your email platform's campaign analytics annotated with churn rate per campaign, not just opens and clicks</div>
+  </div>
+
+  <table class="campaign-table">
+    <thead>
+      <tr><th>Campaign</th><th>Open Rate</th><th>Click Rate</th><th>Recipient Churn</th><th>Verdict</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Monthly Newsletter</td><td>80.2%</td><td>36.5%</td><td class="churn-good">5.2%</td><td><span class="verdict good">Prevents Churn</span></td></tr>
+      <tr><td>Welcome Series</td><td>93.3%</td><td>0%</td><td>6.1%</td><td><span class="verdict warn">Fix the CTAs</span></td></tr>
+      <tr><td>Feature Update</td><td>76.7%</td><td>35.9%</td><td class="churn-bad">7.8%</td><td><span class="verdict bad">Triggers Churn</span></td></tr>
+      <tr><td>Member Spotlight</td><td>84.1%</td><td>42.3%</td><td class="churn-good">4.1%</td><td><span class="verdict good">Prevents Churn</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="col-card good">
+      <div class="col-card-title">DO MORE OF THIS</div>
+      <div class="col-card-item">Monthly Newsletter and Member Spotlight both pull churn below average. Member-centric. Keep them and protect the ritual that produces them.</div>
+    </div>
+    <div class="col-card bad">
+      <div class="col-card-title">KILL OR REDESIGN</div>
+      <div class="col-card-item">Feature Update triggers above-average churn. Content for the creator, not the member. Reframe it around what members asked for, or cut it.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE WELCOME SERIES PROBLEM</div>
+    <p>93.3% open rate but 0% click rate. Members are curious enough to open but not compelled enough to act. The message is right. The next step is wrong. The CTAs need a complete rethink. Fixing this single email series could be your highest-ROI hour this month.</p>
+  </div>
+
+  <!-- ETHICS CHECK -->
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="callout">
+    <div class="callout-label">RETENTION VS DETENTION</div>
+    <p>Detection strategies must remain ethical. You are building a Forever Transaction based on trust, not engineering friction to trap members who want to leave. The pause offer is a helpful option. The guilt-trip survey is a manipulative barrier. The difference matters and members can feel it.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">COMPLIANT OFFBOARDING: THE FTC CLICK TO CANCEL RULE</div>
+    <ul class="ethics-list">
+      <li class="ethics-item do">Cancel process is no harder than the sign-up process</li>
+      <li class="ethics-item do">One-click cancel if they signed up with one click</li>
+      <li class="ethics-item do">Exit survey is optional, not a mandatory gate before cancellation</li>
+      <li class="ethics-item do">Pause offer is presented as a helpful option, not a manipulative barrier</li>
+      <li class="ethics-item dont">Force phone calls to cancel when they signed up online</li>
+      <li class="ethics-item dont">Endless "Are you sure?" screens stacked to block cancellation</li>
+      <li class="ethics-item dont">Hidden cancel buttons or fake errors during the cancellation flow</li>
+    </ul>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">TRANSPARENT DUNNING</div>
+    <ul class="ethics-list">
+      <li class="ethics-item do">Contact members about failed payments before they contact you</li>
+      <li class="ethics-item do">Use collaborative, non-accusatory language throughout</li>
+      <li class="ethics-item do">Offer genuine help (live chat, phone) for technical payment issues</li>
+      <li class="ethics-item dont">Make members feel ashamed about a failed payment</li>
+      <li class="ethics-item dont">Use urgent or threatening language in billing communications</li>
+    </ul>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-label">LEGAL REALITY</div>
+    <div class="warning-body">Obstruction of cancellation is not just unethical. In many jurisdictions it is now illegal. Build the easy exit before regulators force you to under worse circumstances. The reputational damage when dark patterns are exposed publicly is far worse than any members you would have "retained." It is not a close call.</div>
+  </div>
+
+  <div class="pull-quote">"Would I feel manipulated or respected if I were going through this cancellation process?"</div>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 5 Workbook</div>
+    <h2 class="workbook-title">YOUR DE<span class="pink">TEC</span>TION<br>SYSTEM CANVAS</h2>
+    <p class="workbook-sub">Build your early warning system. Map your engagement scoring, intervention playbooks, dunning sequence, win-back plan, and cancellation flow. Everything you need to stop reacting and start predicting.</p>
+
+    <!-- Engagement Scoring -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR ENGAGEMENT SCORING THRESHOLDS</div>
+      <div class="field-why">Define what triggers a nudge and what triggers a direct intervention. If you can't articulate the number, you don't have a system. You have a feeling.</div>
+      <input class="field-input single" id="wb_atrisk" placeholder="At-risk threshold: e.g. below 60 points triggers a nudge email">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_critical" placeholder="Critical threshold: e.g. below 30 points triggers a personal call or video">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_redflag" placeholder="My first behavioural red flag: e.g. no login in 14 days">
+      <div class="field-output" id="score_out"></div>
+    </div>
+
+    <!-- Playbooks -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR INTERVENTION PLAYBOOKS</div>
+      <div class="field-why">Pre-built responses for at-risk and critical members. Decide what you'll do before the situation arises. In-the-moment decisions under pressure are worse than prepared ones made calmly at a desk.</div>
+      <textarea class="field-input" id="wb_atrisk_play" placeholder="At-risk playbook: Trigger + action + message. e.g. Trigger: 14-day no login. Send personalised email with their next step link and a 5-min catch-up resource."></textarea>
+      <div style="height:12px;"></div>
+      <textarea class="field-input" id="wb_critical_play" placeholder="Critical playbook: What do you do differently for critical members? e.g. Trigger: 30-day no login + onboarding incomplete. Personal video or 1:1 call offer."></textarea>
+      <div class="field-output" id="play_out"></div>
+    </div>
+
+    <!-- Dunning -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR DUNNING SEQUENCE</div>
+      <div class="field-why">Map your three dunning touchpoints. What does each email say? What action do you want them to take? Keep the framing collaborative, not accusatory. "We're missing some info" not "Payment Failed."</div>
+      <div class="dunning-grid" id="dunningGrid">
+        <span class="dunning-grid-label d0">DAY 0</span>
+        <input class="dunning-input" id="dun_d0" placeholder="Subject line + message framing + CTA link">
+        <span class="dunning-grid-label d3">DAY 3</span>
+        <input class="dunning-input" id="dun_d3" placeholder="Smart retry + reminder. What does this email say?">
+        <span class="dunning-grid-label d7">DAY 7</span>
+        <input class="dunning-input" id="dun_d7" placeholder="Final attempt + 48-hour account pause warning">
+      </div>
+      <div class="field-output" id="dun_out"></div>
+    </div>
+
+    <!-- Win-Back -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR WIN-BACK PLAN BY EXIT REASON</div>
+      <div class="field-why">One offer per exit reason. Generic win-back offers perform poorly because they don't address the actual reason someone left. Specific offers work because they show you were listening.</div>
+      <input class="field-input single" id="wb_price" placeholder="Price objection offer: e.g. 30% off for 3 months to return">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_time" placeholder="Time objection offer: e.g. Show the async and flexible options added since they left">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_results" placeholder="Results objection offer: e.g. Free 1:1 session to build their personal success path">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_competitor" placeholder="Competitor objection offer: e.g. Here is what we've launched since you left + FOMO angle">
+      <div class="field-output" id="wb_out"></div>
+    </div>
+
+    <!-- Cancellation Flow -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR CANCELLATION FLOW DESIGN</div>
+      <div class="field-why">The exit survey, the pause offer, and the store credit pivot. All three should be in your cancellation flow. All three are optional for the member. None of them are barriers. The ethics check is simple: if it would make you feel manipulated, remove it.</div>
+      <textarea class="field-input" id="wb_exit" placeholder="Exit survey questions (3-5): e.g. Too expensive / Not enough time / Not getting results / Found a better option / Other"></textarea>
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_pause" placeholder="Pause duration options: e.g. 1 month / 2 months / 3 months. Framed as a break, not a breakup.">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_credit" placeholder="Store credit pivot: e.g. $97 refund becomes $194 store credit. Script: 'Would you be open to double the value in store credit instead?'">
+      <div class="field-output" id="cancel_out"></div>
+    </div>
+
+    <!-- Metrics Checklist -->
+    <div class="workbook-field">
+      <div class="field-label">METRICS I WILL TRACK WEEKLY</div>
+      <div class="field-why">Tick the metrics you're committing to tracking every single week. Not monthly. Not "when I get around to it." Weekly. The whole point of Detection is catching signals early. You cannot catch them early if you're looking infrequently.</div>
+      <ul class="metrics-checklist" id="metricsChecklist">
+        <li data-task="crr" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Customer Retention Rate</div></li>
+        <li data-task="mcr" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Member Churn Rate (voluntary)</div></li>
+        <li data-task="mrr" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">MRR Churn Rate</div></li>
+        <li data-task="ttfv" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Time to First Value (TTFV)</div></li>
+        <li data-task="ces" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Customer Engagement Score</div></li>
+        <li data-task="email" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Email open and click rates by campaign</div></li>
+        <li data-task="community" onclick="toggleMetric(this)"><div class="metrics-checkbox"><div class="metrics-check-inner">✓</div></div><div class="metrics-text">Community participation rate</div></li>
+      </ul>
+    </div>
+
+    <!-- MISSION -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--lime);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#aaa;">Build your at-risk member early warning system. Start simple. Spreadsheet is fine. Automate later.</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="export" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Export your member list with last login date, last email opened, and last content consumed</div>
+        </li>
+        <li class="mission-item" data-task="score" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Calculate an engagement score for each member (even manually in a spreadsheet)</div>
+        </li>
+        <li class="mission-item" data-task="identify" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Identify your top 10 at-risk members based on the score</div>
+        </li>
+        <li class="mission-item" data-task="outreach" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Send each of them a personalised "We miss you" message this week</div>
+        </li>
+        <li class="mission-item" data-task="track" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Track how many re-engage within 7 days. That number is your Detection ROI baseline.</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 5</div>
+      </div>
+
+      <div class="callout-red" style="margin-top:32px;">
+        <div class="callout-label">THE STANDARD TO AIM FOR</div>
+        <p>You should know your at-risk members before they know they are at risk. Detection is not reactive analysis after the fact. It is a live early warning system that surfaces the right member at the right moment for the right intervention. Build that system this week.</p>
+      </div>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR DETECTION SYSTEM CANVAS
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your engagement scoring thresholds, intervention playbooks, dunning sequence, win-back plan, cancellation flow, and weekly metrics commitment.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+  <nav class="footer-nav">
+    <a href="/course/module-4">← Module 4</a>
+    <a href="/course/">Course Home</a>
+    <a href="/course/module-6">Module 6 →</a>
+  </nav>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// TEXT FIELD IDS
+const textFields = [
+  ['wb_atrisk','score_out'], ['wb_critical','score_out'], ['wb_redflag','score_out'],
+  ['wb_atrisk_play','play_out'], ['wb_critical_play','play_out'],
+  ['wb_exit','cancel_out'], ['wb_pause','cancel_out'], ['wb_credit','cancel_out'],
+  ['wb_price','wb_out'], ['wb_time','wb_out'], ['wb_results','wb_out'], ['wb_competitor','wb_out']
+];
+const dunningIds = ['dun_d0','dun_d3','dun_d7'];
+
+textFields.forEach(([id, outId]) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { saveWorkbook(); updateOutputs(); });
+});
+dunningIds.forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { saveWorkbook(); updateOutputs(); });
+});
+
+function updateOutputs() {
+  const scoreFilled = ['wb_atrisk','wb_critical','wb_redflag'].filter(i => document.getElementById(i)?.value.trim().length > 3).length;
+  document.getElementById('score_out').textContent = scoreFilled > 0 ? `✓ ${scoreFilled} of 3 thresholds defined` : '';
+  const playFilled = ['wb_atrisk_play','wb_critical_play'].filter(i => document.getElementById(i)?.value.trim().length > 6).length;
+  document.getElementById('play_out').textContent = playFilled > 0 ? `✓ ${playFilled} of 2 playbooks written` : '';
+  const dunFilled = dunningIds.filter(i => document.getElementById(i)?.value.trim().length > 3).length;
+  document.getElementById('dun_out').textContent = dunFilled > 0 ? `✓ ${dunFilled} of 3 dunning steps mapped` : '';
+  const wbFilled = ['wb_price','wb_time','wb_results','wb_competitor'].filter(i => document.getElementById(i)?.value.trim().length > 3).length;
+  document.getElementById('wb_out').textContent = wbFilled > 0 ? `✓ ${wbFilled} of 4 win-back offers defined` : '';
+  const cancelFilled = ['wb_exit','wb_pause','wb_credit'].filter(i => document.getElementById(i)?.value.trim().length > 3).length;
+  document.getElementById('cancel_out').textContent = cancelFilled > 0 ? `✓ ${cancelFilled} of 3 cancellation flow elements defined` : '';
+}
+
+// METRICS
+const metricTasks = new Set();
+function toggleMetric(item) {
+  const task = item.dataset.task;
+  metricTasks.has(task) ? metricTasks.delete(task) : metricTasks.add(task);
+  item.classList.toggle('checked', metricTasks.has(task));
+  saveWorkbook();
+}
+
+// MISSION
+const missionTasks = new Set();
+const TOTAL = 5;
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module5_v1';
+const allTextIds = [...textFields.map(f=>f[0]), ...dunningIds];
+
+function saveWorkbook() {
+  const data = { fields: {}, metrics: Array.from(metricTasks), mission: Array.from(missionTasks) };
+  allTextIds.forEach(id => { const el = document.getElementById(id); if (el) data.fields[id] = el.value; });
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    if (data.fields) allTextIds.forEach(id => { const el = document.getElementById(id); if (el && data.fields[id]) el.value = data.fields[id]; });
+    if (data.metrics) data.metrics.forEach(t => { metricTasks.add(t); const el = document.querySelector(`#metricsChecklist [data-task="${t}"]`); if (el) el.classList.add('checked'); });
+    if (data.mission) {
+      data.mission.forEach(t => { missionTasks.add(t); const el = document.querySelector(`#missionList [data-task="${t}"]`); if (el) el.classList.add('checked'); });
+      document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+    }
+    updateOutputs();
+  } catch(e) {}
+}
+
+// PDF
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255,20,147], black = [13,13,13], white = [248,247,244], lime = [57,255,20], yellow = [255,230,0];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage(); y = 0;
+    doc.setFillColor(...black); doc.rect(0,0,W,14,'F');
+    doc.setFillColor(...pink); doc.rect(0,14,W,1.5,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 5: DETECTION SYSTEM CANVAS', W-M, 9, {align:'right'});
+    y = 22;
+  }
+  function checkY(n) { if (y+n > H-20) addPage(); }
+  function gv(id) { return document.getElementById(id)?.value.trim() || ''; }
+  function hasVal(id) { return gv(id).length > 2; }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...pink); doc.rect(0,0,6,H,'F');
+  doc.setFillColor(...lime); doc.rect(6,78,W-6,1.5,'F');
+  doc.setFillColor(25,25,25); doc.rect(M+4,52,80,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...lime);
+  doc.text('MODULE 5 OF 6: DETECTION', M+8, 59);
+  doc.setFontSize(42); doc.setTextColor(...white);
+  doc.text('DETECTION', M+4, 100);
+  doc.setTextColor(...pink);
+  doc.text('SYSTEM CANVAS', M+4, 124);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Engagement scoring, intervention playbooks, dunning', M+4, 142);
+  doc.text('sequence, win-back plan, and cancellation flow.', M+4, 150);
+  doc.setFillColor(...yellow); doc.rect(M+4,169,CW-4,30,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M+10, 178);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Member Engine: memberengine.co', M+10, 186);
+  doc.text('Spot the signals before members cancel.', M+10, 193);
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}), M+4, H-12);
+
+  addPage();
+
+  function sectionHeader(title, accentColor) {
+    checkY(14);
+    doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(...accentColor); doc.rect(M,y,3,10,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(title, M+7, y+6.5); y+=14;
+  }
+
+  function textBlock(id, placeholder) {
+    const val = gv(id) || placeholder;
+    const has = gv(id).length > 0;
+    const lines = doc.splitTextToSize(val, CW-16);
+    const h = lines.length*5+12;
+    checkY(h);
+    doc.setFillColor(has?250:240,250,has?250:240); doc.rect(M,y,CW,h,'F');
+    if (has) { doc.setDrawColor(...lime); doc.setLineWidth(0.4); doc.rect(M,y,CW,h); }
+    doc.setFont('helvetica',has?'normal':'italic'); doc.setFontSize(9);
+    doc.setTextColor(has?30:140,has?30:140,has?30:140);
+    lines.forEach((l,i) => doc.text(l, M+8, y+8+i*5));
+    y+=h+4;
+  }
+
+  function singleLine(id, label, placeholder) {
+    checkY(12);
+    doc.setFillColor(20,20,20); doc.rect(M,y,46,10,'F');
+    doc.setFillColor(hasVal(id)?30:18,hasVal(id)?30:18,hasVal(id)?30:18); doc.rect(M+46,y,CW-46,10,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...pink);
+    doc.text(label, M+4, y+7);
+    const val = gv(id) || placeholder;
+    const l = doc.splitTextToSize(val, CW-56)[0];
+    doc.setFont('helvetica',hasVal(id)?'normal':'italic'); doc.setFontSize(8);
+    doc.setTextColor(hasVal(id)?200:100,hasVal(id)?200:100,hasVal(id)?200:100);
+    doc.text(l, M+50, y+7);
+    y+=12;
+  }
+
+  // ENGAGEMENT SCORING
+  sectionHeader('ENGAGEMENT SCORING THRESHOLDS', pink);
+  singleLine('wb_atrisk','AT-RISK','Below 60 points: nudge email');
+  singleLine('wb_critical','CRITICAL','Below 30 points: direct intervention');
+  singleLine('wb_redflag','RED FLAG','No login in 14 days');
+  y+=8;
+
+  // INTERVENTION PLAYBOOKS
+  sectionHeader('INTERVENTION PLAYBOOKS', pink);
+  const pFields = [
+    ['wb_atrisk_play','At-risk playbook (not yet completed)'],
+    ['wb_critical_play','Critical playbook (not yet completed)']
+  ];
+  pFields.forEach(([id, ph]) => {
+    const val = gv(id) || ph;
+    const has = gv(id).length > 0;
+    const wl = doc.splitTextToSize(val, CW-12);
+    const h = wl.length*5+12;
+    checkY(h);
+    doc.setFillColor(has?250:240,250,has?250:240); doc.rect(M,y,CW,h,'F');
+    if (has) { doc.setDrawColor(...lime); doc.setLineWidth(0.4); doc.rect(M,y,CW,h); }
+    doc.setFont('helvetica',has?'normal':'italic'); doc.setFontSize(9);
+    doc.setTextColor(has?30:140,has?30:140,has?30:140);
+    wl.forEach((l,i) => doc.text(l, M+8, y+8+i*5));
+    y+=h+6;
+  });
+
+  // DUNNING SEQUENCE
+  sectionHeader('DUNNING SEQUENCE', yellow);
+  const dunRows = [['dun_d0','DAY 0',[0,18,40]],['dun_d3','DAY 3',[26,19,0]],['dun_d7','DAY 7',[26,0,0]]];
+  dunRows.forEach(([id, label, bg]) => {
+    checkY(12);
+    const val = gv(id) || '(not yet mapped)';
+    doc.setFillColor(...bg.map(v=>v+12)); doc.rect(M,y,28,11,'F');
+    doc.setFillColor(18,18,18); doc.rect(M+28,y,CW-28,11,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    if (label==='DAY 0') doc.setTextColor(96,165,250);
+    else if (label==='DAY 3') doc.setTextColor(...yellow);
+    else doc.setTextColor(217,48,48);
+    doc.text(label, M+4, y+7.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(hasVal(id)?200:100,hasVal(id)?200:100,hasVal(id)?200:100);
+    const l = doc.splitTextToSize(val, CW-36)[0];
+    doc.text(l, M+32, y+7.5);
+    y+=13;
+  });
+  y+=8;
+
+  // WIN-BACK PLAN
+  sectionHeader('WIN-BACK PLAN BY EXIT REASON', lime);
+  const wbRows = [['wb_price','PRICE'],['wb_time','TIME'],['wb_results','RESULTS'],['wb_competitor','COMPETITOR']];
+  wbRows.forEach(([id, label]) => singleLine(id, label, '(not yet defined)'));
+  y+=8;
+
+  // CANCELLATION FLOW
+  sectionHeader('CANCELLATION FLOW DESIGN', pink);
+  const cancelFields = [
+    ['wb_exit','Exit survey questions (list 3-5 options)'],
+    ['wb_pause','Pause duration options offered'],
+    ['wb_credit','Store credit pivot offer (double value)']
+  ];
+  cancelFields.forEach(([id, label]) => {
+    checkY(20);
+    const val = gv(id) || '(not yet completed)';
+    const has = gv(id).length > 0;
+    const lines = doc.splitTextToSize(val, CW-16);
+    const h = Math.max(lines.length*5+12, 14);
+    doc.setFillColor(...black); doc.rect(M,y,46,h,'F');
+    doc.setFillColor(has?30:18,has?30:18,has?30:18); doc.rect(M+46,y,CW-46,h,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...pink);
+    const labelLines = doc.splitTextToSize(label.toUpperCase(), 40);
+    labelLines.forEach((l,i) => doc.text(l, M+3, y+6+i*4));
+    doc.setFont('helvetica',has?'normal':'italic'); doc.setFontSize(8);
+    doc.setTextColor(has?200:100,has?200:100,has?200:100);
+    lines.forEach((l,i) => doc.text(l, M+50, y+6+i*5));
+    y+=h+4;
+  });
+  y+=8;
+
+  // METRICS
+  checkY(60);
+  sectionHeader('METRICS I WILL TRACK WEEKLY', lime);
+  const mItems = [
+    ['crr','Customer Retention Rate'],['mcr','Member Churn Rate'],['mrr','MRR Churn Rate'],
+    ['ttfv','Time to First Value (TTFV)'],['ces','Customer Engagement Score'],
+    ['email','Email open and click rates by campaign'],['community','Community participation rate']
+  ];
+  mItems.forEach(([k,txt]) => {
+    checkY(12);
+    const done = metricTasks.has(k);
+    doc.setFillColor(done?0:240,done?26:240,done?0:240); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(done?57:200,done?255:200,done?20:195); doc.rect(M,y,12,10,'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M+3.5, y+7); }
+    doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+    doc.setTextColor(done?20:80,done?20:80,done?20:80);
+    doc.text(txt, M+16, y+7); y+=12;
+  });
+  y+=8;
+
+  // MISSION
+  checkY(60);
+  sectionHeader("THIS WEEK'S MISSION", lime);
+  const missItems = [
+    ['export','Export member list with last login, last email opened, last content consumed'],
+    ['score','Calculate an engagement score for each member (spreadsheet is fine)'],
+    ['identify','Identify your top 10 at-risk members based on the score'],
+    ['outreach','Send each of them a personalised "We miss you" message this week'],
+    ['track','Track how many re-engage within 7 days']
+  ];
+  missItems.forEach(([k,txt]) => {
+    checkY(12);
+    const done = missionTasks.has(k);
+    doc.setFillColor(done?0:240,done?26:240,done?0:240); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(done?57:200,done?255:200,done?20:195); doc.rect(M,y,12,10,'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M+3.5, y+7); }
+    doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+    doc.setTextColor(done?20:80,done?20:80,done?20:80);
+    const tl = doc.splitTextToSize(txt, CW-22);
+    tl.forEach((l,i) => doc.text(l, M+16, y+5+i*4.5));
+    y+=12;
+  });
+  y+=8; checkY(14);
+  doc.setFillColor(...yellow); doc.rect(M,y,CW,12,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission: ${missionTasks.size} of 5 complete (${Math.round(missionTasks.size/5*100)}%)`, M+8, y+8.5);
+  y+=20;
+
+  // BACK COVER
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...lime); doc.rect(0,0,W,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...white);
+  doc.text('WHAT NEXT?', M, 60);
+  doc.setFillColor(...pink); doc.rect(M,64,40,1.5,'F');
+  const next = [
+    ['01','Run your first engagement score on your full member list this week.'],
+    ['02','Send personalised outreach to your top 10 at-risk members.'],
+    ['03','Audit your dunning sequence. Is the framing collaborative or accusatory?'],
+    ['04','Build at least one intervention playbook (At-risk nudge).'],
+    ['05','Move to Module 6: Ascension.']
+  ];
+  let ny = 82;
+  next.forEach(([n,t]) => {
+    doc.setFillColor(22,22,22); doc.rect(M,ny,CW,14,'F');
+    doc.setFillColor(...pink); doc.rect(M,ny,14,14,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+    doc.text(n, M+4, ny+9.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200,200,200);
+    const tl = doc.splitTextToSize(t, CW-22);
+    tl.forEach((l,i) => doc.text(l, M+18, ny+6+i*5));
+    ny+=17;
+  });
+  doc.setFillColor(...yellow); doc.rect(M,H-52,CW,24,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M+8, H-43);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co: The retention framework for subscription businesses', M+8, H-36);
+
+  doc.save('member-engine-module-5-detection-canvas.pdf');
+}
+
+document.addEventListener('DOMContentLoaded', loadWorkbook);
+</script>
+</body>
+</html>

@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 6: Ascension | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--black); -webkit-font-smoothing: antialiased; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 60px; background: var(--black); border-bottom: 3px solid var(--yellow); }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.12em; color: var(--white); text-decoration: none; }
+.nav-logo .dot { color: var(--yellow); }
+.nav-module { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; }
+.nav-progress-wrap { display: flex; align-items: center; gap: 12px; }
+.nav-progress-bar { width: 120px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+.nav-progress-fill { height: 100%; background: var(--yellow); width: 0%; transition: width 0.3s; border-radius: 2px; }
+.nav-progress-pct { font-size: 11px; font-weight: 600; color: var(--yellow); letter-spacing: 0.1em; min-width: 36px; }
+
+/* TICKER */
+.ticker-wrap { background: var(--yellow); overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 60px; border-bottom: 2px solid var(--black); }
+.ticker-track { display: inline-flex; animation: ticker 35s linear infinite; }
+.ticker-item { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--black); padding: 0 32px; }
+.ticker-item .sep { color: var(--pink); margin: 0 8px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* HERO */
+.module-hero { background: var(--black); padding: 80px 40px; border-bottom: 4px solid var(--yellow); position: relative; overflow: hidden; }
+.module-hero::before { content: 'ASCEND'; position: absolute; font-family: 'Bebas Neue', sans-serif; font-size: 240px; letter-spacing: 0.05em; color: rgba(255,255,255,0.02); top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap; pointer-events: none; }
+.hero-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 2; }
+.module-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--yellow); border: 1px solid var(--yellow); padding: 6px 14px; margin-bottom: 24px; }
+.final-badge { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lime); border: 1px solid var(--lime); padding: 6px 14px; margin-bottom: 24px; margin-left: 12px; }
+.hero-h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 8vw, 100px); line-height: 0.9; letter-spacing: 0.03em; color: var(--white); margin-bottom: 20px; }
+.hero-h1 .yellow { color: var(--yellow); }
+.hero-sub { font-size: 20px; font-weight: 300; color: #bbb; line-height: 1.6; max-width: 580px; }
+
+/* VIDEO */
+.video-section { background: var(--black); padding: 0 40px 80px; }
+.video-inner { max-width: 900px; margin: 0 auto; }
+.video-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--yellow); padding-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.video-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--yellow); }
+.video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border: 3px solid #222; }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+.video-placeholder { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.video-play-icon { width: 80px; height: 80px; background: var(--yellow); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.video-play-icon svg { width: 32px; height: 32px; }
+.video-placeholder-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.1em; color: #555; }
+
+/* CONTENT */
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 80px 40px; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 5vw, 56px); letter-spacing: 0.04em; line-height: 1.0; color: var(--black); margin: 72px 0 24px; padding-left: 20px; border-left: 6px solid var(--yellow); }
+.section-title:first-child { margin-top: 0; }
+.body-text { font-size: 18px; font-weight: 300; line-height: 1.8; color: #444; margin-bottom: 20px; }
+.body-text strong { color: var(--black); font-weight: 600; }
+.pull-quote { font-family: 'Bebas Neue', sans-serif; font-size: clamp(22px, 3vw, 32px); letter-spacing: 0.04em; line-height: 1.3; color: var(--yellow); padding: 32px 40px; border-left: 6px solid var(--yellow); background: var(--black); margin: 40px 0; }
+
+/* LTV COMPARE */
+.ltv-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 32px 0; }
+.ltv-card { padding: 36px 32px; }
+.ltv-card.before { background: #1a0000; border-top: 3px solid #d93030; }
+.ltv-card.after { background: #001a00; border-top: 3px solid #1db800; }
+.ltv-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.1em; margin-bottom: 16px; }
+.ltv-card.before .ltv-label { color: #d93030; }
+.ltv-card.after .ltv-label { color: #1db800; }
+.ltv-amount { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 0.03em; line-height: 1; margin-bottom: 8px; }
+.ltv-card.before .ltv-amount { color: #d93030; }
+.ltv-card.after .ltv-amount { color: #1db800; }
+.ltv-desc { font-size: 13px; font-weight: 300; color: #aaa; line-height: 1.5; }
+
+/* CALLOUTS */
+.callout { background: var(--yellow); border: 3px solid var(--black); border-left: 6px solid var(--black); padding: 32px 36px; margin: 32px 0; }
+.callout-label { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; color: var(--black); margin-bottom: 12px; }
+.callout p { font-size: 17px; font-weight: 400; color: var(--black); line-height: 1.7; margin-bottom: 0; }
+.callout p + p { margin-top: 12px; }
+.callout-dark { background: var(--black); border-left: 6px solid var(--yellow); padding: 32px 36px; margin: 32px 0; }
+.callout-dark .callout-label { color: var(--yellow); }
+.callout-dark p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+.callout-green { background: #001a00; border-left: 6px solid #1db800; padding: 32px 36px; margin: 32px 0; }
+.callout-green .callout-label { color: #1db800; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.15em; margin-bottom: 12px; }
+.callout-green p { font-size: 17px; font-weight: 300; color: #ccc; line-height: 1.7; margin-bottom: 0; }
+
+/* FRAMEWORK BOX */
+.framework-box { border: 3px solid var(--black); padding: 40px; margin: 32px 0; }
+.framework-box-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; color: var(--black); margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--grey); }
+
+/* MATH BLOCK */
+.math-block { background: var(--black); border: 3px solid #222; border-left: 6px solid var(--lime); padding: 32px 36px; margin: 24px 0; font-family: 'Courier New', monospace; }
+.math-caption { font-size: 12px; font-weight: 300; color: #666; margin-bottom: 20px; font-family: 'DM Sans', sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
+.math-line { font-size: 15px; color: #aaa; margin-bottom: 8px; line-height: 1.5; }
+.math-line.result { color: var(--lime); font-weight: 700; font-size: 16px; padding-top: 16px; border-top: 1px solid #222; margin-top: 8px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.checklist li { font-size: 16px; font-weight: 400; line-height: 1.6; color: #333; padding: 14px 20px 14px 48px; background: var(--grey); border-left: 3px solid transparent; position: relative; }
+.checklist li::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; font-size: 16px; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: var(--yellow); }
+.timeline-item { padding-left: 24px; padding-bottom: 32px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before { content: ''; position: absolute; left: -10px; top: 6px; width: 14px; height: 14px; background: var(--yellow); border: 3px solid var(--white); outline: 2px solid var(--yellow); border-radius: 50%; }
+.timeline-heading { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--black); margin-bottom: 8px; }
+.timeline-heading.bad { color: #d93030; }
+.timeline-heading.mid { color: var(--yellow); }
+.timeline-heading.good { color: #1db800; }
+.timeline-body { font-size: 15px; font-weight: 300; color: #444; line-height: 1.7; }
+
+/* EXAMPLE BOX */
+.example-box { background: var(--black); border-left: 4px solid var(--lime); padding: 24px 28px; margin: 16px 0; }
+.example-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--lime); margin-bottom: 8px; }
+.example-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* WARNING BOX */
+.warning-box { background: var(--black); border-left: 6px solid var(--yellow); padding: 24px 28px; margin: 24px 0; }
+.warning-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.warning-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* GOLD BOX */
+.gold-box { background: #1a1200; border-left: 4px solid var(--yellow); padding: 24px 28px; margin: 16px 0; }
+.gold-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+.gold-body { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.7; }
+
+/* STRATEGY */
+.strategy-wrap { display: flex; align-items: flex-start; gap: 24px; margin: 48px 0 24px; }
+.strategy-num { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 0.05em; color: var(--yellow); line-height: 1; flex-shrink: 0; }
+.strategy-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.04em; color: var(--black); margin-bottom: 8px; }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.col-card { padding: 28px 32px; }
+.col-card.good { background: #001a00; border-top: 3px solid #1db800; }
+.col-card.bad { background: #1a0000; border-top: 3px solid #d93030; }
+.col-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; margin-bottom: 16px; }
+.col-card.good .col-card-title { color: #1db800; }
+.col-card.bad .col-card-title { color: #d93030; }
+.col-card-item { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.6; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.col-card-item:last-child { border-bottom: none; }
+
+/* ASCENSION TYPES GRID */
+.ascension-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.ascension-card { background: var(--black); padding: 28px 24px; border-top: 3px solid var(--yellow); }
+.type-badge { display: inline-block; font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 0.12em; color: var(--black); background: var(--yellow); padding: 4px 10px; margin-bottom: 12px; }
+.ascension-card h4 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--white); margin-bottom: 12px; }
+.ascension-card p { font-size: 13px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 6px; }
+.ascension-card .eg { font-size: 12px; color: #666; font-style: italic; }
+
+/* TIMING ROWS */
+.timing-stack { display: flex; flex-direction: column; gap: 3px; margin: 24px 0; }
+.timing-row { display: grid; grid-template-columns: 200px 1fr; gap: 3px; }
+.timing-badge { padding: 16px 20px; display: flex; align-items: center; font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 0.08em; }
+.timing-badge.early { background: #1a0800; color: #d97706; }
+.timing-badge.sweet { background: #001a00; color: var(--lime); }
+.timing-badge.late { background: #1a1200; color: var(--yellow); }
+.timing-badge.mature { background: #111; color: #666; }
+.timing-desc { background: #111; padding: 16px 24px; font-size: 14px; font-weight: 300; color: #aaa; line-height: 1.6; display: flex; align-items: center; }
+
+/* TIER STACK */
+.tier-stack { display: flex; flex-direction: column; gap: 3px; margin: 24px 0; }
+.tier-card { display: grid; grid-template-columns: 220px 1fr; }
+.tier-header { padding: 24px 24px; display: flex; flex-direction: column; justify-content: center; }
+.tier-header.t1 { background: #1a1200; border-left: 4px solid var(--yellow); }
+.tier-header.t2 { background: #001220; border-left: 4px solid #60a5fa; }
+.tier-header.t3 { background: #0a0020; border-left: 4px solid var(--pink); }
+.tier-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.08em; }
+.tier-header.t1 .tier-name { color: var(--yellow); }
+.tier-header.t2 .tier-name { color: #60a5fa; }
+.tier-header.t3 .tier-name { color: var(--pink); }
+.tier-price { font-size: 13px; font-weight: 300; color: #888; margin-top: 4px; }
+.tier-body { background: #111; padding: 24px 28px; }
+.tier-body p { font-size: 14px; font-weight: 300; color: #ccc; line-height: 1.5; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.tier-body p:last-child { border-bottom: none; }
+
+/* STATUS LADDER */
+.status-ladder { display: flex; flex-direction: column; gap: 3px; margin: 24px 0; }
+.status-rung { display: grid; grid-template-columns: 60px 1fr 140px; gap: 3px; align-items: stretch; }
+.status-icon-cell { background: var(--black); display: flex; align-items: center; justify-content: center; font-size: 24px; padding: 16px; }
+.status-info-cell { background: #111; padding: 16px 20px; }
+.status-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.06em; color: var(--white); margin-bottom: 4px; }
+.status-desc { font-size: 13px; font-weight: 300; color: #888; line-height: 1.4; }
+.status-trigger-cell { background: #1a1200; padding: 16px; display: flex; align-items: center; }
+.status-trigger-text { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--yellow); line-height: 1.4; }
+
+/* TWO COL GOLD */
+.two-col-gold { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+
+/* ADD-ONS GRID */
+.addons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 24px 0; }
+.addon-col { padding: 24px 28px; background: var(--black); }
+.addon-col-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: var(--yellow); margin-bottom: 16px; }
+.addon-item { font-size: 14px; font-weight: 300; color: #ccc; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); line-height: 1.4; }
+.addon-item:last-child { border-bottom: none; }
+
+/* ETHICS */
+.ethics-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.ethics-item { padding: 12px 16px 12px 44px; font-size: 15px; font-weight: 300; line-height: 1.5; position: relative; }
+.ethics-item.do { background: #001a00; color: #ccc; }
+.ethics-item.do::before { content: '✓'; position: absolute; left: 16px; color: #1db800; font-weight: 700; }
+.ethics-item.dont { background: #1a0000; color: #ccc; }
+.ethics-item.dont::before { content: '✗'; position: absolute; left: 16px; color: #d93030; font-weight: 700; }
+
+/* VISUAL PLACEHOLDER */
+.visual-placeholder { border: 2px dashed #ccc; background: #f0efe9; padding: 40px 24px; margin: 16px 0 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 180px; }
+.visual-placeholder-icon { font-size: 36px; opacity: 0.4; }
+.visual-placeholder-label { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #999; }
+.visual-placeholder-sub { font-size: 13px; color: #aaa; text-align: center; max-width: 320px; line-height: 1.5; }
+
+/* WORKBOOK */
+.workbook-section { background: var(--black); padding: 80px 40px; border-top: 4px solid var(--yellow); }
+.workbook-inner { max-width: 900px; margin: 0 auto; }
+.workbook-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--yellow); margin-bottom: 16px; }
+.workbook-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 64px); letter-spacing: 0.04em; line-height: 0.95; color: var(--white); margin-bottom: 16px; }
+.workbook-title .yellow { color: var(--yellow); }
+.workbook-sub { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.6; margin-bottom: 48px; }
+.workbook-field { margin-bottom: 36px; }
+.field-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: var(--white); margin-bottom: 4px; }
+.field-why { font-size: 13px; font-weight: 300; color: #aaa; margin-bottom: 12px; line-height: 1.5; font-style: italic; }
+.field-input { width: 100%; background: #111; border: 2px solid #222; border-bottom: 2px solid var(--yellow); padding: 16px 20px; font-size: 16px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); resize: vertical; min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.field-input:focus { outline: none; border-color: var(--yellow); background: #161616; }
+.field-input::placeholder { color: #333; }
+.field-input.single { min-height: unset; height: 52px; resize: none; }
+.field-output { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--yellow); min-height: 18px; }
+
+/* TIER GRID */
+.tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin: 16px 0; }
+.tier-grid-label { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.08em; color: var(--yellow); align-self: center; }
+.tier-grid-input { background: #111; border: 2px solid #222; border-bottom: 2px solid var(--yellow); padding: 12px 16px; font-size: 14px; font-weight: 300; font-family: 'DM Sans', sans-serif; color: var(--white); transition: border-color 0.2s; width: 100%; }
+.tier-grid-input:focus { outline: none; border-color: var(--yellow); background: #161616; }
+.tier-grid-input::placeholder { color: #333; }
+
+/* MISSION */
+.mission-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+.mission-item { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: #111; border: 2px solid #222; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+.mission-item:hover { border-color: var(--yellow); background: #161616; }
+.mission-item.checked { border-color: var(--yellow); background: #1a1200; }
+.mission-checkbox { width: 24px; height: 24px; flex-shrink: 0; border: 2px solid #444; background: #0d0d0d; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mission-item.checked .mission-checkbox { background: var(--yellow); border-color: var(--yellow); }
+.mission-check-inner { font-size: 14px; font-weight: 700; color: var(--black); opacity: 0; }
+.mission-item.checked .mission-check-inner { opacity: 1; }
+.mission-text { font-size: 15px; font-weight: 300; color: #ccc; line-height: 1.5; }
+.mission-item.checked .mission-text { color: var(--yellow); }
+.mission-progress { background: #111; border: 2px solid #222; padding: 20px 24px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.mission-progress-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.mission-progress-fill { height: 100%; background: var(--yellow); width: 0%; transition: width 0.4s; border-radius: 3px; }
+.mission-progress-text { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--yellow); min-width: 48px; text-align: right; }
+
+/* COMPLETION BLOCK */
+.completion-block { background: var(--black); border: 3px solid var(--yellow); padding: 48px 40px; margin: 48px 0; position: relative; overflow: hidden; }
+.completion-block::before { content: '✦'; position: absolute; font-size: 200px; color: rgba(255,230,0,0.03); top: -20px; right: -20px; font-family: 'Bebas Neue', sans-serif; }
+.completion-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--yellow); margin-bottom: 16px; }
+.completion-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 4vw, 52px); letter-spacing: 0.04em; color: var(--white); line-height: 1; margin-bottom: 20px; }
+.completion-title .yellow { color: var(--yellow); }
+.completion-body { font-size: 16px; font-weight: 300; color: #aaa; line-height: 1.8; max-width: 680px; }
+.completion-six { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin: 32px 0; }
+.completion-module { background: #111; padding: 20px 20px; border-left: 3px solid transparent; }
+.completion-module.m1 { border-left-color: var(--pink); }
+.completion-module.m2 { border-left-color: #60a5fa; }
+.completion-module.m3 { border-left-color: var(--lime); }
+.completion-module.m4 { border-left-color: var(--pink); }
+.completion-module.m5 { border-left-color: #d93030; }
+.completion-module.m6 { border-left-color: var(--yellow); }
+.completion-module-num { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 0.15em; color: #555; margin-bottom: 4px; }
+.completion-module-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.06em; color: var(--white); }
+
+/* PDF BUTTON */
+.pdf-btn { display: inline-flex; align-items: center; gap: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.1em; color: var(--black); background: var(--yellow); padding: 16px 40px; border: 3px solid var(--yellow); cursor: pointer; margin-top: 40px; transition: background 0.15s, color 0.15s, transform 0.1s; }
+.pdf-btn:hover { background: transparent; color: var(--yellow); transform: translateY(-2px); }
+.pdf-note { font-size: 13px; font-weight: 300; color: #aaa; margin-top: 12px; }
+
+/* FOOTER */
+footer { background: var(--black); border-top: 3px solid var(--yellow); padding: 40px 40px; }
+.footer-inner { max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.12em; color: var(--white); }
+.footer-logo .dot { color: var(--yellow); }
+.footer-tagline { font-size: 13px; font-weight: 300; color: #888; }
+.footer-nav { display: flex; gap: 24px; }
+.footer-nav a { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #888; text-decoration: none; transition: color 0.2s; }
+.footer-nav a:hover { color: var(--white); }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-module { display: none; }
+  .module-hero, .video-section, .content-wrap, .workbook-section { padding-left: 24px; padding-right: 24px; }
+  .video-section { padding-bottom: 60px; }
+  .ltv-compare, .two-col, .ascension-grid, .addons-grid, .completion-six, .tier-grid { grid-template-columns: 1fr; }
+  .timing-row, .tier-card, .status-rung { grid-template-columns: 1fr; }
+  .status-trigger-cell { display: none; }
+  footer { padding: 24px; }
+  .footer-inner { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/index.html" class="nav-logo">MEMBER ENGINE<span class="dot">.</span></a>
+  <span class="nav-module">Module 6: Ascension — Final Module</span>
+  <div class="nav-progress-wrap">
+    <div class="nav-progress-bar"><div class="nav-progress-fill" id="navProgress"></div></div>
+    <span class="nav-progress-pct" id="navProgressPct">0%</span>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap"><div class="ticker-track">
+  <span class="ticker-item">MODULE 6 <span class="sep">✦</span></span>
+  <span class="ticker-item">ASCENSION <span class="sep">✦</span></span>
+  <span class="ticker-item">GIVE YOUR BEST MEMBERS SOMEWHERE TO GO <span class="sep">✦</span></span>
+  <span class="ticker-item">NET NEGATIVE CHURN IS THE HOLY GRAIL <span class="sep">✦</span></span>
+  <span class="ticker-item">THE FINAL MODULE <span class="sep">✦</span></span>
+  <span class="ticker-item">MODULE 6 <span class="sep">✦</span></span>
+  <span class="ticker-item">ASCENSION <span class="sep">✦</span></span>
+  <span class="ticker-item">GIVE YOUR BEST MEMBERS SOMEWHERE TO GO <span class="sep">✦</span></span>
+  <span class="ticker-item">NET NEGATIVE CHURN IS THE HOLY GRAIL <span class="sep">✦</span></span>
+  <span class="ticker-item">THE FINAL MODULE <span class="sep">✦</span></span>
+</div></div>
+
+<!-- HERO -->
+<section class="module-hero">
+  <div class="hero-inner">
+    <div class="module-tag">Module 6 of 6</div><span class="final-badge">Final Module</span>
+    <h1 class="hero-h1">A<span class="yellow">SCEN</span>SION</h1>
+    <p class="hero-sub">Your best members are also your most likely to cancel. They achieved what they came for. This module ensures they always have somewhere to go — without leaving.</p>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<div class="video-section">
+  <div class="video-inner">
+    <div class="video-label">Module Introduction</div>
+    <div class="video-wrap">
+      <div class="video-placeholder">
+        <div class="video-play-icon"><svg viewBox="0 0 32 32" fill="black"><path d="M8 6l20 10L8 26V6z"/></svg></div>
+        <div class="video-placeholder-text">VIDEO COMING SOON</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap" id="moduleContent">
+
+  <h2 class="section-title">THE RETENTION PARADOX</h2>
+
+  <div class="pull-quote">"Here is the retention paradox nobody talks about: your most successful members are most likely to cancel."</div>
+
+  <p class="body-text">A member joins to lose 20 pounds. They lose 20 pounds. Mission accomplished. Cancel. A member joins to hit $10K MRR. They hit it. Cancel. A member joins to master a skill. They master it. Cancel.</p>
+
+  <p class="body-text">This is the <strong>Graduation Problem.</strong> Members achieve their initial goal and leave because they have outgrown you. And it is costing you your best, most engaged, highest-value members. The ones you actually want to keep.</p>
+
+  <div class="ltv-compare">
+    <div class="ltv-card before">
+      <div class="ltv-label">NO ASCENSION PATH</div>
+      <div class="ltv-amount">$1,200</div>
+      <div class="ltv-desc">$50/month for 2 years. Achieves goal. Graduates. Gone.</div>
+    </div>
+    <div class="ltv-card after">
+      <div class="ltv-label">WITH ASCENSION PATH</div>
+      <div class="ltv-amount">$12,000+</div>
+      <div class="ltv-desc">Upgrades to $200/month, stays 5 years. Never runs out of runway.</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">THE MISCONCEPTION</div>
+    <p>Most membership owners think ascension is about making more money. It is not. It is about churn prevention. <strong>Members who have nowhere to go... leave.</strong> Ascension creates a growth path within your ecosystem so members never outgrow you. They just grow deeper with you. The revenue is a by-product of doing the retention right.</p>
+  </div>
+
+  <h2 class="section-title">THE CORE PRINCIPLE</h2>
+
+  <div class="callout-dark">
+    <div class="callout-label">THE BIG IDEA</div>
+    <p>Retention through expansion. Keeping members engaged long-term requires giving them somewhere to go without leaving. Stop thinking "How do I keep someone for 12 months?" Start thinking "How do I serve this person for 5 to 10 years?" The answer to the first question is tactics. The answer to the second is architecture.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">WHEN MEMBERS ACHIEVE THEIR INITIAL GOAL, THEY FACE THREE OPTIONS</div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-heading bad">Option 1: Cancel</div>
+        <div class="timeline-body">Mission accomplished, no reason to stay. The most common outcome without an ascension path. Entirely preventable.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading mid">Option 2: Coast</div>
+        <div class="timeline-body">Stay subscribed but disengage. Eventually cancel anyway. Worse than Option 1 because you don't see it coming and Module 5's detection system will be working overtime on people who were never going to stay.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-heading good">Option 3: Ascend</div>
+        <div class="timeline-body">Redefine the mission. Deepen the relationship. This is the outcome a well-designed ascension path makes irresistible. And it is the only outcome that benefits everyone involved.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout-green">
+    <div class="callout-label">WHY ASCENDERS STAY</div>
+    <p>Members who ascend are more invested, more engaged, more committed, and far less likely to leave due to higher relational switching costs. Ascension increases the cost of leaving through genuine value expansion, not manipulation. That's the difference between a garden fence and a prison fence. The member chose to go deeper. You just built the path.</p>
+  </div>
+
+  <h2 class="section-title">THE SCIENCE</h2>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE GRADUATION PROBLEM: AND HOW TO SOLVE IT</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">When members achieve their stated goal, they mentally "graduate" and cancel, even if you have more to offer. Goal completion triggers a sense of closure. "Mission accomplished" feels like permission to leave. The solution: redefine the mission before they achieve the initial goal.</p>
+    <div class="gold-box">
+      <div class="gold-label">EXAMPLE: FITNESS MEMBERSHIP</div>
+      <div class="gold-body">Member goal: "Lose 20 pounds." At 15 pounds lost: "Amazing progress. You're on track to hit 20. Let's talk about what's next: maintaining this forever, or pushing to your ideal body composition?" New goal: "Maintain 160 lbs and build lean muscle." Result: They don't cancel. They ascend. The initial goal was Stage 1, not the destination.</div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">NET NEGATIVE CHURN: THE HOLY GRAIL METRIC</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">When expansion revenue (upgrades, upsells, add-ons) exceeds churn revenue, your MRR grows even without a single new member. Most memberships fight churn by adding new members to replace lost ones. That is a treadmill. With negative churn, you are growing revenue from your existing base. That is compounding.</p>
+    <div class="math-block">
+      <div class="math-caption">Example: 100 members at $50/month</div>
+      <div class="math-line">Month 1: 100 × $50 = $5,000 MRR</div>
+      <div class="math-line">Month 2: 5 cancel (−$250 MRR lost)</div>
+      <div class="math-line">Month 2: 10 upgrade from $50 to $200 (+$1,500 net expansion)</div>
+      <div class="math-line result">Net result: +$1,250 MRR despite 5% member churn. You grew while shrinking.</div>
+    </div>
+    <div class="callout-dark" style="margin-top:24px;">
+      <div class="callout-label">THE GOAL</div>
+      <p>Make expansion revenue exceed churn revenue every single month. This is what correctly handled ascension can do to LTV: 3 to 10x, depending on how deep you build the ladder. The maths compounds in your favour.</p>
+    </div>
+  </div>
+
+  <h2 class="section-title">FOUR TYPES OF ASCENSION</h2>
+
+  <p class="body-text">Not all ascension is the same. Choose the types that fit your membership model and your members' natural next steps. The best ascension architectures combine at least two.</p>
+
+  <div class="ascension-grid">
+    <div class="ascension-card">
+      <div class="type-badge">VERTICAL</div>
+      <h4>More of the Same</h4>
+      <p>Same offering, higher intensity or frequency. Members who want more of what you already deliver.</p>
+      <p class="eg">Basic (1 call/month) → Pro (4 calls/month) → VIP (unlimited)</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">HORIZONTAL</div>
+      <h4>Adjacent Specialisations</h4>
+      <p>Master one area, expand into related ones. Members who want width, not just depth.</p>
+      <p class="eg">Weight loss → Strength training → Athletic performance</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">DEPTH</div>
+      <h4>Add-On Services</h4>
+      <p>Same tier, optional extras layered on top. Lower commitment, immediate revenue. Feels like help, not upsell.</p>
+      <p class="eg">Course + implementation calls ($100/mo add-on)</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">ADJACENT</div>
+      <h4>Experiences and Credentials</h4>
+      <p>One-time experiential or credential products. Anchors identity further into your ecosystem.</p>
+      <p class="eg">Monthly membership → Annual conference ($1,500) → Certification</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">COMBINE TYPES FOR MAXIMUM LTV</div>
+    <p>MasterClass uses horizontal ascension only. One price, all topics. It works but caps per-member revenue. Peloton combines vertical (bike upgrade), horizontal (run and cycle and strength), and adjacent (apparel, events). The multi-type approach compounds LTV far beyond what any single type achieves alone. Pick at least two.</p>
+  </div>
+
+  <h2 class="section-title">ASCENSION TIMING</h2>
+
+  <p class="body-text">The right offer at the wrong time is the wrong offer. Timing is everything. Pitch too early and you damage the relationship. Pitch too late and they've already mentally checked out.</p>
+
+  <div class="timing-stack">
+    <div class="timing-row">
+      <div class="timing-badge early">MONTHS 1-2: TOO EARLY</div>
+      <div class="timing-desc">They haven't achieved enough to want more. Feels pushy. Damages the trust you just started building. Use this window for activation, not ascension.</div>
+    </div>
+    <div class="timing-row">
+      <div class="timing-badge sweet">MONTHS 3-6: SWEET SPOT</div>
+      <div class="timing-desc">First major win achieved. Habit formed. Results visible. They believe in the process and are excited about what comes next. This is your window. Don't waste it.</div>
+    </div>
+    <div class="timing-row">
+      <div class="timing-badge late">MONTHS 7-9: GETTING LATE</div>
+      <div class="timing-desc">Still viable if they are progressing. Beginning to coast if not. Act on the sweet spot signals while you still can.</div>
+    </div>
+    <div class="timing-row">
+      <div class="timing-badge mature">MONTHS 10-12+: MATURE OR GONE</div>
+      <div class="timing-desc">Either they ascended and are committed, or they are mentally checked out. Very hard to shift at this stage. The time to act was earlier.</div>
+    </div>
+  </div>
+
+  <div class="framework-box" style="margin-top:32px;">
+    <div class="framework-box-title">THREE TACTICAL TRIGGER MOMENTS</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Early Momentum (Month 1-2)</div><div class="timeline-body">Use quick wins to introduce annual plans. "You hit your first milestone in 2 weeks. Imagine what you'll achieve in a full year. Lock in the annual plan now and save $200."</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Retention Buffer (Month 3 or 6)</div><div class="timeline-body">Offer upgrades right before known drop-off points. "Month 3 is when most members plateau. Want to make sure you don't? Upgrade to Pro for personalised support." You know the cliff is coming. Tell them.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Achievement Moments (Variable)</div><div class="timeline-body">When they hit a major milestone. "Congratulations on hitting $10K MRR. Ready for the next level? Here's what scaling to $50K looks like." The moment of victory is the moment of maximum receptivity.</div></div>
+    </div>
+  </div>
+
+  <h2 class="section-title">THE SIX STRATEGIES</h2>
+
+  <!-- Strategy 1 -->
+  <div class="strategy-wrap">
+    <div class="strategy-num">01</div>
+    <div>
+      <div class="strategy-title">THE SUCCESS PATH REFRAME</div>
+      <p class="body-text"><strong>What it is:</strong> Showing the full multi-stage journey from Day 1, so there is never a natural graduation point. The initial goal is Stage 1. Stage 2 was always part of the plan.</p>
+      <p class="body-text"><strong>Why it works:</strong> If the journey is always multi-stage, there is no natural end point where cancellation makes sense. Members cannot graduate from a path that keeps extending in front of them.</p>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE THREE-STAGE ARCHITECTURE</div>
+    <div class="two-col-gold" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+      <div class="gold-box">
+        <div class="gold-label">FITNESS MEMBERSHIP</div>
+        <div class="gold-body"><strong>Stage 1 (Months 1-6):</strong> Lose 20 lbs<br><strong>Stage 2 (Months 7-12):</strong> Build lean muscle, maintain weight<br><strong>Stage 3 (Year 2+):</strong> Athletic performance, body composition mastery</div>
+      </div>
+      <div class="gold-box">
+        <div class="gold-label">BUSINESS COACHING</div>
+        <div class="gold-body"><strong>Stage 1 (Months 1-6):</strong> Hit $10K MRR<br><strong>Stage 2 (Months 7-18):</strong> Scale to $50K MRR<br><strong>Stage 3 (Year 2+):</strong> Build team and systems for $100K+</div>
+      </div>
+    </div>
+    <div class="framework-box-title" style="margin-top:24px;border-top:2px solid var(--grey);padding-top:24px;">WHEN TO INTRODUCE EACH STAGE</div>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">In Activation (Day 1)</div><div class="timeline-body">Show the full path from the beginning. "Here's your journey: Stage 1 = Foundation. Stage 2 = Optimisation. Stage 3 = Mastery." They know from Day 1 there is more ahead.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">At Month 3-4 (Before Stage 1 completion)</div><div class="timeline-body">"You are crushing Stage 1. Let's start thinking about Stage 2. Here is what that looks like for someone at your level..." Plant the seed before they even think about leaving.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">At Stage 1 completion</div><div class="timeline-body">"Incredible. You hit your goal. Now here is the exciting part: Stage 2 is where you make this permanent and build on everything you've achieved." No pause. No graduation. Just the next chapter.</div></div>
+    </div>
+  </div>
+
+  <!-- Strategy 2 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">02</div>
+    <div>
+      <div class="strategy-title">TIERED MEMBERSHIP STRUCTURE</div>
+      <p class="body-text"><strong>What it is:</strong> Two to four tiers with clear value differentiation, allowing members to self-select based on needs and budget. Good, better, best.</p>
+      <p class="body-text"><strong>Why it works:</strong> Members choose their own pace (autonomy). There is a natural upgrade path. And you capture different willingness to pay without excluding anyone at entry level.</p>
+    </div>
+  </div>
+
+  <div class="tier-stack">
+    <div class="tier-card">
+      <div class="tier-header t1"><div class="tier-name">FOUNDATION</div><div class="tier-price">$50-100/month</div></div>
+      <div class="tier-body"><p>Core content library and self-paced learning</p><p>Group community access</p><p>Monthly Q&A calls</p></div>
+    </div>
+    <div class="tier-card">
+      <div class="tier-header t2"><div class="tier-name">ACCELERATOR</div><div class="tier-price">$150-300/month</div></div>
+      <div class="tier-body"><p>Everything in Foundation, plus:</p><p>Monthly 1:1 coaching call</p><p>Exclusive workshops and priority support</p><p>Advanced content and tools</p></div>
+    </div>
+    <div class="tier-card">
+      <div class="tier-header t3"><div class="tier-name">VIP / DONE-FOR-YOU</div><div class="tier-price">$500-2,000/month</div></div>
+      <div class="tier-body"><p>Everything in Accelerator, plus:</p><p>Weekly 1:1 coaching and quarterly strategy sessions</p><p>Done-for-you implementation</p><p>Direct access (Slack and phone)</p></div>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <div class="warning-label">NAMING MATTERS</div>
+    <div class="warning-body">Avoid "Basic / Premium / Elite." Hierarchical, shame-inducing. Use mission-aligned names: "Foundation / Accelerator / Mastery" or "Self-Guided / Coached / Done-For-You." The name signals the transformation, not a social ranking. Members at the Foundation tier should feel like they belong there, not like they are settling for less.</div>
+  </div>
+
+  <div class="callout-green">
+    <div class="callout-label">PITCH TIMING</div>
+    <p>Do not pitch upgrades in the first 30 days. At Month 3: "You are ready for more. Here is what Accelerator unlocks." At first major win: "Imagine what you'd achieve with 1:1 support. Want to explore VIP?" Always tie the offer to their specific progress, not to a sales calendar.</p>
+  </div>
+
+  <!-- Strategy 3 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">03</div>
+    <div>
+      <div class="strategy-title">ADD-ON SERVICES: DEPTH ASCENSION</div>
+      <p class="body-text"><strong>What it is:</strong> A la carte services that enhance the core membership without requiring a full tier upgrade. Lower commitment, immediate revenue. Feels like help, not an upsell.</p>
+      <p class="body-text"><strong>Why it works:</strong> Members request them when they need them. The framing is "I can help you with that specific problem" rather than "please upgrade your account." One is leadership. The other is sales.</p>
+    </div>
+  </div>
+
+  <div class="addons-grid">
+    <div class="addon-col">
+      <div class="addon-col-title">ONE-TIME ADD-ONS</div>
+      <div class="addon-item">Setup or onboarding call ($200-500)</div>
+      <div class="addon-item">Strategy session ($300-1,000)</div>
+      <div class="addon-item">Done-for-you implementation ($1,000-5,000)</div>
+      <div class="addon-item">Conference or retreat ticket ($500-2,000)</div>
+    </div>
+    <div class="addon-col">
+      <div class="addon-col-title">RECURRING ADD-ONS</div>
+      <div class="addon-item">Monthly 1:1 coaching calls (+$100-300/month)</div>
+      <div class="addon-item">Accountability partner matching (+$50/month)</div>
+      <div class="addon-item">Advanced tool access (+$25-50/month)</div>
+      <div class="addon-item">Private mastermind group (+$200-500/month)</div>
+    </div>
+  </div>
+
+  <!-- Strategy 4 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">04</div>
+    <div>
+      <div class="strategy-title">ANNUAL PLAN UPGRADES: LOCK-IN ASCENSION</div>
+      <p class="body-text"><strong>What it is:</strong> Converting monthly members to annual plans. Reduces monthly churn to zero for 12 months. Increases LTV immediately. Creates commitment through sunk cost.</p>
+      <p class="body-text"><strong>Why it works:</strong> An annual member cannot wake up on a difficult Tuesday and cancel on impulse. The commitment is already made. The question is what happens at renewal, not every month.</p>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">THE PITCH AT MONTH 3-6</div>
+    <div class="example-body">"You've achieved [result] in 3 months. Imagine what you'll achieve in a full year. Lock in your annual plan now: save $200 and get exclusive bonuses: [bonus 1], [bonus 2], [bonus 3]." Tie the ask to their specific win. Generic pitches convert poorly. Specific ones convert well.</div>
+  </div>
+
+  <p class="body-text">Annual-only bonuses that create genuine urgency: annual planning session (1:1 call), exclusive annual member community, early access to new content, physical welcome kit. <strong>Best timing:</strong> Month 3-6 (first major win), right before monthly renewal, or during meaningful promotions.</p>
+
+  <!-- Strategy 5 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">05</div>
+    <div>
+      <div class="strategy-title">STATUS AND RECOGNITION: SOCIAL ASCENSION</div>
+      <p class="body-text"><strong>What it is:</strong> Using social status within the community as a parallel ascension track. Not just price tiers. Members ascend in two dimensions simultaneously: financially and socially.</p>
+      <p class="body-text"><strong>Why it works:</strong> Humans crave status and recognition. Being elevated within the tribe is a powerful reward that operates independently of price, creating a second reason to stay that money alone cannot replicate.</p>
+    </div>
+  </div>
+
+  <div class="status-ladder">
+    <div class="status-rung">
+      <div class="status-icon-cell">🌱</div>
+      <div class="status-info-cell"><div class="status-name">Newcomer</div><div class="status-desc">Getting oriented, completing onboarding</div></div>
+      <div class="status-trigger-cell"><div class="status-trigger-text">Month 1</div></div>
+    </div>
+    <div class="status-rung">
+      <div class="status-icon-cell">⚡</div>
+      <div class="status-info-cell"><div class="status-name">Active Member</div><div class="status-desc">Profile badge, featured in newsletter</div></div>
+      <div class="status-trigger-cell"><div class="status-trigger-text">Month 3 + engagement threshold</div></div>
+    </div>
+    <div class="status-rung">
+      <div class="status-icon-cell">🏆</div>
+      <div class="status-info-cell"><div class="status-name">Advanced Member</div><div class="status-desc">Access to advanced-only channel, milestone achieved</div></div>
+      <div class="status-trigger-cell"><div class="status-trigger-text">Month 6 + milestone</div></div>
+    </div>
+    <div class="status-rung">
+      <div class="status-icon-cell">⭐</div>
+      <div class="status-info-cell"><div class="status-name">Elite</div><div class="status-desc">Monthly spotlight, invited to speak on group calls</div></div>
+      <div class="status-trigger-cell"><div class="status-trigger-text">Month 12 + top 10%</div></div>
+    </div>
+    <div class="status-rung">
+      <div class="status-icon-cell">👑</div>
+      <div class="status-info-cell"><div class="status-name">Leader / Mentor</div><div class="status-desc">Community moderator, co-hosts workshops, shapes the culture</div></div>
+      <div class="status-trigger-cell"><div class="status-trigger-text">Year 2 + contribution</div></div>
+    </div>
+  </div>
+
+  <div class="example-box" style="margin-top:24px;">
+    <div class="example-label">WHY THIS COMPOUNDS RETENTION</div>
+    <div class="example-body">Sarah reaches Elite status after a year. She has two reasons to stay: her financial investment in the Accelerator tier, and her social investment in Elite status and community role. Leaving means losing both. The switching cost is now relational and reputational, not just financial. You have made departure expensive through genuine value, not manipulation.</div>
+  </div>
+
+  <!-- Strategy 6 -->
+  <div class="strategy-wrap" style="margin-top:48px;">
+    <div class="strategy-num">06</div>
+    <div>
+      <div class="strategy-title">ADJACENT PRODUCTS AND EXPERIENCES</div>
+      <p class="body-text"><strong>What it is:</strong> One-time or experiential products that complement the core membership without requiring an ongoing commitment change. The LTV multiplier that sits on top of everything else.</p>
+      <p class="body-text"><strong>Why it works:</strong> Deepens the relationship, creates memorable moments, generates significant revenue spikes, and anchors member identity further into your ecosystem. A member who attended your retreat is different from a member who only read your newsletter.</p>
+    </div>
+  </div>
+
+  <div class="ascension-grid">
+    <div class="ascension-card">
+      <div class="type-badge">IN-PERSON EVENTS</div>
+      <h4>Experiences</h4>
+      <p>Annual conference or retreat ($1,000-3,000)</p>
+      <p>Regional meetups ($100-500)</p>
+      <p>VIP dinner with founder ($500-1,000)</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">CREDENTIALS</div>
+      <h4>Certifications</h4>
+      <p>Certified to teach the methodology ($2,000-5,000)</p>
+      <p>Advanced practitioner certification ($1,000-3,000)</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">PHYSICAL</div>
+      <h4>Products</h4>
+      <p>Books, workbooks, planners ($20-50)</p>
+      <p>Equipment or tools ($50-500)</p>
+      <p>Branded merchandise (creates tribe markers)</p>
+    </div>
+    <div class="ascension-card">
+      <div class="type-badge">INTENSIVES</div>
+      <h4>Masterminds</h4>
+      <p>3-day intensive workshop ($3,000-10,000)</p>
+      <p>6-month mastermind cohort ($5,000-15,000)</p>
+    </div>
+  </div>
+
+  <div class="gold-box" style="margin-top:24px;">
+    <div class="gold-label">THE LTV MULTIPLIER EFFECT</div>
+    <div class="gold-body">A member at $100/month who attends a $2,000 retreat and earns a $3,000 certification has a total LTV of over $6,000 in year one alone, without ever upgrading their subscription tier. Adjacent products don't compete with the membership. They compound it.</div>
+  </div>
+
+  <!-- REAL WORLD TEARDOWN -->
+  <h2 class="section-title">REAL WORLD TEARDOWN</h2>
+
+  <div class="framework-box">
+    <div class="framework-box-title">PELOTON: VERTICAL + ADJACENT (THE BENCHMARK)</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:0;">The base tier is fully functional with no value trap. Upgrades offer genuine additional value (larger screen, auto-resistance). Adjacent products (apparel, live events) deepen identity and make members "Pelotoners" before they are cyclists. Status system with milestone rides and leaderboard ranks creates social ascension alongside financial. Average LTV grows from $1,495 to $3,000-5,000+ through this combination. The full playbook in one company.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">MASTERCLASS: HORIZONTAL ONLY (THE CAUTIONARY LESSON)</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:0;">Single price tier, all topics, no vertical tiers. Ascension is purely horizontal. It works and simplifies the decision. The limitation is that everyone pays the same regardless of usage or value received, which leaves significant revenue uncaptured from power users. Lesson: horizontal ascension works. Combining it with vertical creates significantly more LTV potential per member. Don't leave the second dimension on the table.</p>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE FULL ECOSYSTEM MODEL: WHAT, HOW, WITH, FOR YOU</div>
+    <p class="body-text" style="font-size:15px;margin-bottom:20px;">The most durable ascension architectures follow this structure. At every stage, there is a next step. Members never graduate because the ladder keeps extending.</p>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-heading">Stage 1: Course</div><div class="timeline-body">Teaches the framework. "Here is what to do." Self-paced, affordable entry point. The promise is made here.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Stage 2: Membership</div><div class="timeline-body">Shows how with ongoing support. "Here is how to do it, repeatedly." Monthly community and advanced tactics. The habit is built here.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Stage 3: Consultancy</div><div class="timeline-body">Does it with them. "We implement together." High-touch, high-value. The transformation is delivered here.</div></div>
+      <div class="timeline-item"><div class="timeline-heading">Stage 4: Tool or Platform</div><div class="timeline-body">Does it for them automatically. "Set it and it runs." The logical top of the ladder once they have the foundation. Revenue that scales without proportional time.</div></div>
+    </div>
+  </div>
+
+  <!-- ETHICS CHECK -->
+  <h2 class="section-title">THE ETHICS CHECK</h2>
+
+  <div class="callout">
+    <div class="callout-label">ASCENSION SHOULD FEEL LIKE SERVICE, NOT EXTRACTION</div>
+    <p>Ethical ascension is leadership: recognising where a member is in their journey and offering the next step that genuinely serves them. It is not about maximising revenue from every interaction. The test is simple: would you be comfortable if your best friend could see exactly what you're doing and why?</p>
+  </div>
+
+  <div class="two-col">
+    <div class="col-card good">
+      <div class="col-card-title">ETHICAL ASCENSION</div>
+      <div class="col-card-item">Offer ascension when members are ready for more</div>
+      <div class="col-card-item">Each tier delivers genuine incremental value</div>
+      <div class="col-card-item">Members can fully succeed at any tier</div>
+      <div class="col-card-item">Upgrades solve real problems members are experiencing</div>
+      <div class="col-card-item">Pricing and tier differences are transparent from Day 1</div>
+    </div>
+    <div class="col-card bad">
+      <div class="col-card-title">VALUE TRAPS TO AVOID</div>
+      <div class="col-card-item">Pushing upgrades before members are ready</div>
+      <div class="col-card-item">Artificially crippling the base tier to force upgrades</div>
+      <div class="col-card-item">Making members feel inadequate for staying at lower tiers</div>
+      <div class="col-card-item">Fake scarcity: "Only 3 VIP spots left!" with no real limit</div>
+      <div class="col-card-item">Features that appear available but are paywalled unexpectedly</div>
+    </div>
+  </div>
+
+  <div class="framework-box">
+    <div class="framework-box-title">THE BAIT-AND-SWITCH TEST</div>
+    <ul class="ethics-list">
+      <li class="ethics-item do">Sell: "Join for $50/month and achieve [Stage 1 outcome]. When you're ready for Stage 2, here are your options." This is a promise, then an opportunity.</li>
+      <li class="ethics-item dont">Sell: "Join for $50/month and achieve [outcome]." Then immediately: "Actually, to really achieve it, you need the $500/month tier." This is a lie, then a threat.</li>
+    </ul>
+    <p class="body-text" style="font-size:15px;margin-top:16px;margin-bottom:0;">Ethical ascension offers more. Bait-and-switch implies the initial tier was insufficient. The difference is respect for the original promise. If you would feel uncomfortable explaining your upgrade strategy out loud to a room of prospects, your upgrade strategy needs work.</p>
+  </div>
+
+  <div class="pull-quote">"Would I feel good about my best friend buying the Foundation tier and staying there forever? If the honest answer is no, I have built a value trap."</div>
+
+</div>
+
+<!-- WORKBOOK -->
+<div class="workbook-section" id="workbook">
+  <div class="workbook-inner">
+    <div class="workbook-eyebrow">Module 6 Workbook</div>
+    <h2 class="workbook-title">YOUR <span class="yellow">ASCENSION</span><br>CANVAS</h2>
+    <p class="workbook-sub">Map your success path stages, tier structure, add-on menu, and status ladder. The blueprint that turns 12-month members into decade-long partnerships.</p>
+
+    <!-- Success Path -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR THREE-STAGE SUCCESS PATH</div>
+      <div class="field-why">If you can't articulate Stage 2 and Stage 3, your members will graduate and cancel. The path has to extend further than the initial goal. Define it before a member reaches Stage 1 completion, not after.</div>
+      <input class="field-input single" id="wb_s1" placeholder="Stage 1 goal: what members initially join to achieve (e.g. Lose 20 lbs in 6 months)">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_s2" placeholder="Stage 2 goal: what naturally follows Stage 1 completion (e.g. Build lean muscle and maintain)">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="wb_s3" placeholder="Stage 3 goal: long-term mastery state, Year 2+ (e.g. Athletic performance, coaching others)">
+      <div style="height:8px;"></div>
+      <textarea class="field-input" id="wb_s2intro" placeholder="How and when will I introduce Stage 2? e.g. At the Month 3 check-in when they're near Stage 1 goal: 'You're close to hitting X. Let's talk about what comes next...'"></textarea>
+      <div class="field-output" id="path_out"></div>
+    </div>
+
+    <!-- Tier Structure -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR TIER STRUCTURE</div>
+      <div class="field-why">Name each tier after a transformation, not a hierarchy. Define what's genuinely included at each level. If the Foundation tier can't deliver real results on its own, you have a value trap to fix before you build tiers above it.</div>
+      <div class="tier-grid" id="tierGrid">
+        <span class="tier-grid-label" style="color:var(--yellow);">TIER 1 NAME + PRICE</span>
+        <input class="tier-grid-input" id="t1_name" placeholder="e.g. Foundation, $97/month">
+        <span class="tier-grid-label" style="color:var(--yellow);">TIER 1 INCLUSIONS</span>
+        <input class="tier-grid-input" id="t1_inc" placeholder="e.g. Content library, group community, monthly Q&A">
+        <span class="tier-grid-label" style="color:#60a5fa;">TIER 2 NAME + PRICE</span>
+        <input class="tier-grid-input" id="t2_name" placeholder="e.g. Accelerator, $247/month">
+        <span class="tier-grid-label" style="color:#60a5fa;">TIER 2 ADDITIONS</span>
+        <input class="tier-grid-input" id="t2_inc" placeholder="e.g. Monthly 1:1 call, exclusive workshops, priority support">
+        <span class="tier-grid-label" style="color:var(--pink);">TIER 3 NAME + PRICE</span>
+        <input class="tier-grid-input" id="t3_name" placeholder="e.g. Done-For-You, $997/month (if applicable)">
+        <span class="tier-grid-label" style="color:var(--pink);">TIER 3 ADDITIONS</span>
+        <input class="tier-grid-input" id="t3_inc" placeholder="e.g. Weekly 1:1, implementation, direct access">
+      </div>
+      <div class="field-output" id="tier_out"></div>
+    </div>
+
+    <!-- Add-Ons -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR ADD-ON SERVICES MENU</div>
+      <div class="field-why">Four add-ons to map. Two one-time, two recurring. Start with what members are already asking you for. Those conversations already contain the product roadmap.</div>
+      <input class="field-input single" id="addon1" placeholder="One-time add-on 1: e.g. 90-day strategy session, $500">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="addon2" placeholder="One-time add-on 2: e.g. Done-for-you setup, $1,500">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="addon3" placeholder="Recurring add-on 1: e.g. Monthly 1:1 coaching, $200/month">
+      <div style="height:8px;"></div>
+      <input class="field-input single" id="addon4" placeholder="Recurring add-on 2: e.g. Accountability partner matching, $50/month">
+      <div class="field-output" id="addon_out"></div>
+    </div>
+
+    <!-- Status Ladder -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR STATUS LADDER</div>
+      <div class="field-why">5 levels maximum. Name each one after a state your members aspire to, not a generic rank. Define what earns each level. The ladder is only useful if members can see the next rung from where they are standing.</div>
+      <textarea class="field-input" id="wb_status" placeholder="Level 1: Newcomer (Day 1, completing onboarding). Level 2: Active (Month 3, first milestone). Level 3: Advanced (Month 6, featured in newsletter). Level 4: Elite (Month 12, top 10% engagement). Level 5: Leader (Year 2, community moderator role)."></textarea>
+      <div class="field-output" id="status_out"></div>
+    </div>
+
+    <!-- Stage 2 Message -->
+    <div class="workbook-field">
+      <div class="field-label">YOUR STAGE 2 INTRODUCTION MESSAGE</div>
+      <div class="field-why">Write the actual message you will send at Month 3 to introduce Stage 2. Not a draft. The real one. Personalised, specific to their progress, with no generic sales language. If you wouldn't send it to your most engaged member right now, rewrite it.</div>
+      <textarea class="field-input" id="wb_s2msg" placeholder="Congratulations on achieving [Stage 1 goal]. You've [specific accomplishment in their words]. Now here's where it gets exciting: Stage 2 is about [Stage 2 goal]. Here's what that looks like, and here's how we get you there..."></textarea>
+      <div class="field-output" id="msg_out"></div>
+    </div>
+
+    <!-- MISSION -->
+    <div class="workbook-field" style="margin-top:48px;">
+      <div class="field-label" style="color:var(--yellow);font-size:22px;">This Week's Mission</div>
+      <div class="field-why" style="color:#aaa;">Design your Success Path with all three stages. Then write the Stage 2 introduction message. Do both before leaving this page.</div>
+
+      <ul class="mission-list" id="missionList">
+        <li class="mission-item" data-task="s1" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Map your Stage 1 goal: what members join specifically to achieve</div>
+        </li>
+        <li class="mission-item" data-task="s2" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Map your Stage 2 goal: what naturally follows Stage 1 completion</div>
+        </li>
+        <li class="mission-item" data-task="s3" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Map your Stage 3 goal: the long-term mastery state (Year 2+)</div>
+        </li>
+        <li class="mission-item" data-task="msg" onclick="toggleMission(this)">
+          <div class="mission-checkbox"><div class="mission-check-inner">✓</div></div>
+          <div class="mission-text">Write the Stage 2 introduction message to send at Month 3</div>
+        </li>
+      </ul>
+
+      <div class="mission-progress">
+        <div class="mission-progress-bar"><div class="mission-progress-fill" id="missionFill"></div></div>
+        <div class="mission-progress-text" id="missionPct">0 / 4</div>
+      </div>
+
+      <div class="gold-box" style="margin-top:32px;">
+        <div class="gold-label">YOUR STAGE 2 MESSAGE TEMPLATE</div>
+        <div class="gold-body">"Congratulations on achieving [Stage 1 goal]. You have [specific accomplishment]. Now here is where it gets exciting: Stage 2 is about [Stage 2 goal]. Here is what that looks like, and here is how we get you there..."</div>
+      </div>
+    </div>
+
+    <!-- COMPLETION -->
+    <div class="completion-block" id="completionBlock">
+      <div class="completion-eyebrow">The Member Engine Framework: Complete</div>
+      <h2 class="completion-title">YOU'VE BUILT THE<br><span class="yellow">FULL RETENTION ENGINE</span></h2>
+      <p class="completion-body">Six modules. Six pillars. One framework that changes how your membership grows. Each module built on the last. Together, they form a retention system that works whether you're running 50 members or 5,000.</p>
+      <div class="completion-six">
+        <div class="completion-module m1"><div class="completion-module-num">MODULE 1</div><div class="completion-module-name">Activation</div></div>
+        <div class="completion-module m2"><div class="completion-module-num">MODULE 2</div><div class="completion-module-name">Habit Formation</div></div>
+        <div class="completion-module m3"><div class="completion-module-num">MODULE 3</div><div class="completion-module-name">Connection</div></div>
+        <div class="completion-module m4"><div class="completion-module-num">MODULE 4</div><div class="completion-module-name">Communication</div></div>
+        <div class="completion-module m5"><div class="completion-module-num">MODULE 5</div><div class="completion-module-name">Detection</div></div>
+        <div class="completion-module m6"><div class="completion-module-num">MODULE 6</div><div class="completion-module-name">Ascension</div></div>
+      </div>
+      <p class="completion-body" style="margin-top:16px;">Activation gets them started. Habit Formation keeps them coming back. Connection makes them stay for people. Communication Architecture builds ritual and trust. Detection catches the signals before they cancel. And Ascension ensures your best members always have somewhere to go.<br><br>That is how you build a membership that grows on its own momentum. Now go implement it.</p>
+    </div>
+
+    <button class="pdf-btn" onclick="generatePDF()">
+      <span>↓</span> DOWNLOAD YOUR ASCENSION CANVAS
+    </button>
+    <div class="pdf-note">Generates a branded PDF with your three-stage success path, tier structure, add-on menu, status ladder, and Stage 2 message.</div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">MEMBER ENGINE<span class="dot">.</span></div>
+      <div class="footer-tagline" style="margin-top:4px;">Retention not detention.</div>
+    </div>
+    <nav class="footer-nav">
+      <a href="/course/module-5">← Module 5</a>
+      <a href="/course/">Course Home</a>
+      <a href="/">memberengine.co</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+  document.getElementById('navProgress').style.width = pct + '%';
+  document.getElementById('navProgressPct').textContent = pct + '%';
+});
+
+// TEXT FIELDS
+const textIds = ['wb_s1','wb_s2','wb_s3','wb_s2intro','wb_s2msg','wb_status',
+  't1_name','t1_inc','t2_name','t2_inc','t3_name','t3_inc',
+  'addon1','addon2','addon3','addon4'];
+
+textIds.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { saveWorkbook(); updateOutputs(); });
+});
+
+function updateOutputs() {
+  const pathFilled = ['wb_s1','wb_s2','wb_s3'].filter(i => gv(i).length > 3).length;
+  document.getElementById('path_out').textContent = pathFilled > 0 ? `✓ ${pathFilled} of 3 stages mapped` : '';
+  const tierFilled = ['t1_name','t1_inc','t2_name','t2_inc'].filter(i => gv(i).length > 3).length;
+  document.getElementById('tier_out').textContent = tierFilled > 0 ? `✓ ${tierFilled} of 4 core tier fields defined` : '';
+  const addonFilled = ['addon1','addon2','addon3','addon4'].filter(i => gv(i).length > 3).length;
+  document.getElementById('addon_out').textContent = addonFilled > 0 ? `✓ ${addonFilled} of 4 add-ons defined` : '';
+  document.getElementById('status_out').textContent = gv('wb_status').length > 10 ? '✓ Status ladder captured' : '';
+  document.getElementById('msg_out').textContent = gv('wb_s2msg').length > 20 ? '✓ Stage 2 message drafted' : '';
+}
+
+function gv(id) { return document.getElementById(id)?.value.trim() || ''; }
+function hasVal(id) { return gv(id).length > 2; }
+
+// MISSION
+const missionTasks = new Set();
+const TOTAL = 4;
+function toggleMission(item) {
+  const task = item.dataset.task;
+  missionTasks.has(task) ? missionTasks.delete(task) : missionTasks.add(task);
+  item.classList.toggle('checked', missionTasks.has(task));
+  document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+  document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+  saveWorkbook();
+}
+
+// STORAGE
+const KEY = 'me_module6_v1';
+function saveWorkbook() {
+  const data = { fields: {}, mission: Array.from(missionTasks) };
+  textIds.forEach(id => { const el = document.getElementById(id); if (el) data.fields[id] = el.value; });
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function loadWorkbook() {
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY));
+    if (!data) return;
+    if (data.fields) textIds.forEach(id => { const el = document.getElementById(id); if (el && data.fields[id]) el.value = data.fields[id]; });
+    if (data.mission) {
+      data.mission.forEach(t => { missionTasks.add(t); const el = document.querySelector(`#missionList [data-task="${t}"]`); if (el) el.classList.add('checked'); });
+      document.getElementById('missionFill').style.width = (missionTasks.size / TOTAL * 100) + '%';
+      document.getElementById('missionPct').textContent = missionTasks.size + ' / ' + TOTAL;
+    }
+    updateOutputs();
+  } catch(e) {}
+}
+
+// PDF
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 16, CW = W - M * 2;
+  const pink = [255,20,147], black = [13,13,13], white = [248,247,244], lime = [57,255,20], yellow = [255,230,0];
+  let y = 0;
+
+  function addPage() {
+    doc.addPage(); y = 0;
+    doc.setFillColor(...black); doc.rect(0,0,W,14,'F');
+    doc.setFillColor(...yellow); doc.rect(0,14,W,1.5,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...white);
+    doc.text('MEMBER ENGINE', M, 9);
+    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text('MODULE 6: ASCENSION CANVAS', W-M, 9, {align:'right'});
+    y = 22;
+  }
+  function checkY(n) { if (y+n > H-20) addPage(); }
+
+  function sectionHeader(title, accentColor) {
+    checkY(14); doc.setFillColor(...black); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(...accentColor); doc.rect(M,y,3,10,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...white);
+    doc.text(title, M+7, y+6.5); y+=14;
+  }
+
+  function textBlock(id, placeholder) {
+    const val = gv(id) || placeholder;
+    const has = gv(id).length > 0;
+    const lines = doc.splitTextToSize(val, CW-16);
+    const h = lines.length*5+12;
+    checkY(h);
+    doc.setFillColor(has?250:240,250,has?250:240); doc.rect(M,y,CW,h,'F');
+    if (has) { doc.setDrawColor(...yellow); doc.setLineWidth(0.4); doc.rect(M,y,CW,h); }
+    doc.setFont('helvetica',has?'normal':'italic'); doc.setFontSize(9);
+    doc.setTextColor(has?30:140,has?30:140,has?30:140);
+    lines.forEach((l,i) => doc.text(l, M+8, y+8+i*5));
+    y+=h+4;
+  }
+
+  function labelRow(label, id, placeholder, labelColor) {
+    checkY(12);
+    doc.setFillColor(20,20,20); doc.rect(M,y,50,11,'F');
+    doc.setFillColor(hasVal(id)?30:18,hasVal(id)?30:18,hasVal(id)?30:18); doc.rect(M+50,y,CW-50,11,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...(labelColor||yellow));
+    const ll = doc.splitTextToSize(label, 44);
+    doc.text(ll[0], M+3, y+7.5);
+    const val = gv(id) || placeholder;
+    doc.setFont('helvetica',hasVal(id)?'normal':'italic'); doc.setFontSize(8);
+    doc.setTextColor(hasVal(id)?200:100,hasVal(id)?200:100,hasVal(id)?200:100);
+    const vl = doc.splitTextToSize(val, CW-58)[0];
+    doc.text(vl, M+54, y+7.5);
+    y+=13;
+  }
+
+  // COVER
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...yellow); doc.rect(0,0,6,H,'F');
+  doc.setFillColor(...yellow); doc.rect(6,78,W-6,2,'F');
+  doc.setFillColor(25,25,25); doc.rect(M+4,52,90,10,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...yellow);
+  doc.text('MODULE 6 OF 6: ASCENSION  —  FINAL MODULE', M+8, 59);
+  doc.setFontSize(46); doc.setTextColor(...white);
+  doc.text('ASCENSION', M+4, 102);
+  doc.setTextColor(...yellow);
+  doc.text('CANVAS', M+4, 124);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(100,100,100);
+  doc.text('Success path, tier structure, add-on menu,', M+4, 142);
+  doc.text('status ladder, and Stage 2 introduction message.', M+4, 150);
+  doc.setFillColor(...yellow); doc.rect(M+4,168,CW-4,32,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black);
+  doc.text('THE COMPLETE MEMBER ENGINE FRAMEWORK', M+10, 178);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Activation  |  Habit Formation  |  Connection', M+10, 186);
+  doc.text('Communication  |  Detection  |  Ascension', M+10, 193);
+  doc.setFontSize(8); doc.setTextColor(55,55,55);
+  doc.text('memberengine.co', M+4, H-20);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}), M+4, H-12);
+
+  addPage();
+
+  // SUCCESS PATH
+  sectionHeader('YOUR THREE-STAGE SUCCESS PATH', yellow);
+  labelRow('STAGE 1 GOAL','wb_s1','Members join to achieve... (not yet defined)');
+  labelRow('STAGE 2 GOAL','wb_s2','What follows Stage 1... (not yet defined)');
+  labelRow('STAGE 3 GOAL','wb_s3','Long-term mastery state... (not yet defined)');
+  y+=4;
+  checkY(8);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...yellow);
+  doc.text('HOW I WILL INTRODUCE STAGE 2', M, y+6); y+=10;
+  textBlock('wb_s2intro','(Not yet completed — describe the timing and message for introducing Stage 2 at Month 3)');
+
+  // TIER STRUCTURE
+  sectionHeader('TIER STRUCTURE', yellow);
+  const tierPairs = [
+    ['t1_name','TIER 1 NAME + PRICE','t1_inc','TIER 1 INCLUSIONS', yellow],
+    ['t2_name','TIER 2 NAME + PRICE','t2_inc','TIER 2 ADDITIONS', [96,165,250]],
+    ['t3_name','TIER 3 NAME + PRICE','t3_inc','TIER 3 ADDITIONS', pink]
+  ];
+  tierPairs.forEach(([id1,l1,id2,l2,col]) => {
+    labelRow(l1,id1,'(not yet defined)',col);
+    labelRow(l2,id2,'(not yet defined)',col);
+    y+=4;
+  });
+
+  // ADD-ONS
+  sectionHeader('ADD-ON SERVICES MENU', yellow);
+  labelRow('ONE-TIME 1','addon1','(not yet defined)');
+  labelRow('ONE-TIME 2','addon2','(not yet defined)');
+  labelRow('RECURRING 1','addon3','(not yet defined)');
+  labelRow('RECURRING 2','addon4','(not yet defined)');
+  y+=8;
+
+  // STATUS LADDER
+  sectionHeader('STATUS LADDER', yellow);
+  textBlock('wb_status','(Not yet completed — define 5 levels with names and the triggers that earn each)');
+
+  // STAGE 2 MESSAGE
+  sectionHeader('YOUR STAGE 2 INTRODUCTION MESSAGE', yellow);
+  const msgVal = gv('wb_s2msg') || '(Not yet written — the message you will send at Month 3 to introduce Stage 2. Personalised. Specific. No generic sales language.)';
+  const hasMsg = gv('wb_s2msg').length > 0;
+  const mlines = doc.splitTextToSize(msgVal, CW-16);
+  const mh = Math.max(mlines.length*5+16, 32);
+  checkY(mh);
+  doc.setFillColor(hasMsg?26:240,hasMsg?18:240,hasMsg?0:240); doc.rect(M,y,CW,mh,'F');
+  if (hasMsg) { doc.setDrawColor(...yellow); doc.setLineWidth(0.8); doc.rect(M,y,CW,mh); }
+  doc.setFont('helvetica',hasMsg?'normal':'italic'); doc.setFontSize(9);
+  doc.setTextColor(hasMsg?255:140,hasMsg?230:140,hasMsg?0:140);
+  mlines.forEach((l,i) => doc.text(l, M+8, y+10+i*5));
+  y+=mh+8;
+
+  // MISSION
+  sectionHeader("THIS WEEK'S MISSION", lime);
+  const missItems = [
+    ['s1','Map Stage 1 goal: what members join specifically to achieve'],
+    ['s2','Map Stage 2 goal: what naturally follows Stage 1 completion'],
+    ['s3','Map Stage 3 goal: the long-term mastery state (Year 2+)'],
+    ['msg','Write the Stage 2 introduction message to send at Month 3']
+  ];
+  missItems.forEach(([k,txt]) => {
+    checkY(12);
+    const done = missionTasks.has(k);
+    doc.setFillColor(done?0:240,done?26:240,done?0:240); doc.rect(M,y,CW,10,'F');
+    doc.setFillColor(done?57:200,done?255:200,done?20:195); doc.rect(M,y,12,10,'F');
+    if (done) { doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...black); doc.text('✓', M+3.5, y+7); }
+    doc.setFont('helvetica',done?'bold':'normal'); doc.setFontSize(9);
+    doc.setTextColor(done?20:80,done?20:80,done?20:80);
+    doc.text(txt, M+16, y+7); y+=12;
+  });
+  y+=8; checkY(14);
+  doc.setFillColor(...yellow); doc.rect(M,y,CW,12,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...black);
+  doc.text(`Mission: ${missionTasks.size} of 4 complete (${Math.round(missionTasks.size/4*100)}%)`, M+8, y+8.5);
+  y+=20;
+
+  // COMPLETION PAGE
+  doc.addPage();
+  doc.setFillColor(...black); doc.rect(0,0,W,H,'F');
+  doc.setFillColor(...yellow); doc.rect(0,0,W,4,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...yellow);
+  doc.text('THE MEMBER ENGINE FRAMEWORK: COMPLETE', M, 30);
+  doc.setFillColor(...yellow); doc.rect(M,34,60,1.5,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(...white);
+  doc.text("YOU'VE BUILT THE", M, 56);
+  doc.setTextColor(...yellow);
+  doc.text('FULL RETENTION ENGINE', M, 74);
+
+  const modules = [
+    ['01','Activation',pink],['02','Habit Formation',[96,165,250]],
+    ['03','Connection',lime],['04','Communication',pink],
+    ['05','Detection',[217,48,48]],['06','Ascension',yellow]
+  ];
+  let mx = M; let my = 92;
+  modules.forEach(([n,name,col],i) => {
+    if (i === 3) { mx = M; my = 120; }
+    doc.setFillColor(22,22,22); doc.rect(mx,my,(CW/3)-4,20,'F');
+    doc.setFillColor(...col); doc.rect(mx,my,3,20,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...col);
+    doc.text('MODULE ' + n, mx+6, my+7);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...white);
+    doc.text(name, mx+6, my+16);
+    mx += (CW/3)+2;
+  });
+
+  const summary = [
+    'Activation gets them started.',
+    'Habit Formation keeps them coming back.',
+    'Connection makes them stay for people.',
+    'Communication Architecture builds ritual and trust.',
+    'Detection catches the signals before they cancel.',
+    'Ascension gives your best members somewhere to go.',
+    '',
+    'Six pillars. One framework. Now go implement it.'
+  ];
+  let sy = 152;
+  summary.forEach(line => {
+    if (!line) { sy += 6; return; }
+    doc.setFont('helvetica', line.includes('Now go') ? 'bold' : 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(line.includes('Now go') ? 255 : 170, line.includes('Now go') ? 230 : 170, line.includes('Now go') ? 0 : 170);
+    doc.text(line, M, sy); sy += 10;
+  });
+
+  doc.setFillColor(...yellow); doc.rect(M,H-52,CW,26,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...black);
+  doc.text('RETENTION NOT DETENTION', M+8, H-42);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('memberengine.co', M+8, H-33);
+
+  doc.save('member-engine-module-6-ascension-canvas.pdf');
+}
+
+document.addEventListener('DOMContentLoaded', loadWorkbook);
+</script>
+</body>
+</html>
