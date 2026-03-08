@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Member Engine | Course Access</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+}
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* BACKGROUND TEXTURE */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(255,255,255,0.015) 39px,
+      rgba(255,255,255,0.015) 40px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 39px,
+      rgba(255,255,255,0.015) 39px,
+      rgba(255,255,255,0.015) 40px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* MAIN LAYOUT */
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.gate-wrap {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* LOGO */
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  color: var(--white);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 48px;
+}
+.logo .dot { color: var(--pink); }
+
+/* HEADING */
+.gate-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gate-eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #222;
+}
+
+.gate-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(42px, 10vw, 72px);
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.gate-title .pink { color: var(--pink); }
+
+.gate-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: #888;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+/* FORM */
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.pw-input {
+  width: 100%;
+  background: #111;
+  border: 2px solid #222;
+  border-bottom: 2px solid var(--pink);
+  padding: 18px 52px 18px 20px;
+  font-size: 17px;
+  font-weight: 300;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--white);
+  letter-spacing: 0.08em;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+}
+.pw-input:focus {
+  border-color: var(--pink);
+  background: #161616;
+}
+.pw-input::placeholder {
+  color: #333;
+  letter-spacing: 0.04em;
+}
+.pw-input.error {
+  border-bottom-color: #d93030;
+  animation: shake 0.4s ease;
+}
+.pw-input.success {
+  border-bottom-color: var(--lime);
+}
+
+/* TOGGLE VISIBILITY */
+.toggle-vis {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #444;
+  padding: 4px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+.toggle-vis:hover { color: #888; }
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--black);
+  background: var(--pink);
+  border: 3px solid var(--pink);
+  padding: 18px 32px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.submit-btn:hover {
+  background: transparent;
+  color: var(--pink);
+  transform: translateY(-2px);
+}
+.submit-btn:active { transform: translateY(0); }
+.submit-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ERROR MSG */
+.error-msg {
+  font-size: 13px;
+  font-weight: 500;
+  color: #d93030;
+  letter-spacing: 0.04em;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.error-msg.visible { opacity: 1; }
+.error-msg::before { content: '✗'; font-weight: 700; }
+
+/* SUCCESS STATE */
+.success-state {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+}
+.success-state.visible { display: flex; }
+.gate-form.hidden { display: none; }
+
+.success-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 16px;
+}
+.success-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.success-sub {
+  font-size: 15px;
+  font-weight: 300;
+  color: #888;
+  margin-bottom: 32px;
+}
+.module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.module-link {
+  display: grid;
+  grid-template-columns: 36px 1fr 24px;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  background: #111;
+  border-left: 3px solid #222;
+  padding: 14px 16px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.module-link:hover {
+  border-left-color: var(--pink);
+  background: #161616;
+}
+.module-link:hover .ml-arrow { color: var(--pink); }
+.ml-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #555;
+}
+.ml-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+.ml-sub {
+  font-size: 11px;
+  font-weight: 300;
+  color: #666;
+  margin-top: 2px;
+}
+.ml-arrow {
+  font-size: 16px;
+  color: #333;
+  transition: color 0.15s;
+  text-align: right;
+}
+
+/* HELP TEXT */
+.help-text {
+  font-size: 12px;
+  font-weight: 300;
+  color: #444;
+  margin-top: 32px;
+  line-height: 1.6;
+}
+.help-text a {
+  color: var(--pink);
+  text-decoration: none;
+}
+.help-text a:hover { text-decoration: underline; }
+
+/* FOOTER */
+footer {
+  position: relative;
+  z-index: 1;
+  padding: 24px 40px;
+  border-top: 1px solid #1a1a1a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy {
+  font-size: 11px;
+  font-weight: 300;
+  color: #333;
+  letter-spacing: 0.05em;
+}
+.footer-home {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #444;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-home:hover { color: var(--white); }
+
+/* SHAKE ANIMATION */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+
+/* FADE IN */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gate-wrap {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@media (max-width: 480px) {
+  footer { padding: 20px 24px; }
+}
+</style>
+</head>
+<body>
+
+<main>
+  <div class="gate-wrap">
+
+    <a href="/" class="logo">MEMBER ENGINE<span class="dot">.</span></a>
+
+    <div class="gate-eyebrow">Member Access</div>
+    <h1 class="gate-title">YOUR<br><span class="pink">COURSE</span></h1>
+    <p class="gate-sub">Enter your access password to get into the course. Check your welcome email if you've misplaced it.</p>
+
+    <!-- FORM STATE -->
+    <div class="gate-form" id="gateForm">
+      <div class="input-wrap">
+        <input
+          class="pw-input"
+          type="password"
+          id="pwInput"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          spellcheck="false"
+        >
+        <button class="toggle-vis" type="button" onclick="toggleVisibility()" id="toggleBtn" title="Show/hide password">
+          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="error-msg" id="errorMsg">Wrong password. Try again.</div>
+
+      <button class="submit-btn" onclick="checkPassword()" id="submitBtn">
+        <span>ENTER THE COURSE</span>
+        <span>→</span>
+      </button>
+
+      <div class="help-text">
+        Haven't got a password? You'll need to <a href="/">grab a founding member spot</a> first.
+      </div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-state" id="successState">
+      <div class="success-label">Access Granted</div>
+      <div class="success-title">Welcome back.</div>
+      <p class="success-sub">Six modules. Start at Module 1 or pick up where you left off.</p>
+      <div class="module-list">
+        <a href="/course/module-1.html" class="module-link">
+          <div class="ml-num">01</div>
+          <div><div class="ml-name">Activation</div><div class="ml-sub">Get members to their first win fast</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+        <a href="/course/module-2.html" class="module-link">
+          <div class="ml-num">02</div>
+          <div><div class="ml-name">Habit Formation</div><div class="ml-sub">Make your membership part of their routine</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+        <a href="/course/module-3.html" class="module-link">
+          <div class="ml-num">03</div>
+          <div><div class="ml-name">Connection</div><div class="ml-sub">Make members stay for people, not content</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+        <a href="/course/module-4.html" class="module-link">
+          <div class="ml-num">04</div>
+          <div><div class="ml-name">Communication Architecture</div><div class="ml-sub">Build ritual and trust through email</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+        <a href="/course/module-5.html" class="module-link">
+          <div class="ml-num">05</div>
+          <div><div class="ml-name">Detection</div><div class="ml-sub">Spot the signals before members cancel</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+        <a href="/course/module-6.html" class="module-link">
+          <div class="ml-num">06</div>
+          <div><div class="ml-name">Ascension</div><div class="ml-sub">Give your best members somewhere to go</div></div>
+          <div class="ml-arrow">→</div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <span class="footer-copy">© 2026 Member Engine. Retention not detention.</span>
+  <a href="/" class="footer-home">← Back to memberengine.co</a>
+</footer>
+
+<script>
+  // Plain-text password is fine for a 25-person founding cohort.
+  // Anyone who inspects source and reverse-engineers a retention course password
+  // was probably going to figure it out anyway.
+  const PASSWORD = 'retention2026';
+  const SESSION_KEY = 'me_course_access';
+
+  // Check session on load — no need to re-enter if they've been here before
+  window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem(SESSION_KEY) === 'granted') {
+      showSuccess();
+    }
+    document.getElementById('pwInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') checkPassword();
+    });
+  });
+
+  function checkPassword() {
+    const val = document.getElementById('pwInput').value.trim().toLowerCase();
+    const input = document.getElementById('pwInput');
+    const btn = document.getElementById('submitBtn');
+    const err = document.getElementById('errorMsg');
+
+    if (!val) return;
+
+    btn.classList.add('loading');
+    btn.querySelector('span').textContent = 'CHECKING...';
+
+    // Brief artificial delay — feels more intentional than instant
+    setTimeout(() => {
+      if (val === PASSWORD) {
+        input.classList.remove('error');
+        input.classList.add('success');
+        err.classList.remove('visible');
+        sessionStorage.setItem(SESSION_KEY, 'granted');
+        setTimeout(showSuccess, 300);
+      } else {
+        input.classList.add('error');
+        input.classList.remove('success');
+        err.classList.add('visible');
+        input.value = '';
+        input.focus();
+        btn.classList.remove('loading');
+        btn.querySelector('span').textContent = 'ENTER THE COURSE';
+        // Remove shake class after animation
+        setTimeout(() => input.classList.remove('error'), 500);
+      }
+    }, 400);
+  }
+
+  function showSuccess() {
+    document.getElementById('gateForm').classList.add('hidden');
+    const ss = document.getElementById('successState');
+    ss.classList.add('visible');
+    ss.style.animation = 'fadeUp 0.4s ease forwards';
+  }
+
+  function toggleVisibility() {
+    const input = document.getElementById('pwInput');
+    const icon = document.getElementById('eyeIcon');
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    icon.innerHTML = isPassword
+      ? `<line x1="1" y1="1" x2="23" y2="23"/><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+</script>
+
+</body>
+</html>
