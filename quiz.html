@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Leak | Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --grey: #e8e7e3;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; background: var(--black); }
+
+body {
+  font-family: var(--body);
+  background: var(--black);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  background: var(--black);
+  border-bottom: 3px solid var(--pink);
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 22px; letter-spacing: 0.12em;
+  color: var(--white); text-decoration: none;
+}
+.nav-logo .dot { color: var(--pink); }
+
+/* TICKER */
+.ticker-wrap {
+  background: var(--pink);
+  overflow: hidden; white-space: nowrap;
+  padding: 10px 0; margin-top: 60px;
+  border-bottom: 3px solid var(--black);
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker 30s linear infinite;
+}
+.ticker-inner span {
+  font-family: var(--display);
+  font-size: 13px; letter-spacing: 0.2em;
+  color: var(--black);
+  padding: 0 40px;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* HERO */
+.hero {
+  max-width: 800px; margin: 0 auto;
+  padding: 80px 40px 60px;
+  text-align: center;
+  background: var(--black);
+}
+
+.quiz-wrap {
+  background: var(--black);
+}
+.hero-eyebrow {
+  font-family: var(--display);
+  font-size: 13px; letter-spacing: 0.25em;
+  color: var(--pink); margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; display: block; width: 40px; height: 2px; background: var(--pink);
+}
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(56px, 10vw, 100px);
+  line-height: 0.95; letter-spacing: 0.02em;
+  color: var(--white); margin-bottom: 8px;
+}
+.hero h1 .pink { color: var(--pink); }
+.hero-sub {
+  font-size: 18px; font-weight: 300; line-height: 1.7;
+  color: #aaa; max-width: 560px; margin: 24px auto 0;
+}
+.hero-sub strong { color: var(--white); font-weight: 600; }
+
+/* QUIZ CONTAINER */
+.quiz-wrap {
+  max-width: 720px; margin: 0 auto;
+  padding: 0 40px 100px;
+}
+
+/* PROGRESS BAR */
+.progress-wrap {
+  margin-bottom: 48px;
+}
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--display); font-size: 13px; letter-spacing: 0.18em;
+  color: #555; margin-bottom: 10px;
+}
+.progress-label .current { color: var(--pink); }
+.progress-track {
+  height: 4px; background: #222; border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--pink);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* QUESTION CARD */
+.question-card {
+  display: none;
+  animation: fadeUp 0.35s ease forwards;
+}
+.question-card.active { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.q-module {
+  font-family: var(--display); font-size: 12px;
+  letter-spacing: 0.25em; color: var(--pink);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.q-module::before {
+  content: ''; display: block; width: 24px; height: 2px; background: var(--pink);
+}
+
+.q-number {
+  font-family: var(--display); font-size: clamp(64px, 12vw, 110px);
+  line-height: 0.85; color: #1a1a1a;
+  position: absolute; right: 0; top: -10px;
+  pointer-events: none; user-select: none;
+  letter-spacing: -0.02em;
+}
+
+.q-text-wrap { position: relative; padding-right: 80px; margin-bottom: 32px; }
+
+.q-text {
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 500; line-height: 1.4;
+  color: var(--white);
+}
+
+/* OPTIONS */
+.options { display: flex; flex-direction: column; gap: 12px; }
+
+.option {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 24px;
+  background: #111;
+  border: 2px solid #222;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.option::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0; background: var(--pink);
+  transition: width 0.2s;
+}
+.option:hover { border-color: #444; }
+.option:hover::before { width: 4px; }
+
+.option.selected {
+  border-color: var(--pink);
+  background: #1a0010;
+}
+.option.selected::before { width: 4px; }
+
+.option-letter {
+  font-family: var(--display); font-size: 20px;
+  color: #333; min-width: 28px;
+  transition: color 0.2s;
+}
+.option.selected .option-letter { color: var(--pink); }
+
+.option-text {
+  font-size: 16px; font-weight: 300; line-height: 1.5;
+  color: #aaa; transition: color 0.2s;
+}
+.option.selected .option-text { color: var(--white); }
+
+/* NAV BUTTONS */
+.q-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 32px;
+}
+.btn-next {
+  font-family: var(--display); font-size: 16px; letter-spacing: 0.15em;
+  background: var(--pink); color: var(--black);
+  border: none; padding: 16px 40px;
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.3; pointer-events: none;
+}
+.btn-next.ready { opacity: 1; pointer-events: all; }
+.btn-next.ready:hover { background: var(--white); }
+
+.btn-back {
+  font-family: var(--display); font-size: 14px; letter-spacing: 0.15em;
+  background: none; color: #555; border: none;
+  cursor: pointer; padding: 16px 0;
+  transition: color 0.2s;
+}
+.btn-back:hover { color: var(--white); }
+.btn-back:disabled { opacity: 0; pointer-events: none; }
+
+/* EMAIL GATE */
+#email-gate {
+  display: none;
+  animation: fadeUp 0.35s ease forwards;
+}
+#email-gate.active { display: block; }
+
+.gate-heading {
+  font-family: var(--display);
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 0.95; margin-bottom: 20px;
+}
+.gate-heading .pink { color: var(--pink); }
+.gate-sub {
+  font-size: 17px; font-weight: 300; line-height: 1.7;
+  color: #aaa; margin-bottom: 40px; max-width: 480px;
+}
+
+.email-form { display: flex; flex-direction: column; gap: 12px; max-width: 480px; }
+.email-input {
+  background: #111; border: 2px solid #333;
+  color: var(--white); font-family: var(--body);
+  font-size: 17px; padding: 16px 20px;
+  outline: none; transition: border-color 0.2s;
+  width: 100%;
+}
+.email-input::placeholder { color: #444; }
+.email-input:focus { border-color: var(--pink); }
+
+.name-input {
+  background: #111; border: 2px solid #333;
+  color: var(--white); font-family: var(--body);
+  font-size: 17px; padding: 16px 20px;
+  outline: none; transition: border-color 0.2s;
+  width: 100%;
+}
+.name-input::placeholder { color: #444; }
+.name-input:focus { border-color: var(--pink); }
+
+.btn-results {
+  font-family: var(--display); font-size: 18px; letter-spacing: 0.12em;
+  background: var(--pink); color: var(--black);
+  border: none; padding: 18px 40px;
+  cursor: pointer; transition: all 0.2s;
+  align-self: flex-start;
+}
+.btn-results:hover { background: var(--white); }
+
+.privacy-note {
+  font-size: 12px; color: #444; margin-top: 8px;
+}
+
+/* RESULTS PAGE */
+#results-page {
+  display: none;
+  animation: fadeUp 0.5s ease forwards;
+}
+#results-page.active { display: block; }
+
+.results-header { margin-bottom: 56px; }
+.results-eyebrow {
+  font-family: var(--display); font-size: 13px; letter-spacing: 0.25em;
+  color: var(--lime); margin-bottom: 16px;
+}
+.results-heading {
+  font-family: var(--display);
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 0.95;
+}
+.results-heading .name-placeholder { color: var(--pink); }
+
+.overall-score {
+  background: #111; border: 3px solid #222;
+  border-left: 6px solid var(--pink);
+  padding: 32px 40px; margin-bottom: 48px;
+}
+.overall-label {
+  font-family: var(--display); font-size: 12px;
+  letter-spacing: 0.25em; color: #555; margin-bottom: 8px;
+}
+.overall-number {
+  font-family: var(--display); font-size: 72px;
+  line-height: 1; color: var(--pink); display: inline;
+}
+.overall-max {
+  font-family: var(--display); font-size: 32px;
+  color: #333; margin-left: 4px;
+}
+.overall-verdict {
+  font-size: 18px; font-weight: 500; color: var(--white);
+  margin-top: 12px; line-height: 1.5;
+}
+
+/* MODULE SCORES */
+.module-scores { display: flex; flex-direction: column; gap: 4px; margin-bottom: 48px; }
+
+.module-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 60px;
+  align-items: center; gap: 16px;
+  padding: 20px 24px;
+  background: #0a0a0a;
+  border: 2px solid #111;
+  transition: border-color 0.2s;
+}
+.module-row.critical { border-left: 4px solid var(--pink); }
+.module-row.moderate { border-left: 4px solid var(--yellow); }
+.module-row.solid { border-left: 4px solid var(--lime); }
+
+.module-row-name {
+  font-family: var(--display); font-size: 16px;
+  letter-spacing: 0.08em;
+}
+.module-row.critical .module-row-name { color: var(--pink); }
+.module-row.moderate .module-row-name { color: var(--yellow); }
+.module-row.solid .module-row-name { color: #aaa; }
+
+.module-bar-track {
+  height: 8px; background: #1a1a1a; border-radius: 4px; overflow: hidden;
+}
+.module-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s ease 0.3s;
+}
+.module-row.critical .module-bar-fill { background: var(--pink); }
+.module-row.moderate .module-bar-fill { background: var(--yellow); }
+.module-row.solid .module-bar-fill { background: var(--lime); }
+
+.module-score-label {
+  font-family: var(--display); font-size: 20px;
+  text-align: right;
+}
+.module-row.critical .module-score-label { color: var(--pink); }
+.module-row.moderate .module-score-label { color: var(--yellow); }
+.module-row.solid .module-score-label { color: var(--lime); }
+
+/* BREAKDOWN */
+.breakdown { margin-bottom: 56px; }
+.breakdown-title {
+  font-family: var(--display); font-size: 36px;
+  letter-spacing: 0.04em; margin-bottom: 24px;
+  padding-left: 20px; border-left: 6px solid var(--pink);
+}
+
+.leak-card {
+  background: #0f0007;
+  border: 2px solid var(--pink);
+  padding: 32px; margin-bottom: 12px;
+}
+.leak-card-label {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.25em; color: var(--pink); margin-bottom: 8px;
+}
+.leak-card-module {
+  font-family: var(--display); font-size: 28px;
+  color: var(--white); margin-bottom: 12px;
+}
+.leak-card-desc {
+  font-size: 15px; font-weight: 300; line-height: 1.7;
+  color: #bbb; margin-bottom: 20px;
+}
+.leak-card-fix {
+  background: #1a0010; border-left: 3px solid var(--pink);
+  padding: 16px 20px;
+}
+.leak-card-fix-label {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.2em; color: var(--pink); margin-bottom: 6px;
+}
+.leak-card-fix-text {
+  font-size: 14px; font-weight: 400; line-height: 1.6; color: #ccc;
+}
+
+.secondary-card {
+  background: #0a0800; border: 2px solid var(--yellow);
+  padding: 24px; margin-bottom: 12px;
+}
+.secondary-card-label {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.25em; color: var(--yellow); margin-bottom: 6px;
+}
+.secondary-card-module {
+  font-family: var(--display); font-size: 22px;
+  color: var(--white); margin-bottom: 8px;
+}
+.secondary-card-desc {
+  font-size: 14px; font-weight: 300; line-height: 1.6; color: #999;
+}
+
+/* RESULTS CTA */
+.results-cta {
+  background: var(--pink); padding: 48px 40px;
+  text-align: center; margin-bottom: 0;
+}
+.results-cta-heading {
+  font-family: var(--display);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1; color: var(--black); margin-bottom: 16px;
+}
+.results-cta-sub {
+  font-size: 17px; color: rgba(0,0,0,0.7);
+  margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto;
+  line-height: 1.6;
+}
+.btn-cta {
+  display: inline-block;
+  background: var(--black); color: var(--white);
+  font-family: var(--display); font-size: 20px;
+  letter-spacing: 0.1em; padding: 20px 48px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-cta:hover { background: var(--white); color: var(--black); }
+.cta-spots {
+  font-family: var(--display); font-size: 13px;
+  letter-spacing: 0.2em; color: rgba(0,0,0,0.5);
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  nav { padding: 0 20px; }
+  .hero { padding: 60px 24px 40px; }
+  .quiz-wrap { padding: 0 24px 80px; }
+  .module-row { grid-template-columns: 120px 1fr 48px; gap: 10px; padding: 16px; }
+  .module-row-name { font-size: 13px; }
+  .results-cta { padding: 40px 24px; }
+  .leak-card, .secondary-card { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://memberengine.co" class="nav-logo">MEMBER<span class="dot">.</span>ENGINE</a>
+</nav>
+
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <span>FIND YOUR LEAK</span><span>FREE DIAGNOSTIC</span><span>3 MINUTES</span>
+    <span>PROBABLY UNCOMFORTABLE</span><span>NO UPSELL UNTIL THE VERY END</span>
+    <span>(THERE IS AN UPSELL AT THE END)</span><span>12 QUESTIONS</span>
+    <span>ONE HONEST ANSWER</span><span>YOU ALREADY KNOW WHICH ONE</span>
+    <span>RESULTS MAY CAUSE MILD EXISTENTIAL CRISIS</span><span>FIND YOUR LEAK</span>
+    <span>FREE DIAGNOSTIC</span><span>3 MINUTES</span><span>PROBABLY UNCOMFORTABLE</span>
+    <span>NO UPSELL UNTIL THE VERY END</span><span>(THERE IS AN UPSELL AT THE END)</span>
+    <span>12 QUESTIONS</span><span>ONE HONEST ANSWER</span>
+    <span>YOU ALREADY KNOW WHICH ONE</span><span>RESULTS MAY CAUSE MILD EXISTENTIAL CRISIS</span>
+  </div>
+</div>
+
+<div class="hero" id="quiz-hero">
+  <div class="hero-eyebrow">Free Retention Diagnostic</div>
+  <h1>FIND<br>YOUR <span class="pink">LEAK.</span></h1>
+  <p class="hero-sub">
+    12 questions. 3 minutes. You'll know exactly which part of your retention system is
+    <strong>actively costing you members</strong> and what to fix first.
+  </p>
+</div>
+
+<div class="quiz-wrap">
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label">
+      <span class="current" id="progress-current">Question 1 of 12</span>
+      <span id="progress-module">Activation</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div id="questions-container">
+
+    <!-- Q1 -->
+    <div class="question-card active" data-q="1" data-module="activation" data-module-label="ACTIVATION">
+      <div class="q-module">ACTIVATION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">When someone joins your membership, what happens in the first 24 hours?</div>
+        <div class="q-number">01</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">They get a login email. The relationship peaks immediately and deteriorates from there.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">They get a welcome email and some getting started info. Good intentions,, inconsistent execution</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">They get a structured onboarding sequence with a clear first action to complete</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back" disabled>← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card" data-q="2" data-module="activation" data-module-label="ACTIVATION">
+      <div class="q-module">ACTIVATION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">How long does it typically take a new member to achieve their first tangible result?</div>
+        <div class="q-number">02</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">Honestly, I haven't measured it. And now that you've asked, I'm a bit worried</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Within a few weeks of joining. Probably.</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Within the first 7 days. It's designed that way deliberately</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card" data-q="3" data-module="habit" data-module-label="HABIT FORMATION">
+      <div class="q-module">HABIT FORMATION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">How often do your average members engage with your membership?</div>
+        <div class="q-number">03</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">Honestly? I try not to think about it.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Occasionally. A few times a month at best</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">At least weekly. It's become a genuine part of their routine, not something they have to remember to do</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card" data-q="4" data-module="habit" data-module-label="HABIT FORMATION">
+      <div class="q-module">HABIT FORMATION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">Does your membership have a regular trigger that brings members back?</div>
+        <div class="q-number">04</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">Not really. Members come back when they feel like it, which is less often than I'd like</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">We send emails but engagement is all over the place</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Yes. A recurring event, ritual, or prompt that reliably brings people back without begging</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card" data-q="5" data-module="connection" data-module-label="CONNECTION">
+      <div class="q-module">CONNECTION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">How would you describe the sense of community in your membership?</div>
+        <div class="q-number">05</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">Ghost town. Tumbleweeds. One brave soul posted in March and never came back.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Some activity but it's inconsistent. A few regulars carrying the rest</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Active and genuine. Members know each other and engage without being prompted</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card" data-q="6" data-module="connection" data-module-label="CONNECTION">
+      <div class="q-module">CONNECTION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">When a new member joins, do they connect with another human being. Not just content.?</div>
+        <div class="q-number">06</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">No. They get content, a login, and then radio silence from another human being</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Sometimes, but it's accidental rather than designed</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Yes. Connecting with the community is a deliberate, structured part of onboarding</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-card" data-q="7" data-module="communication" data-module-label="COMMUNICATION">
+      <div class="q-module">COMMUNICATION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">How would you describe your current member communication?</div>
+        <div class="q-number">07</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">Ad hoc. We send things when we think of something to say, which is less often than it should be</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Fairly regular, but it's the same message to everyone regardless of where they're at</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Deliberately planned. Different messages for different stages, mapped to the member journey</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-card" data-q="8" data-module="communication" data-module-label="COMMUNICATION">
+      <div class="q-module">COMMUNICATION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">Do you know which communications help retention vs. quietly damage it?</div>
+        <div class="q-number">08</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">No. I track opens and clicks and pretend that's the same as understanding retention</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">I have a rough sense but nothing I could actually defend with data</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Yes. I track how communications correlate with engagement and cancellation rates</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-card" data-q="9" data-module="detection" data-module-label="DETECTION">
+      <div class="q-module">DETECTION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">How do you currently find out a member is at risk of cancelling?</div>
+        <div class="q-number">09</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">When they cancel. Sometimes when they do a chargeback. Occasionally both.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">When engagement drops noticeably. By then the decision is usually already made</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">We track leading indicators and intervene weeks before they'd ever think about cancelling</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-card" data-q="10" data-module="detection" data-module-label="DETECTION">
+      <div class="q-module">DETECTION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">What happens when a member's payment fails?</div>
+        <div class="q-number">10</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">They lose access. I send a sad little email. We both move on and never speak of it again.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">We send an automated retry email but honestly the recovery rate is pretty grim</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">We have a multi-step recovery sequence that catches most failures before access is ever lost</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-card" data-q="11" data-module="ascension" data-module-label="ASCENSION">
+      <div class="q-module">ASCENSION: QUESTION 1 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">What happens to your best, most engaged members over time?</div>
+        <div class="q-number">11</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">They eventually cancel. Not because they're unhappy , because there's nowhere left to go.</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">They stick around but plateau , they've maxed out what's on offer and we both know it</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">They have a clear path to go deeper. More access,, higher tier, or greater involvement</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-card" data-q="12" data-module="ascension" data-module-label="ASCENSION">
+      <div class="q-module">ASCENSION: QUESTION 2 OF 2</div>
+      <div class="q-text-wrap">
+        <div class="q-text">Does your membership generate expansion revenue from existing members?</div>
+        <div class="q-number">12</div>
+      </div>
+      <div class="options">
+        <div class="option" data-score="0">
+          <span class="option-letter">A</span>
+          <span class="option-text">No. One price,, one tier, everyone gets the same thing until they leave</span>
+        </div>
+        <div class="option" data-score="1">
+          <span class="option-letter">B</span>
+          <span class="option-text">Occasionally. Someone upgrades but I couldn't tell you why or how to repeat it</span>
+        </div>
+        <div class="option" data-score="2">
+          <span class="option-letter">C</span>
+          <span class="option-text">Yes. Upgrades and add-ons are a real part of the revenue mix, not a happy accident</span>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn-back">← BACK</button>
+        <button class="btn-next">SEE MY RESULTS →</button>
+      </div>
+    </div>
+
+  </div><!-- /questions-container -->
+
+  <!-- EMAIL GATE -->
+  <div id="email-gate">
+    <div class="gate-heading">
+      Almost there.<br>
+      <span class="pink">Where should<br>we send this?</span>
+    </div>
+    <p class="gate-sub">
+      Your results are ready. Enter your name and email and we'll show you exactly
+      where your membership is leaking and what to fix first.
+    </p>
+    <div class="email-form">
+      <input type="text" class="name-input" id="user-name" placeholder="First name" autocomplete="given-name">
+      <input type="email" class="email-input" id="user-email" placeholder="Email address" autocomplete="email">
+      <button class="btn-results" id="btn-show-results">SHOW MY RESULTS →</button>
+      <p class="privacy-note">No spam. Just your results and the occasional useful thing from Member Engine.</p>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-page">
+    <div class="results-header">
+      <div class="results-eyebrow">YOUR RETENTION DIAGNOSTIC</div>
+      <div class="results-heading">Here's where<br>you're <span class="name-placeholder pink">leaking</span>,<br><span id="result-name"></span></div>
+    </div>
+
+    <div class="overall-score">
+      <div class="overall-label">OVERALL SCORE</div>
+      <span class="overall-number" id="overall-score-display">0</span>
+      <span class="overall-max">/ 24</span>
+      <div class="overall-verdict" id="overall-verdict"></div>
+    </div>
+
+    <div class="module-scores" id="module-scores-display"></div>
+
+    <div class="breakdown">
+      <div class="breakdown-title">YOUR LEAKS</div>
+      <div id="breakdown-cards"></div>
+    </div>
+
+    <div class="results-cta">
+      <div class="results-cta-heading">THE FRAMEWORK<br>THAT FIXES THIS.</div>
+      <p class="results-cta-sub">Member Engine is a six-module retention system built around the exact areas your diagnostic just identified. Founding member price: $197.</p>
+      <a href="https://buy.stripe.com/dRm3cu0MzfRIdbG5jr9IQ00" class="btn-cta">GET FOUNDING MEMBER ACCESS</a>
+      <div class="cta-spots">⚡ Only 25 spots available ⚡</div>
+    </div>
+
+  </div>
+
+</div><!-- /quiz-wrap -->
+
+<script>
+(function() {
+
+  // ── DATA ──
+  const modules = ['activation','habit','connection','communication','detection','ascension'];
+  const moduleLabels = {
+    activation: 'ACTIVATION',
+    habit: 'HABIT FORMATION',
+    connection: 'CONNECTION',
+    communication: 'COMMUNICATION',
+    detection: 'DETECTION',
+    ascension: 'ASCENSION'
+  };
+  const moduleDescriptions = {
+    activation: {
+      critical: "You scored 0-1 out of 4 on Activation. What that means: there is no structured approach to getting new members started. They join, look around, feel a bit lost, and leave. Often within 30 days. 67% of members who don't complete onboarding cancel in the first month. This is not bad luck. It is a design gap. The good news: it is entirely fixable, and fixing it is the fastest lever you have on retention.",
+      moderate: "You scored 2 out of 4 on Activation. What that means: your onboarding exists but it is not doing the full job. Members are getting started, but the experience is not deliberately engineered to hook them in the first week. You are leaving early retention on the table. A structured first-week sequence would move this score and your numbers.",
+      solid: "You scored 3-4 out of 4 on Activation. What that means: your onboarding is genuinely working. New members know what to do, they do it, and they get early value. That is rarer than it sounds. This is not your primary leak."
+    },
+    habit: {
+      critical: "You scored 0-1 out of 4 on Habit Formation. What that means: your membership has not become a habit for most members. They return when they feel motivated, which is less and less over time. Motivation decays fast after signup. Members who engage less than weekly have 4x higher churn than those who engage regularly. Without a habit loop, you are fighting a losing battle every single month.",
+      moderate: "You scored 2 out of 4 on Habit Formation. What that means: some members have built a routine around your membership, but it is happening by accident rather than design. You have the ingredients for habit formation. You just have not assembled them deliberately yet.",
+      solid: "You scored 3-4 out of 4 on Habit Formation. What that means: members return because it is part of their routine, not because they remembered to. That stickiness is compounding quietly in your favour every month. Not your primary leak."
+    },
+    connection: {
+      critical: "You scored 0-1 out of 4 on Connection. What that means: your membership is a content library. People join for the content, which is fine, but they stay for connection, and right now there is not enough of it to anchor anyone. An isolated member is a member with one foot already out the door. People do not cancel communities they feel part of.",
+      moderate: "You scored 2 out of 4 on Connection. What that means: there is some community happening, but it is held up by a handful of regulars rather than baked into the structure. When those regulars go quiet, the whole thing gets very empty very fast. Connection needs to be designed in, not hoped for.",
+      solid: "You scored 3-4 out of 4 on Connection. What that means: members feel like they belong to something. They know each other. That social investment is one of the most powerful retention forces there is. Not your primary leak."
+    },
+    communication: {
+      critical: "You scored 0-1 out of 4 on Communication Architecture. What that means: your members are not hearing from you at the right moments, with the right message. The silence is being filled with doubt, distraction, and eventually cancellation. Communication is not just about sending emails. It is about having a deliberate system that meets members where they are in their journey.",
+      moderate: "You scored 2 out of 4 on Communication Architecture. What that means: you are communicating, but broadcasting the same thing to everyone regardless of where they are. A new member and a 12-month member need very different messages. You are probably sending them the same one.",
+      solid: "You scored 3-4 out of 4 on Communication Architecture. What that means: your communication is mapped and intentional. Members hear the right thing at the right time. That is genuinely hard to build. Not your primary leak."
+    },
+    detection: {
+      critical: "You scored 0-1 out of 4 on Detection. What that means: you are finding out members are leaving when they cancel. That is reading yesterday's news. The decision to cancel was made weeks earlier. Without early warning signals, you have no intervention window. You are just watching churn happen and cataloguing it neatly.",
+      moderate: "You scored 2 out of 4 on Detection. What that means: you are catching some signals, but inconsistently, and often too late to do much about them. You need a systematic early warning approach rather than gut feel and late-stage heroics.",
+      solid: "You scored 3-4 out of 4 on Detection. What that means: you are spotting drift before it becomes departure. That early warning window is worth a lot. Most membership businesses never build this. Not your primary leak."
+    },
+    ascension: {
+      critical: "You scored 0-1 out of 4 on Ascension. What that means: your best members have nowhere to go. When they have maxed out what you offer, they leave. Not out of dissatisfaction. Out of completion. This is the Graduation Problem, and it is costing you the members who were most invested. It is also costing you the expansion revenue that would make your membership genuinely compound.",
+      moderate: "You scored 2 out of 4 on Ascension. What that means: some members are going deeper, but it is not by design. You have no clear path for your best members to follow. Some will find one. Most will not.",
+      solid: "You scored 3-4 out of 4 on Ascension. What that means: you have built progression into your membership. Your best members can go further rather than having to leave. That is the foundation of net negative churn. Not your primary leak."
+    }
+  };
+  const moduleFixes = {
+    activation: "Map your first 72 hours deliberately. Define one first action that takes under 10 minutes and delivers a tangible result. Not 'explore the content library.' One specific thing with a clear outcome. That single change will measurably reduce first-month churn.",
+    habit: "Identify the one recurring trigger your membership can own. A weekly live session. A daily prompt. A community ritual on a specific day. Build one reliable return loop before you add anything else. Consistency beats variety here.",
+    connection: "Add a structured community introduction to your onboarding before anything else. New members should meet at least one other member in their first week. Not optionally. By design. That single connection point is worth more than any content you can add.",
+    communication: "Audit your last 6 months of emails against member longevity data. Which sends correlate with members staying longer? Which ones precede cancellations? The answers will surprise you. Start there before you write another word.",
+    detection: "Pick three leading indicators to track weekly: login frequency, email open rate by member, and community participation. Set a threshold for each. When someone hits it, you have a 2-4 week window to intervene. That window is everything.",
+    ascension: "Map one natural next step for your best members. It does not need to be a full new tier. A small group. A VIP add-on. An accountability option. Build the path before you need it, because by the time you need it, they will already be gone."
+  };
+
+  // ── STATE ──
+  let scores = { activation: 0, habit: 0, connection: 0, communication: 0, detection: 0, ascension: 0 };
+  let answers = {};
+  let currentQ = 1;
+  const totalQ = 12;
+
+  // ── ELEMENTS ──
+  const cards = document.querySelectorAll('.question-card');
+  const progressFill = document.getElementById('progress-fill');
+  const progressCurrent = document.getElementById('progress-current');
+  const progressModule = document.getElementById('progress-module');
+
+  // ── HELPERS ──
+  function showCard(n) {
+    cards.forEach(c => c.classList.remove('active'));
+    const card = document.querySelector(`[data-q="${n}"]`);
+    if (card) {
+      card.classList.add('active');
+      const mod = card.dataset.moduleLabel;
+      progressCurrent.textContent = `Question ${n} of ${totalQ}`;
+      progressModule.textContent = mod;
+      progressFill.style.width = ((n - 1) / totalQ * 100) + '%';
+      // restore selection if answered
+      if (answers[n] !== undefined) {
+        const opts = card.querySelectorAll('.option');
+        opts.forEach(o => {
+          o.classList.remove('selected');
+          if (parseInt(o.dataset.score) === answers[n]) o.classList.add('selected');
+        });
+        card.querySelector('.btn-next').classList.add('ready');
+      }
+    }
+  }
+
+  function initCard(card) {
+    const opts = card.querySelectorAll('.option');
+    const btnNext = card.querySelector('.btn-next');
+    const btnBack = card.querySelector('.btn-back');
+    const qNum = parseInt(card.dataset.q);
+    const mod = card.dataset.module;
+
+    opts.forEach(opt => {
+      opt.addEventListener('click', function() {
+        opts.forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        const score = parseInt(this.dataset.score);
+        answers[qNum] = score;
+        // recalculate module score
+        recalcModuleScore(mod);
+        btnNext.classList.add('ready');
+      });
+    });
+
+    btnNext.addEventListener('click', function() {
+      if (!this.classList.contains('ready')) return;
+      if (qNum < totalQ) {
+        currentQ = qNum + 1;
+        showCard(currentQ);
+      } else {
+        showEmailGate();
+      }
+    });
+
+    if (btnBack) {
+      btnBack.addEventListener('click', function() {
+        if (qNum > 1) {
+          currentQ = qNum - 1;
+          showCard(currentQ);
+        }
+      });
+    }
+  }
+
+  function recalcModuleScore(mod) {
+    let total = 0;
+    document.querySelectorAll(`[data-module="${mod}"]`).forEach(card => {
+      const qNum = parseInt(card.dataset.q);
+      if (answers[qNum] !== undefined) total += answers[qNum];
+    });
+    scores[mod] = total;
+  }
+
+  // ── EMAIL GATE ──
+  function showEmailGate() {
+    document.getElementById('quiz-hero').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('questions-container').style.display = 'none';
+    const gate = document.getElementById('email-gate');
+    gate.style.display = 'block';
+    gate.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('btn-show-results').addEventListener('click', function() {
+    const name = document.getElementById('user-name').value.trim() || 'Friend';
+    const email = document.getElementById('user-email').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('user-email').style.borderColor = 'var(--pink)';
+      return;
+    }
+    showResults(name);
+  });
+
+  // ── RESULTS ──
+  function showResults(name) {
+    document.getElementById('email-gate').style.display = 'none';
+    const resultsPage = document.getElementById('results-page');
+    resultsPage.style.display = 'block';
+    resultsPage.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Name
+    const firstName = name.split(' ')[0];
+    document.getElementById('result-name').textContent = firstName + '.';
+
+    // Overall score
+    const total = Object.values(scores).reduce((a, b) => a + b, 0);
+    document.getElementById('overall-score-display').textContent = total;
+
+    let verdict = '';
+    if (total <= 8) verdict = "Multiple critical leaks. Your retention system needs rebuilding from the ground up. But the good news is every one of these is fixable.";
+    else if (total <= 14) verdict = "Significant gaps in 2-3 areas. These are actively costing you members every month. Targeted fixes will compound quickly.";
+    else if (total <= 19) verdict = "Solid foundation with identifiable weak points. You're doing the fundamentals, but there's real upside in the gaps.";
+    else verdict = "Strong system. You're ahead of most membership businesses. These results are about optimisation, not repair.";
+    document.getElementById('overall-verdict').textContent = verdict;
+
+    // Sort modules by score ascending (worst first)
+    const sorted = modules.slice().sort((a, b) => scores[a] - scores[b]);
+
+    // Module score bars
+    const scoresDiv = document.getElementById('module-scores-display');
+    scoresDiv.innerHTML = '';
+    modules.forEach(mod => {
+      const s = scores[mod];
+      let cls = s <= 1 ? 'critical' : s <= 2 ? 'moderate' : 'solid';
+      const pct = (s / 4) * 100;
+      const row = document.createElement('div');
+      row.className = `module-row ${cls}`;
+      row.innerHTML = `
+        <div class="module-row-name">${moduleLabels[mod]}</div>
+        <div class="module-bar-track"><div class="module-bar-fill" style="width:0%" data-pct="${pct}"></div></div>
+        <div class="module-score-label">${s}/4</div>
+      `;
+      scoresDiv.appendChild(row);
+    });
+    // Animate bars
+    setTimeout(() => {
+      document.querySelectorAll('.module-bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 100);
+
+    // Breakdown cards
+    const breakdownDiv = document.getElementById('breakdown-cards');
+    breakdownDiv.innerHTML = '';
+
+    // Primary leak
+    const primary = sorted[0];
+    const pScore = scores[primary];
+    const pLevel = pScore <= 1 ? 'critical' : pScore <= 2 ? 'moderate' : 'solid';
+    const pDesc = moduleDescriptions[primary][pLevel];
+    const pFix = moduleFixes[primary];
+
+    const primaryCard = document.createElement('div');
+    primaryCard.className = 'leak-card';
+    primaryCard.innerHTML = `
+      <div class="leak-card-label">PRIMARY LEAK</div>
+      <div class="leak-card-module">${moduleLabels[primary]}</div>
+      <div class="leak-card-desc">${pDesc}</div>
+      <div class="leak-card-fix">
+        <div class="leak-card-fix-label">QUICK WIN</div>
+        <div class="leak-card-fix-text">${pFix}</div>
+      </div>
+    `;
+    breakdownDiv.appendChild(primaryCard);
+
+    // Secondary leaks (next 2 if score < 4)
+    let secondaryCount = 0;
+    for (let i = 1; i < sorted.length && secondaryCount < 2; i++) {
+      const mod = sorted[i];
+      if (scores[mod] < 4) {
+        const sScore = scores[mod];
+        const sLevel = sScore <= 1 ? 'critical' : sScore <= 2 ? 'moderate' : 'solid';
+        const sDesc = moduleDescriptions[mod][sLevel];
+        const card = document.createElement('div');
+        card.className = 'secondary-card';
+        card.innerHTML = `
+          <div class="secondary-card-label">SECONDARY LEAK</div>
+          <div class="secondary-card-module">${moduleLabels[mod]}</div>
+          <div class="secondary-card-desc">${sDesc}</div>
+        `;
+        breakdownDiv.appendChild(card);
+        secondaryCount++;
+      }
+    }
+  }
+
+  // ── INIT ──
+  cards.forEach(initCard);
+  showCard(1);
+
+})();
+</script>
+
+</body>
+</html>
