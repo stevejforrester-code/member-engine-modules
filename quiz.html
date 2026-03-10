@@ -1025,13 +1025,29 @@ nav {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  document.getElementById('btn-show-results').addEventListener('click', function() {
+document.getElementById('btn-show-results').addEventListener('click', function() {
     const name = document.getElementById('user-name').value.trim() || 'Friend';
     const email = document.getElementById('user-email').value.trim();
     if (!email || !email.includes('@')) {
       document.getElementById('user-email').style.borderColor = 'var(--pink)';
       return;
     }
+
+    // Send to Sender.net
+    fetch('https://api.sender.net/v2/subscribers', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiY2ZjZDk3MWU5OGI1ODY5ZDgwZDM2ZDhiMDYxZTNhZjU5MWIzZDBhNzFmNDFjNzcxY2UzNGRkYTk5ODNkOTY5ZjlkOWI1MmZkMzFhNzE3NWMiLCJpYXQiOjE3NzMxMjc5NzcuMTgzNjYzLCJuYmYiOjE3NzMxMjc5NzcuMTgzNjY3LCJleHAiOjQ5MjY3Mjc5NzcuMTgwNjY3LCJzdWIiOiIxMDU1ODI2Iiwic2NvcGVzIjpbXX0.AOpXoc0mLgm1yVgaRzTJm37Vdk5oVpe8OST7kaJ5EWb-jujTkfiqw8Pjq35cSNYAi1w6VpsAMkPE79u2N69ZUIKDiRqk6sNypgvdad903027cnNeR2vXEi6XOELhu9ss-Pv3yGUCwIZP3xvaC0aT4UHmOfqM43Dvqu7uVET2gg7VZQdcqTLLbBta_rrOBH7jgpTQzqEpNVOmnjRMlLKAitGYVOiJ2eEq4CSTwXCNa9Icpafo6uOBwdH1LIVO5Jf1Cfv_qfEZgTBxrho_crlEaitTR4nsHKfIMoZFOVM-FVTwB-uG6e_6kMs6PyJIkLKFn3TNaPFc9tIU10UznT3EhpsUq2i7lQy2NM5yxit1dRyW7MC02b5RrjiaWCBkzM6i-Bz7m3lxG4eTYfzViv62V9ySB-EGaFj94iKycVZteImMnbAs7jvExe6L4RDvQ49ZVvbRqay8KC8EUpCw7fVsthtP1X4B-JMATT9ekY5D6wdY4E8OXEeP2msRGakaH9ts3Qlja4vvIOMlAJ_lo0zL8JdWr1oPhPVNH-ZT6shdjuapQxfCrp9JEnySQiZo92pEoUbKLtoLetx-71thND2luWoJ-QKjxhxlq1QPyLX3sP-bXx6W2nynKWEqmjabs85_3w9axfUi4cZx-bmxHXau9khLYN3i4_BdN1g5Bvxj-X8',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        firstname: name,
+        groups: []
+      })
+    }).catch(() => {}); // silent fail — don't block results if API hiccups
+
     showResults(name);
   });
 
