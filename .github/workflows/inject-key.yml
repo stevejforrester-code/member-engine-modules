@@ -1,0 +1,21 @@
+name: Inject API Key
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Inject API key into advisor
+        run: |
+          sed -i "s|YOUR_API_KEY_HERE|${{ secrets.ANTHROPIC_API_KEY }}|g" advisor/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
