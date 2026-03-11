@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retention Advisor — Member Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0d0d0d;
+  --white: #f8f7f4;
+  --pink: #FF1493;
+  --lime: #39FF14;
+  --yellow: #FFE600;
+  --mid: #1a1a1a;
+  --border: #2a2a2a;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html, body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  background: var(--black);
+  border-bottom: 3px solid var(--pink);
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 22px; letter-spacing: 0.12em;
+  color: var(--white); text-decoration: none;
+}
+.nav-logo .dot { color: var(--pink); }
+.nav-tag {
+  font-family: var(--display); font-size: 12px;
+  letter-spacing: 0.2em; color: #444;
+}
+
+/* TICKER */
+.ticker-wrap {
+  background: var(--pink); overflow: hidden;
+  white-space: nowrap; padding: 8px 0;
+  margin-top: 60px;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker 25s linear infinite;
+}
+.ticker-inner span {
+  font-family: var(--display); font-size: 12px;
+  letter-spacing: 0.2em; color: var(--black);
+  padding: 0 32px;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: calc(100vh - 84px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* SIDEBAR */
+.sidebar {
+  border-right: 2px solid var(--border);
+  padding: 32px 24px;
+  overflow-y: auto;
+  background: #0a0a0a;
+}
+
+.sidebar-heading {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.25em; color: #444;
+  margin-bottom: 20px;
+}
+
+.score-card {
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  background: var(--mid);
+  border: 2px solid var(--border);
+  border-left: 4px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.score-card:hover { border-color: #444; }
+.score-card.active { border-left-color: var(--pink); background: #1a0010; }
+.score-card.good { border-left-color: var(--lime); }
+.score-card.moderate { border-left-color: var(--yellow); }
+.score-card.critical { border-left-color: var(--pink); }
+
+.score-card-name {
+  font-family: var(--display); font-size: 14px;
+  letter-spacing: 0.1em; color: #aaa;
+  margin-bottom: 6px;
+}
+.score-card.active .score-card-name { color: var(--white); }
+
+.score-bar-track {
+  height: 4px; background: #333; border-radius: 2px;
+  overflow: hidden; margin-bottom: 4px;
+}
+.score-bar-fill { height: 100%; border-radius: 2px; }
+.score-card.good .score-bar-fill { background: var(--lime); }
+.score-card.moderate .score-bar-fill { background: var(--yellow); }
+.score-card.critical .score-bar-fill { background: var(--pink); }
+
+.score-label {
+  font-family: var(--display); font-size: 12px;
+  color: #555;
+}
+.score-card.good .score-label { color: var(--lime); }
+.score-card.moderate .score-label { color: var(--yellow); }
+.score-card.critical .score-label { color: var(--pink); }
+
+.sidebar-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.sidebar-note {
+  font-size: 12px; font-weight: 300;
+  line-height: 1.6; color: #444;
+}
+
+/* CHAT AREA */
+.chat-area {
+  display: flex; flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 24px 32px 20px;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+.chat-header-title {
+  font-family: var(--display); font-size: 28px;
+  letter-spacing: 0.04em; color: var(--white);
+  margin-bottom: 4px;
+}
+.chat-header-title .pink { color: var(--pink); }
+.chat-header-sub {
+  font-size: 13px; font-weight: 300; color: #555;
+}
+
+/* MESSAGES */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  display: flex; flex-direction: column; gap: 20px;
+  scroll-behavior: smooth;
+}
+
+.message {
+  display: flex; gap: 14px;
+  animation: fadeUp 0.3s ease forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 14px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+.avatar.advisor {
+  background: var(--pink); color: var(--black);
+}
+.avatar.user {
+  background: var(--border); color: var(--white);
+}
+
+.bubble {
+  max-width: 620px;
+  padding: 16px 20px;
+  line-height: 1.7;
+  font-size: 15px; font-weight: 300;
+}
+.message.advisor .bubble {
+  background: var(--mid);
+  border: 2px solid var(--border);
+  border-top-left-radius: 0;
+  color: var(--white);
+}
+.message.user .bubble {
+  background: #1a0010;
+  border: 2px solid var(--pink);
+  color: var(--white);
+  text-align: right;
+}
+
+.bubble strong { font-weight: 600; color: var(--white); }
+.bubble .highlight { color: var(--pink); font-weight: 500; }
+.bubble .good { color: var(--lime); font-weight: 500; }
+.bubble .cta-link {
+  display: inline-block;
+  background: var(--pink); color: var(--black);
+  font-family: var(--display); font-size: 15px;
+  letter-spacing: 0.1em; padding: 12px 28px;
+  text-decoration: none; margin-top: 12px;
+  transition: background 0.2s;
+}
+.bubble .cta-link:hover { background: var(--white); }
+
+/* TYPING INDICATOR */
+.typing-indicator {
+  display: none;
+  align-items: center; gap: 14px;
+}
+.typing-indicator.visible { display: flex; }
+.typing-dots {
+  background: var(--mid); border: 2px solid var(--border);
+  padding: 16px 20px;
+  display: flex; gap: 6px; align-items: center;
+}
+.dot {
+  width: 6px; height: 6px;
+  background: var(--pink); border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* INPUT */
+.input-area {
+  padding: 20px 32px;
+  border-top: 2px solid var(--border);
+  flex-shrink: 0;
+  background: #0a0a0a;
+}
+.input-row {
+  display: flex; gap: 12px; align-items: flex-end;
+}
+.input-field {
+  flex: 1;
+  background: var(--mid); border: 2px solid var(--border);
+  color: var(--white); font-family: var(--body);
+  font-size: 15px; font-weight: 300;
+  padding: 14px 18px;
+  resize: none; outline: none;
+  min-height: 52px; max-height: 140px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+.input-field::placeholder { color: #444; }
+.input-field:focus { border-color: var(--pink); }
+
+.send-btn {
+  background: var(--pink); color: var(--black);
+  font-family: var(--display); font-size: 14px;
+  letter-spacing: 0.12em; border: none;
+  padding: 0 24px; height: 52px;
+  cursor: pointer; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--white); }
+.send-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+.input-hint {
+  font-size: 11px; color: #333; margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+
+/* SETUP SCREEN */
+#setup-screen {
+  position: fixed; inset: 0;
+  background: var(--black);
+  z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px;
+}
+.setup-card {
+  max-width: 560px; width: 100%;
+  background: var(--mid);
+  border: 3px solid var(--pink);
+  padding: 48px;
+}
+.setup-eyebrow {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.25em; color: var(--pink);
+  margin-bottom: 16px;
+}
+.setup-heading {
+  font-family: var(--display);
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 0.95; margin-bottom: 20px;
+}
+.setup-sub {
+  font-size: 15px; font-weight: 300;
+  line-height: 1.7; color: #aaa;
+  margin-bottom: 32px;
+}
+.setup-fields { display: flex; flex-direction: column; gap: 12px; }
+.setup-input {
+  background: #111; border: 2px solid var(--border);
+  color: var(--white); font-family: var(--body);
+  font-size: 16px; padding: 14px 18px;
+  outline: none; transition: border-color 0.2s;
+}
+.setup-input:focus { border-color: var(--pink); }
+.setup-input::placeholder { color: #444; }
+
+.setup-label {
+  font-family: var(--display); font-size: 11px;
+  letter-spacing: 0.2em; color: #555;
+  margin-bottom: 6px; margin-top: 8px;
+}
+
+.score-inputs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-top: 4px;
+}
+.score-input-wrap { display: flex; flex-direction: column; }
+.score-mini-label {
+  font-size: 10px; letter-spacing: 0.15em;
+  color: #444; margin-bottom: 4px;
+  font-family: var(--display);
+}
+.score-number-input {
+  background: #111; border: 2px solid var(--border);
+  color: var(--pink); font-family: var(--display);
+  font-size: 20px; padding: 10px 14px;
+  outline: none; width: 100%;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.score-number-input:focus { border-color: var(--pink); }
+
+.setup-btn {
+  background: var(--pink); color: var(--black);
+  font-family: var(--display); font-size: 18px;
+  letter-spacing: 0.1em; border: none;
+  padding: 18px 40px; cursor: pointer;
+  transition: background 0.2s; margin-top: 8px;
+  align-self: flex-start;
+}
+.setup-btn:hover { background: var(--white); }
+
+.skip-scores {
+  font-size: 12px; color: #444; margin-top: 12px;
+  cursor: pointer; text-decoration: underline;
+}
+.skip-scores:hover { color: #888; }
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .chat-header { padding: 16px 20px; }
+  .messages { padding: 16px 20px; }
+  .input-area { padding: 16px 20px; }
+  .setup-card { padding: 32px 24px; }
+  .score-inputs { grid-template-columns: 1fr 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-eyebrow">RETENTION ADVISOR</div>
+    <div class="setup-heading">Let's have a<br>proper look.</div>
+    <p class="setup-sub">
+      A few quick details and I will know exactly where to start.
+      No generic advice. Just your situation.
+    </p>
+    <div class="setup-fields">
+      <div>
+        <div class="setup-label">YOUR FIRST NAME</div>
+        <input type="text" class="setup-input" id="setup-name" placeholder="What should I call you?">
+      </div>
+      <div>
+        <div class="setup-label">YOUR MEMBERSHIP OR COURSE NAME</div>
+        <input type="text" class="setup-input" id="setup-membership" placeholder="What are we looking at today?">
+      </div>
+      <div>
+        <div class="setup-label">YOUR QUIZ SCORES (if you have them)</div>
+        <div class="score-inputs">
+          <div class="score-input-wrap">
+            <div class="score-mini-label">ACTIVATION</div>
+            <input type="number" class="score-number-input" id="score-activation" min="0" max="4" placeholder="0-4">
+          </div>
+          <div class="score-input-wrap">
+            <div class="score-mini-label">HABIT</div>
+            <input type="number" class="score-number-input" id="score-habit" min="0" max="4" placeholder="0-4">
+          </div>
+          <div class="score-input-wrap">
+            <div class="score-mini-label">CONNECTION</div>
+            <input type="number" class="score-number-input" id="score-connection" min="0" max="4" placeholder="0-4">
+          </div>
+          <div class="score-input-wrap">
+            <div class="score-mini-label">COMMS</div>
+            <input type="number" class="score-number-input" id="score-communication" min="0" max="4" placeholder="0-4">
+          </div>
+          <div class="score-input-wrap">
+            <div class="score-mini-label">DETECTION</div>
+            <input type="number" class="score-number-input" id="score-detection" min="0" max="4" placeholder="0-4">
+          </div>
+          <div class="score-input-wrap">
+            <div class="score-mini-label">ASCENSION</div>
+            <input type="number" class="score-number-input" id="score-ascension" min="0" max="4" placeholder="0-4">
+          </div>
+        </div>
+        <div class="skip-scores" id="skip-scores-btn">I haven't done the quiz yet. Start anyway.</div>
+      </div>
+      <button class="setup-btn" id="start-btn">START MY SESSION</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<nav>
+  <a href="https://memberengine.co" class="nav-logo">MEMBER<span class="dot">.</span>ENGINE</a>
+  <span class="nav-tag">RETENTION ADVISOR</span>
+</nav>
+
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <span>RETENTION ADVISOR</span><span>POWERED BY AI</span><span>YOUR SITUATION</span>
+    <span>NOT GENERIC ADVICE</span><span>HONEST DIAGNOSIS</span><span>ONE QUICK WIN</span>
+    <span>RETENTION ADVISOR</span><span>POWERED BY AI</span><span>YOUR SITUATION</span>
+    <span>NOT GENERIC ADVICE</span><span>HONEST DIAGNOSIS</span><span>ONE QUICK WIN</span>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-heading">YOUR SCORES</div>
+    <div id="score-cards"></div>
+    <hr class="sidebar-divider">
+    <p class="sidebar-note">
+      Your scores are from the Find Your Leak diagnostic.
+      Lower scores mean bigger leaks.
+      The advisor focuses on your worst area first.
+    </p>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="chat-header">
+      <div class="chat-header-title">THE <span class="pink">RETENTION</span> ADVISOR</div>
+      <div class="chat-header-sub">Honest diagnosis. One quick win. No fluff.</div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="typing-indicator" id="typing">
+        <div class="avatar advisor">RA</div>
+        <div class="typing-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <textarea class="input-field" id="user-input" placeholder="Type your answer..." rows="1"></textarea>
+        <button class="send-btn" id="send-btn">SEND</button>
+      </div>
+      <div class="input-hint">Press Enter to send. Shift+Enter for new line.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+
+  // ── STATE ──
+  let userName = '';
+  let membershipName = '';
+  let scores = {};
+  let conversationHistory = [];
+  let isLoading = false;
+
+  const moduleLabels = {
+    activation: 'ACTIVATION',
+    habit: 'HABIT FORMATION',
+    connection: 'CONNECTION',
+    communication: 'COMMUNICATION',
+    detection: 'DETECTION',
+    ascension: 'ASCENSION'
+  };
+
+  // ── SYSTEM PROMPT ──
+  function buildSystemPrompt() {
+    const hasScores = Object.keys(scores).length > 0;
+    const scoresText = hasScores
+      ? Object.entries(scores).map(([k, v]) => `${moduleLabels[k]}: ${v}/4`).join(', ')
+      : 'Not provided';
+
+    const primaryLeak = hasScores
+      ? Object.entries(scores).sort((a, b) => a[1] - b[1])[0]
+      : null;
+
+    return `You are the Retention Advisor, a diagnostic tool built by Steve Forrester and Member Engine.
+
+Your personality is a direct blend of two people:
+- Steve Forrester: a former subscription box founder who built a whisky sampling business (The Whisky Order) that failed due to retention problems, then became a retention consultant. Blunt, honest, genuinely useful. Comfortable talking about his own failures. No corporate speak. Practical over theoretical.
+- Jon Buchan (Charm Offensive): warm but cheeky, disarming humour, short punchy sentences, punchlines that sit alone on their own line, self-aware, never smug.
+
+THE USER:
+- Name: ${userName}
+- Membership/Course: ${membershipName}
+- Quiz scores: ${scoresText}
+${primaryLeak ? `- Primary leak (lowest score): ${moduleLabels[primaryLeak[0]]} (${primaryLeak[1]}/4)` : ''}
+
+YOUR JOB:
+You are a DIAGNOSTIC ADVISOR, not a complete solution. You diagnose clearly and give one concrete quick win. You do NOT give away the full framework.
+
+THE SIX MODULE AREAS (you know these but share sparingly):
+1. ACTIVATION - What happens in the first 72 hours after someone joins. Most memberships waste this entirely.
+2. HABIT FORMATION - Making the membership part of someone's routine, not something they get around to eventually.
+3. CONNECTION - People don't cancel communities they feel part of. Content vs community distinction.
+4. COMMUNICATION ARCHITECTURE - Right message, right person, right time. Not broadcasting the same email to everyone.
+5. DETECTION - Measuring leading indicators of churn, not lagging ones. The cancellation lag problem.
+6. ASCENSION - What happens to your best members when they run out of road. The Graduation Problem.
+
+WHAT YOU SHARE FREELY:
+- Diagnosis of their specific situation
+- Why the problem matters (with real stakes and numbers where relevant)
+- One concrete quick win they can action this week
+- Honest assessment of what the quick win does NOT solve
+
+WHAT YOU NEVER SHARE:
+- The complete framework for any module
+- How the six modules interconnect and compound
+- The implementation sequences and systems behind each module
+- Anything that removes the need to do the course
+
+If someone asks "can you just tell me everything" or tries to extract the full system: acknowledge it with humour ("I respect the hustle. Genuinely. But that is what the course is for.") then redirect.
+
+CONVERSATION STRUCTURE:
+1. Welcome them by name. Acknowledge their primary leak if you have scores. One joke or disarming line. Then get to work.
+2. Ask 2 targeted questions about their primary leak area. One at a time. Wait for answers.
+3. Diagnose their specific situation based on their answers. Be precise. Be honest. If it is bad, say it is bad.
+4. Give one concrete quick win. Specific and actionable. Not "improve your onboarding." Something they can do today.
+5. Name what the quick win does NOT solve. Create the gap.
+6. Surface Member Engine naturally. Not a hard sell. A logical next step. Mention the $197 founding member price and 25 spot limit honestly.
+
+STYLE RULES:
+- Short sentences. Never use em dashes.
+- Comedy lands in white space. Punchlines sit alone.
+- No bullet point walls. Conversational prose.
+- Maximum 3-4 short paragraphs per response.
+- Talk like a smart mate, not a consultant writing a report.
+- Contractions are fine. Slang is fine if it fits.
+- If they share something vulnerable or honest, acknowledge it before moving on.
+- Never be smug about their problems. You made the same mistakes. Say so when relevant.
+
+The Stripe link for Member Engine is: https://buy.stripe.com/dRm3cu0MzfRIdbG5jr9IQ00
+The course page is: https://memberengine.co/sales.html
+
+When surfacing the course, format the CTA as plain text with the URL. Do not use markdown links.`;
+  }
+
+  // ── SETUP ──
+  document.getElementById('start-btn').addEventListener('click', startSession);
+  document.getElementById('skip-scores-btn').addEventListener('click', () => {
+    document.querySelectorAll('.score-number-input').forEach(i => i.value = '');
+    startSession();
+  });
+
+  function startSession() {
+    userName = document.getElementById('setup-name').value.trim() || 'there';
+    membershipName = document.getElementById('setup-membership').value.trim() || 'your membership';
+
+    const modules = ['activation','habit','connection','communication','detection','ascension'];
+    scores = {};
+    modules.forEach(m => {
+      const val = document.getElementById(`score-${m}`).value;
+      if (val !== '' && val >= 0 && val <= 4) {
+        scores[m] = parseInt(val);
+      }
+    });
+
+    document.getElementById('setup-screen').style.display = 'none';
+    renderScoreCards();
+    beginConversation();
+  }
+
+  // ── SCORE CARDS ──
+  function renderScoreCards() {
+    const container = document.getElementById('score-cards');
+    container.innerHTML = '';
+    const modules = ['activation','habit','connection','communication','detection','ascension'];
+
+    if (Object.keys(scores).length === 0) {
+      container.innerHTML = '<p style="font-size:13px;color:#444;font-weight:300;line-height:1.6;">No quiz scores provided. The advisor will ask about your situation directly.</p>';
+      return;
+    }
+
+    modules.forEach(m => {
+      if (scores[m] === undefined) return;
+      const s = scores[m];
+      const cls = s <= 1 ? 'critical' : s <= 2 ? 'moderate' : 'good';
+      const pct = (s / 4) * 100;
+      const card = document.createElement('div');
+      card.className = `score-card ${cls}`;
+      card.innerHTML = `
+        <div class="score-card-name">${moduleLabels[m]}</div>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="score-label">${s}/4 ${cls === 'critical' ? 'CRITICAL' : cls === 'moderate' ? 'MODERATE' : 'SOLID'}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // ── CONVERSATION ──
+  async function beginConversation() {
+    showTyping();
+    const systemPrompt = buildSystemPrompt();
+    const openingPrompt = `Start the conversation. Welcome ${userName} by name. Reference their membership "${membershipName}". ${Object.keys(scores).length > 0 ? 'You have their quiz scores. Acknowledge their primary leak area with honesty and a touch of humour. Then ask your first targeted question about it.' : 'They have not done the quiz yet. Welcome them warmly, ask them what area of their membership they are most worried about right now — give them the six options briefly.'} Keep it short. One disarming line. Then get to work.`;
+
+    conversationHistory = [];
+    const response = await callClaude(systemPrompt, openingPrompt);
+    hideTyping();
+    appendMessage('advisor', response);
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    if (!text || isLoading) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    appendMessage('user', text);
+
+    conversationHistory.push({ role: 'user', content: text });
+
+    showTyping();
+    const systemPrompt = buildSystemPrompt();
+    const response = await callClaude(systemPrompt, null);
+    hideTyping();
+
+    conversationHistory.push({ role: 'assistant', content: response });
+    appendMessage('advisor', response);
+  }
+
+  // ── API CALL ──
+  async function callClaude(systemPrompt, openingPrompt) {
+    isLoading = true;
+    document.getElementById('send-btn').disabled = true;
+
+    try {
+      let messages;
+      if (openingPrompt) {
+        messages = [{ role: 'user', content: openingPrompt }];
+      } else {
+        messages = conversationHistory.slice();
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: messages
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('');
+
+      if (!openingPrompt) {
+        // already pushed user message before call
+      } else {
+        conversationHistory.push({ role: 'user', content: openingPrompt });
+        conversationHistory.push({ role: 'assistant', content: text });
+      }
+
+      return text;
+    } catch (err) {
+      return "Something went sideways on my end. Try sending that again.";
+    } finally {
+      isLoading = false;
+      document.getElementById('send-btn').disabled = false;
+    }
+  }
+
+  // ── UI HELPERS ──
+  function appendMessage(role, text) {
+    const messages = document.getElementById('messages');
+    const typing = document.getElementById('typing');
+
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role}`;
+    avatar.textContent = role === 'advisor' ? 'RA' : userName.charAt(0).toUpperCase() || 'U';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    // Format text: convert URLs to CTA links, handle line breaks
+    let formatted = text
+      .replace(/https:\/\/buy\.stripe\.com\/[^\s]+/g, url =>
+        `<a href="${url}" class="cta-link" target="_blank">GET FOUNDING MEMBER ACCESS</a>`)
+      .replace(/https:\/\/memberengine\.co\/sales\.html/g, url =>
+        `<a href="${url}" class="cta-link" target="_blank">VIEW MEMBER ENGINE</a>`)
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+
+    bubble.innerHTML = `<p>${formatted}</p>`;
+
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+
+    messages.insertBefore(div, typing);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function showTyping() {
+    const typing = document.getElementById('typing');
+    typing.classList.add('visible');
+    const messages = document.getElementById('messages');
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function hideTyping() {
+    document.getElementById('typing').classList.remove('visible');
+  }
+
+  // ── INPUT HANDLING ──
+  const input = document.getElementById('user-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+})();
+</script>
+</body>
+</html>
